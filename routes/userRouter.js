@@ -11,5 +11,6 @@ router.get("/signup",userController.loadSignup),
 router.get("/shop",userController.loadshopping)
 router.post("/signup",userController.signup),
 router.get("/verify-otp",userController.loadverifyotp),
-router.post("/verify-otp",userController.verifyotp)
+router.post("/verify-otp",userController.verifyotp),
+router.post("/resend-otp",userController.resendOtp),
 module.exports=router;

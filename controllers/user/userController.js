@@ -15,6 +15,29 @@ const bcrypt=require("bcrypt");
 
 //     }
 // }////new creation of signup at 7-10 at 8th episode not done
+const resendOtp=async(req,res)=>{
+    try {
+        const {email}=req.session.userData;
+        if(!email){
+            return res.status(400).json({success:false,message:"Email not found in session"})
+        }
+        const otp=generateOtp();
+        req.session.userOtp=otp;
+        const emailSent=await sendVerificationEmail(email,otp);
+        if(emailSent){
+            console.log("Resend OTP",otp);
+            res.status(200).json({success:true,message:"OTP Resend succesfully"})
+            
+        }else{
+            res.status(500).json({success:false,message:"failed to resend OTP. Please try again"})
+
+        }
+    } catch (error) {
+        console.error("Error resending OTP",error)
+        res.status(500).json({success:false,message:"Internl server Error . Please try again"})
+        
+    }
+}
 
 const securePassword=async (password)=>{
     try {
@@ -36,12 +59,18 @@ const verifyotp=async (req,res)=> {
                 email:user.email,
                 phone:user.phone,
                 password:passwordHash,
-            })
+            })////////change ividem vareeeee
+            await saveUserData.save();
+            req.session.user=saveUserData._id;
+            res.json({success:true,redirectUrl:"/"})
             
+        }else{
+            res.status(400).json({success:false,message:"Invalid OTP,Please try again"})
         }
 
     } catch (error) {
         console.error('error in otp verify',error)
+        res.status(500).json({success:false,message:"An error occured"})
     }
 }
 const loadverifyotp = async (req, res) => {
@@ -172,5 +201,6 @@ module.exports = {
     loadshopping,
     signup,
     verifyotp,
-    loadverifyotp
+    loadverifyotp,
+    resendOtp,
 }
