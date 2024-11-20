@@ -14,11 +14,17 @@ const userSchema=new Schema({
       },
       password: {
         type: String,
-        required: true
+        required: false,
       },
       phone: {
         type: String,
         required: false,
+        sparse:true,
+        default:null,
+      },
+      googleId:{
+        type:String,
+        unique:true,
       },
       isAdmin: {
         type: Boolean,
