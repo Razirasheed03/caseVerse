@@ -3,6 +3,7 @@ const User=require("../../models/userSchema")
 
 const customerInfo=async(req,res)=>{
     try{
+        console.log("hiiii")
         let search="";
         if(req.query.search){
             search=req.query.search;
@@ -35,7 +36,11 @@ const customerInfo=async(req,res)=>{
             ],
 
         }).countDocuments();
-        res.render('users')
+        res.render('customers',{
+            data:userData,
+            totalPages:Math.ceil(count/limit),
+currentPage:page,
+        })
 
     }catch(error){
 
