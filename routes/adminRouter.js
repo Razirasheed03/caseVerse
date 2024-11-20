@@ -10,12 +10,13 @@ router.post("/login",adminController.login);
 router.get("/",adminAuth,adminController.loadDashboard);
 router.get("/pageerror",adminController.pageerror)
 router.get("/logout",adminAuth,adminController.logout)
-// router.get("/users",adminAuth,customerBlocked)
+
 
 
 ////customer management
-router.get("/customers",adminAuth,customerController.customerInfo)
-
+router.get("/customers",adminAuth,customerController.customerInfo);
+router.get("/blockCustomer",adminAuth,customerController.customerBlocked);
+router.get("/unblockCustomer",adminAuth,customerController.customerunBlocked);
 
 
 

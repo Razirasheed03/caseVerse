@@ -30,7 +30,7 @@ const userSchema=new Schema({
         type: Boolean,
         default: false,
       },
-      idblocked:{
+      isBlocked:{
         type:Boolean,
       }
 
