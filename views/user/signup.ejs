@@ -327,8 +327,8 @@
         passwordToggle2.addEventListener('click', function () {
             const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             confirmPasswordInput.setAttribute('type', type);
-            passwordToggle2.classList.toggle('fa-eye');
             passwordToggle2.classList.toggle('fa-eye-slash');
+            passwordToggle2.classList.toggle('fa-eye');
         });
 
         // Form validation(username , email, phone,password)

@@ -36,16 +36,16 @@ const login=async(req,res)=>{
         const {email,password}=req.body;///finding admin(checking also )
          const admin=await User.findOne({email,isAdmin:true})
          if(admin){
-            const passwordMatch=bcrypt.compare(password,admin.password);
+            const passwordMatch= bcrypt.compare(password,admin.password);  ///await
             if(passwordMatch){
                 req.session.admin=true;
                 return res.redirect("/admin")
             }else{
-                return res.redirect("/login")
+                return res.redirect("/admin/login")
             }
 
          }else{
-            return res.redirect("/login")
+            return res.redirect("/admin/login")
          }
     } catch (error) {
         console.log("login error",error);
