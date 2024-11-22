@@ -1,7 +1,7 @@
-const mongoose=require('mongoose');
-const {Schema}=mongoose;
+const mongoose = require('mongoose');
+const {Schema} = mongoose;
 
-const categorySchema=new mongoose.Schema({
+const categorySchema = new mongoose.Schema({
     name:{
         type:String,
         required:true,
@@ -13,7 +13,7 @@ const categorySchema=new mongoose.Schema({
     },
     isListed:{
         type:Boolean,
-        default:true
+        default:true,
     },
     categoryOffer:{
         type:Number,
@@ -24,6 +24,10 @@ const categorySchema=new mongoose.Schema({
         default:Date.now
     }
 })
-const category=mongoose.model("category",categorySchema);
 
-module.exports=category;
+
+
+
+const Category = mongoose.model('Category',categorySchema)
+
+module.exports= Category;
