@@ -109,10 +109,51 @@ res.render('products',{
     }
 };
 
+const addProductOffer = async (req, res) => {
+    try {
+        const { productId, percentage } = req.body;
+        // console.log(req.body,"im before")
+        const findProduct = await Product.findOne({ _id: productId });
+        // console.log(findProduct,"iam here in addpro")
+        const findCategory = await Category.findOne({ _id: findProduct.category });
+        if (findCategory.categoryOffer > percentage) {
+            return res.json({ status: false, message: 'This product category already has a category offer' })
+        }
+        findProduct.salePrice = findProduct.salePrice - Math.floor(findProduct.regularPrice * (percentage / 100));
+        findProduct.productOffer = parseInt(percentage);
+        await findProduct.save();
+        findCategory.categoryOffer = 0;
+        await findCategory.save();
+        res.json({ status: true });
+    } catch (error) {
+        res.redirect('/pageError');
+        res.status(500).json({ status: false, message: "Internal Server Error" });
+
+    }
+}
+
+const removeProductOffer=async (req,res)=>{
+    try{
+        const{productId}=req.body
+        const findProduct=await Product.findOne({_id:productId});
+        const percentage=findProduct.productOffer;
+        findProduct.salePrice=findProduct.salePrice+Math.floor(findProduct.regularPrice*(percentage/100));
+        findProduct.productOffer=0;
+        await findProduct.save();
+        res.json({status:true})
+
+    }catch(error){
+        res.redirect("/pageerror")
+    }
+}
+
 
 module.exports = {
     getProductAddPage,
     addProducts,
     getAllProducts,
+    addProductOffer,
+    removeProductOffer,
+
 
 }
