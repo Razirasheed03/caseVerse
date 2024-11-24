@@ -26,6 +26,7 @@ router.get("/login",userController.loadLogin)
 router.post("/login",userController.login);
 router.get("/logout",userController.logout)
 
-
+///user products
+router.get('/productDetail',userController.productDetail)
 
 module.exports=router;

@@ -219,6 +219,7 @@ const loadSignup = async (req, res) => {
 
 const loadshopping = async (req, res) => {
     try {
+        
         res.render('shop')
     } catch (error) {
         console.log(error, "shopping page not loading")
@@ -252,6 +253,16 @@ const loadHomepage = async (req, res) => {
     }
 }
 
+const productDetail=async(req,res)=>{
+    try {
+        console.log("product detaileedd")
+        res.render('productDetail')
+        
+    } catch (error) {
+        res.render("pageerror")
+        
+    }
+}
 module.exports = {
     loadHomepage,
     pageNotFound,
@@ -264,4 +275,5 @@ module.exports = {
     loadLogin,
     login,
     logout,
+    productDetail,
 }

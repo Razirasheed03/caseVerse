@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Main Image Styling */
+        .main-image-container {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            width: 70%;
+            height: 300px;
+        }
+
+        .main-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .main-image-container:hover img {
+            transform: scale(2);
+            cursor: zoom-in;
+        }
+
+        /* Thumbnails Styling */
+        .thumbnails-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .thumbnail img {
+            cursor: pointer;
+            margin-bottom: 10px;
+            border: 2px solid transparent;
+        }
+
+        .thumbnail img:hover,
+        .thumbnail img.active {
+            border-color: #007bff;
+        }
+
+        /* Review Section */
+        .review-box textarea {
+            resize: none;
+        }
+
+        .rating {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+
+        /* Customer Reviews */
+        .review-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .review-container .like-button {
+            cursor: pointer;
+            color: gray;
+        }
+
+        .review-container .like-button.liked {
+            color: red;
+        }
+
+        /* Spacer */
+        .spacer {
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Thumbnails Section -->
+        <div class="col-md-2 thumbnails-container d-flex flex-column">
+            <div class="thumbnail">
+                <img src="https://via.placeholder.com/100" alt="Image 1" class="img-thumbnail" onclick="changeMainImage(this)">
+            </div>
+            <div class="thumbnail">
+                <img src="https://via.placeholder.com/100" alt="Image 2" class="img-thumbnail" onclick="changeMainImage(this)">
+            </div>
+            <div class="thumbnail">
+                <img src="https://via.placeholder.com/100" alt="Image 3" class="img-thumbnail" onclick="changeMainImage(this)">
+            </div>
+            <div class="thumbnail">
+                <img src="https://via.placeholder.com/100" alt="Image 4" class="img-thumbnail" onclick="changeMainImage(this)">
+            </div>
+        </div>
+
+        <!-- Main Image Section -->
+        <div class="col-md-6">
+            <div class="main-image-container" id="mainImageContainer">
+                <img src="https://via.placeholder.com/400" id="mainProductImage" alt="Product">
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-md-4">
+            <h1>Product Name</h1>
+            <p class="text-muted">Category: Electronics</p>
+            <h3 class="text-danger">$299.99</h3>
+            <div>
+                <span class="rating">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                    <i class="far fa-star"></i>
+                </span>
+                <span class="text-muted">(45 reviews)</span>
+            </div>
+            <p class="mt-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pharetra euismod libero a gravida. Proin non ornare metus.</p>
+            <div class="d-flex mt-3">
+                <button class="btn btn-primary me-2">Add to Cart</button>
+                <button class="btn btn-outline-danger">Add to Wishlist</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spacer -->
+    <div class="spacer"></div>
+
+    <!-- Reviews Section -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3>Customer Reviews</h3>
+            <div id="reviews">
+                <div class="review-container">
+                    <p><strong>John Doe</strong>: Great product! Highly recommend it.</p>
+                    <span class="like-button" onclick="toggleLike(this)"><i class="fas fa-heart"></i></span>
+                </div>
+                <div class="review-container">
+                    <p><strong>Jane Smith</strong>: Good value for money.</p>
+                    <span class="like-button" onclick="toggleLike(this)"><i class="fas fa-heart"></i></span>
+                </div>
+            </div>
+            <div class="review-box mt-4">
+                <h5>Write a Review</h5>
+                <textarea class="form-control" rows="3" id="reviewInput" placeholder="Share your thoughts..."></textarea>
+                <button class="btn btn-success mt-2" onclick="submitReview()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Change Main Image
+    function changeMainImage(img) {
+        const mainImage = document.getElementById('mainProductImage');
+        mainImage.src = img.src;
+
+        // Highlight active thumbnail
+        document.querySelectorAll('.thumbnail img').forEach(thumbnail => {
+            thumbnail.classList.remove('active');
+        });
+        img.classList.add('active');
+    }
+
+    // Add Review
+    function submitReview() {
+        const reviewInput = document.getElementById('reviewInput');
+        const reviews = document.getElementById('reviews');
+        if (reviewInput.value.trim()) {
+            const newReview = `
+                <div class="review-container">
+                    <p><strong>You</strong>: ${reviewInput.value.trim()}</p>
+                    <span class="like-button" onclick="toggleLike(this)"><i class="fas fa-heart"></i></span>
+                </div>`;
+            reviews.innerHTML += newReview;
+            reviewInput.value = '';
+        }
+    }
+
+    // Toggle Like
+    function toggleLike(button) {
+        button.classList.toggle('liked');
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
