@@ -238,7 +238,7 @@
         }
 
 
-
+///////////image adding and setting cropper
 
         function viewImage1(event) {
             document.getElementById('imgView1').src = URL.createObjectURL(event.target.files[0])
@@ -343,7 +343,6 @@
         }
 
         function validateForm() {
-            console.log('inside validate form');//////////////////////////
             clearErrorMessages();
             const name = document.getElementsByName('productName')[0].value;
             const description = document.getElementById('descriptionid').value;
@@ -366,8 +365,8 @@
             if (description.trim() === "") {
                 displayErrorMessage('description-error', 'Please enter a product description.');
                 isValid = false;
-            } else if (!/^[a-zA-Z\s]+$/.test(description.trim())) {
-                displayErrorMessage('description-error', 'Product description should contain only alphabetic characters.');
+            } else if (!/[,-.a-zA-Z\s]+$/.test(description.trim())) {
+                displayErrorMessage('description-error', 'Product description should not contain numeric characters.');
                 isValid = false;
             }
 

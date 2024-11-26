@@ -13,7 +13,7 @@
             overflow: hidden;
             border: 1px solid #ddd;
             width: 70%;
-            height: 300px;
+            height: 500px;
         }
 
         .main-image-container img {
@@ -30,7 +30,7 @@
 
         /* Thumbnails Styling */
         .thumbnails-container {
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
         }
 
@@ -43,11 +43,6 @@
         .thumbnail img:hover,
         .thumbnail img.active {
             border-color: #007bff;
-        }
-
-        /* Review Section */
-        .review-box textarea {
-            resize: none;
         }
 
         .rating {
@@ -73,42 +68,68 @@
 
         /* Spacer */
         .spacer {
-            height: 50px;
+            height: 250px;
+        }
+
+        /* Breadcrumb Styling */
+        .breadcrumb {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .breadcrumb a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
 <div class="container mt-5">
+    <!-- Breadcrumb Section -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
+            <li class="breadcrumb-item " aria-current="page"><%= product.productName %></li>
+        </ol>
+    </nav>
+
     <div class="row">
         <!-- Thumbnails Section -->
         <div class="col-md-2 thumbnails-container d-flex flex-column">
             <div class="thumbnail">
-                <img src="https://via.placeholder.com/100" alt="Image 1" class="img-thumbnail" onclick="changeMainImage(this)">
+                <img src="/uploads/product-images/<%=product.productImage[0]%>" alt="Image 1" class="img-thumbnail" onclick="changeMainImage(this)">
             </div>
             <div class="thumbnail">
-                <img src="https://via.placeholder.com/100" alt="Image 2" class="img-thumbnail" onclick="changeMainImage(this)">
+                <img src="/uploads/product-images/<%=product.productImage[1]%>" alt="Image 2" class="img-thumbnail" onclick="changeMainImage(this)">
             </div>
             <div class="thumbnail">
-                <img src="https://via.placeholder.com/100" alt="Image 3" class="img-thumbnail" onclick="changeMainImage(this)">
+                <img src="/uploads/product-images/<%=product.productImage[2]%>" alt="Image 3" class="img-thumbnail" onclick="changeMainImage(this)">
             </div>
             <div class="thumbnail">
-                <img src="https://via.placeholder.com/100" alt="Image 4" class="img-thumbnail" onclick="changeMainImage(this)">
+                <img src="/uploads/product-images/<%=product.productImage[3]%>" alt="Image 4" class="img-thumbnail" onclick="changeMainImage(this)">
             </div>
         </div>
 
         <!-- Main Image Section -->
         <div class="col-md-6">
             <div class="main-image-container" id="mainImageContainer">
-                <img src="https://via.placeholder.com/400" id="mainProductImage" alt="Product">
+                <img src="/uploads/product-images/<%=product.productImage[0]%>" id="mainProductImage" alt="Product">
             </div>
         </div>
 
         <!-- Product Details -->
         <div class="col-md-4">
-            <h1>Product Name</h1>
-            <p class="text-muted">Category: Electronics</p>
-            <h3 class="text-danger">$299.99</h3>
+            <h1><%=product.productName%></h1>
+            <p class="text-muted">Category: <%=category.name%></p>
+            <h3 class="text-black"> ₹<%=product.salePrice%></h3>
             <div>
                 <span class="rating">
                     <i class="fas fa-star"></i>
@@ -119,8 +140,32 @@
                 </span>
                 <span class="text-muted">(45 reviews)</span>
             </div>
-            <p class="mt-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut pharetra euismod libero a gravida. Proin non ornare metus.</p>
-            <div class="d-flex mt-3">
+            <br>
+            <p><%=product.description%></p>
+
+            <div class="flex-w flex-r-m p-b-10">
+                <div class="size-204 respon6-next">
+                    <div class="rs1-select2 bor8 bg0">
+                        <select class="js-select2" name="time">
+                            <option>Choose Your Device</option>
+                            <option>Iphone 14 Pro</option>
+                            <option>Iphone 15 Pro</option>
+                            <option>Iphone 16 Pro</option>
+                            <option>Ipad M2</option>
+                            <option>Ipad M3</option>
+                            <option>Ipad M4</option>
+                            <option>IWatch 9</option>
+                            <option>IWatch 10</option>
+                            <option>IWatch Ultra</option>
+                            <option>Macbook M2</option>
+                            <option>Macbook M3</option>
+                        </select>
+                        <div class="dropDownSelect2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex mt-5">
                 <button class="btn btn-primary me-2">Add to Cart</button>
                 <button class="btn btn-outline-danger">Add to Wishlist</button>
             </div>
@@ -144,11 +189,6 @@
                     <span class="like-button" onclick="toggleLike(this)"><i class="fas fa-heart"></i></span>
                 </div>
             </div>
-            <div class="review-box mt-4">
-                <h5>Write a Review</h5>
-                <textarea class="form-control" rows="3" id="reviewInput" placeholder="Share your thoughts..."></textarea>
-                <button class="btn btn-success mt-2" onclick="submitReview()">Submit</button>
-            </div>
         </div>
     </div>
 </div>
@@ -164,21 +204,6 @@
             thumbnail.classList.remove('active');
         });
         img.classList.add('active');
-    }
-
-    // Add Review
-    function submitReview() {
-        const reviewInput = document.getElementById('reviewInput');
-        const reviews = document.getElementById('reviews');
-        if (reviewInput.value.trim()) {
-            const newReview = `
-                <div class="review-container">
-                    <p><strong>You</strong>: ${reviewInput.value.trim()}</p>
-                    <span class="like-button" onclick="toggleLike(this)"><i class="fas fa-heart"></i></span>
-                </div>`;
-            reviews.innerHTML += newReview;
-            reviewInput.value = '';
-        }
     }
 
     // Toggle Like

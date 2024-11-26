@@ -251,6 +251,19 @@ const deleteSingleImage=async(req,res)=>{
     }
 }
 
+const deleteProduct = async(req,res)=>{
+
+    const id = req.params.id;
+    try {
+        const update = await Product.findByIdAndUpdate({_id:id},{isDeleted:true},{new:true});
+        if(!update){
+            return res.status(404).json({message:'product not Found'});
+        }
+        res.status(200).json({message:`${Product} deleted successfully`})
+    } catch (error) {
+        res.status(500).json({message:'Error occured during Deleting product',error:error.message});
+    }
+}
 
 module.exports = {
     getProductAddPage,
@@ -263,6 +276,7 @@ module.exports = {
     getEditProduct,
     editProduct,
     deleteSingleImage,
+    deleteProduct,
 
 
 }

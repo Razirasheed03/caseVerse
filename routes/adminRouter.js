@@ -34,7 +34,7 @@ router.get('/listCategory',adminAuth,categoryController.getListCategory);
 router.get('/unlistCategory',adminAuth,categoryController.getUnlistCategory);
 router.get('/editCategory',adminAuth,categoryController.getEditCategory);
 router.post('/editCategory/:id',adminAuth,categoryController.editCategory)
-
+router.post('/deleteCategory/:id',adminAuth,categoryController.deleteCategory)
 
 //Product Management
 router.get('/addProducts',adminAuth,productController.getProductAddPage);
@@ -47,6 +47,7 @@ router.get("/unblockProduct",adminAuth,productController.unblockProduct);
 router.get("/editProduct",adminAuth,productController.getEditProduct);
 router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productController.editProduct);
 router.post("/deleteImage",adminAuth,productController.deleteSingleImage)
+router.post('/deleteProduct/:id',adminAuth,productController.deleteProduct)
 
 
 module.exports=router;

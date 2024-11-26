@@ -1,8 +1,10 @@
 const { response } = require("../../app");
 const User = require("../../models/userSchema")
+const Product =require('../../models/productSchema')
 const env = require("dotenv").config();
 const nodemailer=require('nodemailer')
 const bcrypt=require("bcrypt");
+const Category = require("../../models/categorySchema");
 
 const logout=async(req,res)=>{
     try {
@@ -176,15 +178,9 @@ const signup = async (req, res) => {
   ///destructuring from body
     try {
         const { username, email, phone, password} = req.body;
-        // const newUser = new User({ username, email, phone, password });
-        // console.log("saved")
-        // await newUser.save()///save to mongodb
-        // res.json({ success: true, message: "user signup successfuly!!" })
-
         const findUser=await User.findOne({email});
         if(findUser){
-            console.log("user found")
-            return res.json({status:false, message: "User already exists"})
+            res.render('signup',{ message: "User With this Email Already exists"})
         }
 
         const otp = generateOtp();
@@ -209,6 +205,8 @@ const signup = async (req, res) => {
 
 const loadSignup = async (req, res) => {
     try {
+  
+
         return res.render('signup')
 
     } catch (error) {
@@ -219,14 +217,42 @@ const loadSignup = async (req, res) => {
 
 const loadshopping = async (req, res) => {
     try {
-        
-        res.render('shop')
-    } catch (error) {
-        console.log(error, "shopping page not loading")
-        res.status(500).send("server error")
+        const search = req.query.search || ""; 
+        const page = parseInt(req.query.page) || 1;
+        const limit = 8; 
 
+     
+        const totalProducts = await Product.countDocuments({
+            $or: [
+                { productName: { $regex: new RegExp('.*' + search + '.*', 'i') } },
+        
+            ],
+        });
+  
+
+        const productData = await Product.find({
+            $or: [
+                { productName: { $regex: new RegExp('.*' + search + '.*', 'i') } },
+            ],
+        })
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .populate('category')
+            .exec();
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        res.render('shop', {
+            product: productData, 
+            currentPage: page, 
+            totalPages, 
+            search, 
+        });
+    } catch (error) {
+        console.error("Error loading shopping page:", error);
+        res.status(500).send("Server error");
     }
-}
+};
+
 
 const pageNotFound = async (req, res) => {
     try {
@@ -238,13 +264,16 @@ const pageNotFound = async (req, res) => {
     }
 }
 
+
 const loadHomepage = async (req, res) => {
     try {
-        ///show profile after login
+  
+        const product = await Product.find({isBlocked:false})
+        const category=await Category.findOne({_id:product.category})
         const userSession = req.session.user;
         const user = userSession ? await User.findById(userSession._id) : null;
-        res.render('home', { user }); // Pass user as null if not logged in
-  
+        res.render('home', { user,product,category}); // Pass user as null if not logged in
+
      
     } catch (error) {
         console.log("home page not found")
@@ -255,8 +284,13 @@ const loadHomepage = async (req, res) => {
 
 const productDetail=async(req,res)=>{
     try {
-        console.log("product detaileedd")
-        res.render('productDetail')
+       
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+        const product = await Product.findOne({_id:id})
+        const category=await Category.findOne({_id:product.category})
+        res.render('productDetail',{product,category,user})
         
     } catch (error) {
         res.render("pageerror")

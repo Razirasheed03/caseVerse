@@ -191,6 +191,19 @@ const editCategory=async(req,res)=>{
     }
 }
 
+const deleteCategory = async(req,res)=>{
+    const id = req.params.id;
+    try {
+        const category = await Category.findByIdAndUpdate({_id:id},{isDeleted:true},{new:true});
+        if(!category){
+            return res.status(404).json({message:'Category not Found'});
+        }
+        res.status(200).json({message:`${category} deleted successfully`})
+    } catch (error) {
+        res.status(500).json({message:'Error occured during Deleting Category',error:error.message});
+    }
+}
+
 
 module.exports = {
     categoryInfo,
@@ -201,4 +214,6 @@ module.exports = {
     getUnlistCategory,
     getEditCategory,
     editCategory,
+    deleteCategory,
+
 };

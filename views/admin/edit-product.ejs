@@ -98,19 +98,7 @@
                             </select>
                             <div id="category-error" class="error-message"></div>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label">Images</label>
-                            <% if (product && product.productImage && product.productImage.length > 0) { %>
-                                <% product.productImage.forEach(image => { %>
-                                    <div class="col-md-12 mb-2">
-                                        <img src="/uploads/re-image/<%= image %>" style="width: 50px; height: 60px;" alt="">
-                                        <i onclick="deleteSingleImage('<%= image %>', '<%= product._id %>')" class="fa-thin fa-x"
-                                            style="cursor: pointer;"></i>
-                                    </div>
-                                <% }); %>
-                            <% } %>
-                            <input class="form-control" type="file" name="images" accept="image/png, image/jpeg, image/jpg">
-                        </div>
+                
                         <div>
                             <button class="btn btn-md rounded font-sm hover-up" type="submit">Update</button>
                         </div>

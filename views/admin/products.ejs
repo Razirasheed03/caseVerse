@@ -77,8 +77,20 @@
                         <a href="/admin/editProduct?id=<%=data[i]._id%>" class="text-white" style="text-decoration: none;">Edit</a>
                     </button>
                 </td>
+                <td>
+                    <% if (!data.isDeleted) { %>
+                        <button class="btn btn-danger"
+                            onclick="softDeleteCategory('<%= data._id %>')">
+                            Delete
+                        </button>
+                        <% } else { %>
+                            <span class="text-muted">Deleted</span>
+                            <%}%>
+                </td>
+                
             </tr>
             <%}%>
+            
             
         </tbody>
 
@@ -183,6 +195,51 @@ function removeOffer(productId){
     }
 }
 
+
+async function softDeleteCategory(productId) {
+            // Confirm the action before proceeding
+            const confirmation = await Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to recover this category!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (confirmation.isConfirmed) {
+                try {
+                    // Send fetch request to delete the category
+                    const response = await fetch(`/admin/deleteProduct/${productId}`, {
+                        method: 'POST', // Can also use DELETE, depending on your API design
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // Show success alert
+                        Swal.fire(
+                            'Deleted!',
+                            'The Prodect has been soft deleted.',
+                            'success'
+                        ).then(() => {
+                            // Reload the page or update the UI dynamically
+                            location.reload();
+                        });
+                    } else {
+                        // Show error message from the server
+                        Swal.fire('Error', data.message || 'Failed to delete the product', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error soft deleting product:', error);
+                    Swal.fire('Error', 'An unexpected error occurred while deleting the product', 'error');
+                }
+            }
+        }
  </script>
 
 
