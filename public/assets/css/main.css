@@ -3900,6 +3900,7 @@ body.offcanvas-active {
   -ms-flex-pack: justify;
   justify-content: space-between;
   margin-bottom: 30px;
+  margin-top: 40px;
 }
 
 .content-header .content-title {

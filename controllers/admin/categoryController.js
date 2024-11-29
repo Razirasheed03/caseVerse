@@ -91,7 +91,7 @@ const addCategoryOffer = async (req, res) => {
   
 
   const removeCategoryOffer = async (req, res) => {
-    console.log('hii im in controller');
+
     
     try {
       const categoryId = req.body.categoryId;

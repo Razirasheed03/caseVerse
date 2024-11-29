@@ -8,25 +8,28 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Main Image Styling */
-        .main-image-container {
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #ddd;
-            width: 70%;
-            height: 500px;
-        }
+/* Main Image Styling */
+.main-image-container {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    width: 70%;
+    height: 500px;
+}
 
-        .main-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
+.main-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease; /* Smooth transition for zooming in and out */
+}
 
-        .main-image-container:hover img {
-            transform: scale(2);
-            cursor: zoom-in;
-        }
+/* Zoom Effect */
+.main-image-container img.zoomed {
+    transform: scale(2); /* Adjust zoom level here */
+    transition: transform 0.2s ease, transform-origin 0.2s ease; /* Smooth zoom effect */
+}
+
 
         /* Thumbnails Styling */
         .thumbnails-container {
@@ -89,6 +92,7 @@
         }
     </style>
 </head>
+
 <body>
 
 <div class="container mt-5">
@@ -210,7 +214,35 @@
     function toggleLike(button) {
         button.classList.toggle('liked');
     }
+
+    
 </script>
+<script>
+    const mainImageContainer = document.getElementById("mainImageContainer");
+    const mainImage = document.getElementById("mainProductImage");
+
+    // Mouse movement logic for zoom
+    mainImageContainer.addEventListener("mousemove", (event) => {
+        const rect = mainImageContainer.getBoundingClientRect();
+        const x = event.clientX - rect.left; // X coordinate relative to the image container
+        const y = event.clientY - rect.top; // Y coordinate relative to the image container
+
+        // Calculate the zoom origin based on mouse position
+        const xPercent = (x / rect.width) * 100;
+        const yPercent = (y / rect.height) * 100;
+
+        // Apply the zoom and set transform-origin
+        mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+        mainImage.classList.add("zoomed");
+    });
+
+    // Reset image on mouse leave
+    mainImageContainer.addEventListener("mouseleave", () => {
+        mainImage.classList.remove("zoomed");
+        mainImage.style.transformOrigin = "center center"; // Reset transform origin
+    });
+</script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>

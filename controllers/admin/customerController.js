@@ -62,7 +62,7 @@ const customerBlocked = async (req, res) => {
 
 const customerunBlocked = async (req, res) => {
     try {
-        console.log('hiii2')
+   
         let id = req.query.id;
         await User.updateOne({ _id: id }, { $set: { isBlocked: false } });
 

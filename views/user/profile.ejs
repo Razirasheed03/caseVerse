@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>CaseVerse Profile</title>
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="" />
+        <meta property="og:type" content="" />
+        <meta property="og:url" content="" />
+        <meta property="og:image" content="" />
+
+        <!-- Template CSS -->
+        <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
+        <style>
+            /* Remove box styling */
+            .content-main {
+                background: none;
+                box-shadow: none;
+                border: none;
+            }
+            .content-body {
+                padding: 20px;
+                background-color: #f8f9fa;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            h2.section-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+                color: #343a40;
+                font-weight: 600;
+            }
+            .btn-primary {
+                background-color: #4caf50;
+                border-color: #4caf50;
+                transition: all 0.3s ease-in-out;
+            }
+            .btn-primary:hover {
+                background-color: #45a049;
+                border-color: #45a049;
+            }
+            .card-placeholder {
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+                background-color: #ffffff;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s, box-shadow 0.3s;
+            }
+            .card-placeholder:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            }
+            .card-placeholder h5 {
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 10px;
+            }
+            .card-placeholder p {
+                font-size: 14px;
+                color: #555;
+            }
+        </style>
+    </head>
+    <%-include("../../views/partials/user/header")%>
+    <body>
+        <section class="content-main">
+            <div class="content-header"></div>
+            <div class="row gx-5">
+                <%-include("../../views/partials/user/profileAside")%>
+         
+                <div class="col-lg-9">
+                    <section class="content-body">
+                        <!-- Form Section -->
+                        <h2 class="section-title">Edit Profile</h2>
+                        <form>
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <div class="row gx-3">
+                                        <div class="col-12 mb-3">
+                                            <label class="form-label">User Name</label>
+                                            <input class="form-control" type="text" value="<%=user.username%>" />
+                                        </div>
+                                      
+                                        <div class="col-lg-12 mb-3">
+                                            <label class="form-label">Email</label>
+                                            <input class="form-control" disabled placeholder="<%=user.email%>"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <button class="btn btn-primary" type="submit">Save changes</button>
+                        </form>
+
+                        <!-- Placeholder Content Section -->
+                        <hr class="my-5" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card-placeholder">
+                                    <h5>Account Information</h5>
+                                    <p>Keep your profile information up-to-date to ensure smooth communication and account security.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card-placeholder">
+                                    <h5>Privacy Settings</h5>
+                                    <p>Review your privacy settings regularly to stay in control of your personal information.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+        <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
+        <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/vendors/select2.min.js"></script>
+        <script src="assets/js/vendors/perfect-scrollbar.js"></script>
+        <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+        <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
+    </body>
+</html>
+

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>CaseVerse Profile</title>
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="" />
+        <meta property="og:type" content="" />
+        <meta property="og:url" content="" />
+        <meta property="og:image" content="" />
+
+        <!-- Template CSS -->
+        <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
+
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f9f9f9;
+            }
+    
+            .container {
+                max-width: 800px;
+                margin: 30px auto;
+                background: #fff;
+                padding: 20px;
+                border-radius: 5px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+    
+            h2 {
+                text-align: center;
+                font-size: 24px;
+                color: #333;
+                margin-bottom: 20px;
+            }
+    
+            .wallet-balance {
+                background-color: #f4f4f4;
+                padding: 20px;
+                border-radius: 5px;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+    
+            .wallet-balance h3 {
+                font-size: 20px;
+                color: #333;
+            }
+    
+            .wallet-balance p {
+                font-size: 28px;
+                font-weight: bold;
+                color: #000;
+            }
+    
+            .add-funds {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 30px;
+            }
+    
+            .add-funds button {
+                padding: 10px 20px;
+                background-color: #2c9403;
+                color: #fff;
+                border: none;
+                cursor: pointer;
+                border-radius: 3px;
+                font-size: 16px;
+            }
+    
+            .transactions {
+                margin-top: 20px;
+            }
+    
+            .transactions h3 {
+                font-size: 20px;
+                color: #333;
+                margin-bottom: 10px;
+            }
+    
+            .transaction-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+    
+            .transaction-list li {
+                display: flex;
+                justify-content: space-between;
+                padding: 15px;
+                background-color: #f9f9f9;
+                margin-bottom: 10px;
+                border-radius: 5px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+    
+            .transaction-list li .transaction-detail {
+                font-size: 16px;
+                color: #555;
+            }
+    
+            .transaction-list li .transaction-amount {
+                font-size: 16px;
+                font-weight: bold;
+                color: #000;
+            }
+    
+            .transaction-list li.credit .transaction-amount {
+                color: #4caf50; /* Green for credits */
+            }
+    
+            .transaction-list li.debit .transaction-amount {
+                color: #f44336; /* Red for debits */
+            }
+        </style>
+       <style>
+            /* Remove box styling */
+            .content-main {
+                background: none;
+                box-shadow: none;
+                border: none;
+            }
+            .content-body {
+                padding: 20px;
+                background-color: #f8f9fa;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            h2.section-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+                color: #343a40;
+                font-weight: 600;
+            }
+            .btn-primary {
+                background-color: #4caf50;
+                border-color: #4caf50;
+                transition: all 0.3s ease-in-out;
+            }
+            .btn-primary:hover {
+                background-color: #45a049;
+                border-color: #45a049;
+            }
+            .card-placeholder {
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 20px;
+                background-color: #ffffff;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s, box-shadow 0.3s;
+            }
+            .card-placeholder:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            }
+            .card-placeholder h5 {
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 10px;
+            }
+            .card-placeholder p {
+                font-size: 14px;
+                color: #555;
+            }
+        </style>
+    </head>
+    <%-include("../../views/partials/user/header")%>
+    <body>
+        <section class="content-main">
+            <div class="content-header"></div>
+            <div class="row gx-5">
+                <%-include("../../views/partials/user/profileAside")%>
+         
+                <div class="col-lg-9">
+                    <section class="content-body">
+                        <!-- Form Section -->
+                        <h2 class="section-title">Wallet</h2>
+                
+
+                        <!-- Wallet Balance -->
+                        <div class="wallet-balance">
+                            <h3>Current Balance</h3>
+                            <p>₹5,200.00</p>
+                        </div>
+                
+
+                        <!-- Add Funds Button -->
+                        <div class="add-funds">
+                            <button>Add Funds</button>
+                        </div>
+
+                        <!-- Placeholder Content Section -->
+                        <hr class="my-5" />
+                        <div class="transactions">
+                            <h3>Recent Transactions</h3>
+                            <ul class="transaction-list">
+                                <li class="credit">
+                                    <span class="transaction-detail">Order Refund</span>
+                                    <span class="transaction-amount">+ ₹1,000.00</span>
+                                </li>
+                                <li class="debit">
+                                    <span class="transaction-detail">Order Payment #1234</span>
+                                    <span class="transaction-amount">- ₹2,000.00</span>
+                                </li>
+                                <li class="credit">
+                                    <span class="transaction-detail">Added Funds</span>
+                                    <span class="transaction-amount">+ ₹3,000.00</span>
+                                </li>
+                                <li class="debit">
+                                    <span class="transaction-detail">Order Payment #1233</span>
+                                    <span class="transaction-amount">- ₹1,500.00</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+        <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
+        <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/vendors/select2.min.js"></script>
+        <script src="assets/js/vendors/perfect-scrollbar.js"></script>
+        <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+        <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
+    </body>
+</html>
+

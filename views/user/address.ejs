@@ -1,0 +1,242 @@
+
+
+    <!-- Template CSS -->
+    <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
+    <style>
+        /* Remove box styling */
+        .content-main {
+            background: none;
+            box-shadow: none;
+            border: none;
+            overflow-y: hidden;
+        }
+
+        .content-body {
+            padding: 20px;
+            overflow-y: hidden;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0px;
+            margin-bottom: 0px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .card-body {
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<%-include("../../views/partials/user/header")%>
+
+    <body>
+        <section class="content-main">
+            <div class="content-header"></div>
+            <div class="row gx-5">
+                <%-include("../../views/partials/user/profileAside")%>
+                    <div class="col-lg-9">
+                        <section class="content-body">
+                            <!-- Add Address Form -->
+                            <h2 class="mb-4">Add Address</h2>
+                            <form id="addressForm">
+                                <div class="row">
+                                    <div class="col-lg-3 mb-3">
+                                        <label class="form-label">Name</label>
+                                        <input class="form-control" id="name" type="text"
+                                            placeholder="Enter Your FullName" name="name" />
+                                    </div>
+                                    <div class="col-lg-3 mb-3">
+                                        <label class="form-label">Address Type</label>
+                                        <input class="form-control" id="addressType" type="text"
+                                            placeholder="e.g., Home, Office" name="addressType" />
+                                    </div>
+                                    <div class="col-lg-6 mb-3">
+                                        <label class="form-label">Phone</label>
+                                        <input class="form-control" id="phone" type="tel" placeholder="+1234567890"
+                                            name="phone" />
+                                    </div>
+                                    <div class="col-lg-6 mb-3">
+                                        <label class="form-label">Address</label>
+                                        <input class="form-control" id="address" placeholder="Enter full address"
+                                            name="address"></input>
+                                    </div>
+                                    <div class="col-lg-6 mb-3">
+                                        <label class="form-label">LandMark</label>
+                                        <input class="form-control" id="landMark" placeholder="Enter Landmark"
+                                            name="landMark"></input>
+                                    </div>
+                                    <div class="col-lg-3 mb-3">
+                                        <label class="form-label">City</label>
+                                        <input class="form-control" id="city" type="text" placeholder="City"
+                                            name="city" />
+                                    </div>
+                                    <div class="col-lg-3 mb-3">
+                                        <label class="form-label">state</label>
+                                        <input class="form-control" id="state" type="text" placeholder="State"
+                                            name="state" />
+                                    </div>
+                                    <div class="col-lg-3 mb-3">
+                                        <label class="form-label">Pin Code</label>
+                                        <input class="form-control" id="pincode" type="tel" placeholder="Pin Code"
+                                            name="pincode" />
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" type="submit" id="submitAddress">Add Address</button>
+                            </form>
+
+                            <!-- Existing Addresses -->
+                            <hr class="my-4" />
+
+                            <div class="row">
+                                <%if(userAddress){%>
+                                    <%userAddress.address.forEach((address)=>{%>
+                                <!-- Office Address -->
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header"><%=address.addressType%></div>
+                                        <div class="card-body">
+                                            <p>Name : <%=address.name%><br></p>
+                                            <p>Address : <%=address.address%></p>
+                                            <p>City : <%=address.city%></p>
+                                            <p>Landmark : <%=address.landMark%></p>
+                                            <p>State : <%=address.state%></p>
+                                            <p>Pincode : <%=address.pincode%></p>
+                                            <p>Phone : <%=address.phone%></p>
+                                            <a class="btn btn-sm btn-secondary" href="/editAddress?id=<%=address._id%>">Edit</a>
+                                            <a class="btn btn-sm btn-danger" href="/deleteAddress?id=<%=address._id%>" onclick="return confirm('Are You Sure You Want To Delete This Address?')">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <%})%><%}else{%>
+
+
+                                <!-- Home Address -->
+                           <div class="col-lg-6">
+                            <div class="card mb-3 mb-lg-0">
+                                <div class="card-header">
+                                    <h5 class="mb-0"></h5>
+                                    </div>
+                                    <div class="card-body">
+                                </div><address>No Saved addresses</address>
+                                </div>
+                            </div>
+                            </div>
+                            <%}%>
+                        </section>
+                    </div>
+            </div>
+        </section>
+        <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
+        <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/vendors/select2.min.js"></script>
+        <script src="assets/js/vendors/perfect-scrollbar.js"></script>
+        <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+        <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
+
+        <script>
+            const submitAddress = document.getElementById('submitAddress');
+            const name = document.getElementById('name')
+            const addressType = document.getElementById('addressType')
+            const phone = document.getElementById('phone')
+            const pincode = document.getElementById('pincode')
+            const city = document.getElementById('city')
+            const state = document.getElementById('state')
+            const landMark = document.getElementById('landMark')
+            const address = document.getElementById('address')
+            submitAddress.addEventListener('click', (e) => {
+                e.preventDefault()
+                console.log(name.value)
+                const addressData = {
+                    name: name.value,
+                    addressType: addressType.value,
+                    phone: phone.value,
+                    pincode: pincode.value,
+                    city: city.value,
+                    state: state.value,
+                    landMark: landMark.value,
+                    address: address.value,
+                }
+                console.log(addressData);
+                fetch('/addAddress', {
+                    method: "post",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(addressData)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Your address has been added successfully.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(()=>{
+                                window.location.reload()
+                            })
+
+                        }
+                    })
+            })
+
+            console.log(name)
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    </body>
+
+</html>
+<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+	<script>
+		$(".js-select2").each(function(){
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+	<script>
+		$('.js-pscroll').each(function(){
+			$(this).css('position','relative');
+			$(this).css('overflow','hidden');
+			var ps = new PerfectScrollbar(this, {
+				wheelSpeed: 1,
+				scrollingThreshold: 1000,
+				wheelPropagation: false,
+			});
+
+			$(window).on('resize', function(){
+				ps.update();
+			})
+		});
+	</script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>

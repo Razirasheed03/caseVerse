@@ -1,0 +1,272 @@
+
+
+    <!-- Template CSS -->
+    <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
+    <style>
+        /* Remove box styling */
+        .content-main {
+            background: none;
+            box-shadow: none;
+            border: none;
+            overflow-y: hidden;
+        }
+
+        .content-body {
+            padding: 20px;
+            overflow-y: hidden;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0px;
+            margin-bottom: 0px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .card-body {
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<%-include("../../views/partials/user/header")%>
+
+    <body>
+        <section class="content-main">
+            <div class="content-header"></div>
+            <div class="row gx-5">
+                <%-include("../../views/partials/user/profileAside")%>
+                    <div class="col-lg-9">
+                        <section class="content-body">
+                            <!-- Add Address Form -->
+                            <h2 class="mb-4">Edit Address</h2>
+                            <form id="addressForm">
+                                    <div class="row">
+                                      <div class="col-lg-3 mb-3">
+                                        <label class="form-label">Name</label>
+                                        <input class="form-control" id="name" value="<%= userAddress.name %>" type="text" name="name" />
+                                      </div>
+                                      <div class="col-lg-3 mb-3">
+                                        <label class="form-label">Address Type</label>
+                                        <input class="form-control" id="addressType" type="text" value="<%= userAddress.addressType %>" name="addressType" />
+                                      </div>
+                                      <div class="col-lg-6 mb-3">
+                                        <label class="form-label">Phone</label>
+                                        <input class="form-control" id="phone" type="tel" value="<%= userAddress.phone %>" name="phone" />
+                                      </div>
+                                      <div class="col-lg-6 mb-3">
+                                        <label class="form-label">Address</label>
+                                        <input class="form-control" id="address" value="<%= userAddress.address %>" name="address"></input>
+                                      </div>
+                                      <div class="col-lg-6 mb-3">
+                                        <label class="form-label">LandMark</label>
+                                        <input class="form-control" id="landMark" value="<%= userAddress.landMark %>" name="landMark"></input>
+                                      </div>
+                                      <div class="col-lg-3 mb-3">
+                                        <label class="form-label">City</label>
+                                        <input class="form-control" id="city" type="text" value="<%= userAddress.city %>" name="city" />
+                                      </div>
+                                      <div class="col-lg-3 mb-3">
+                                        <label class="form-label">State</label>
+                                        <input class="form-control" id="state" type="text" value="<%= userAddress.state %>" name="state" />
+                                      </div>
+                                      <div class="col-lg-3 mb-3">
+                                        <label class="form-label">Pin Code</label>
+                                        <input class="form-control" id="pincode" type="tel" value="<%= userAddress.pincode %>" name="pincode" />
+                                      </div>
+                                    </div>
+                                  
+                               
+                                    <button id="editAddBtn" class="btn btn-primary" type="submit" id="submitAddress">Update Address</button>
+                               
+                              </form>
+                              
+                    </div>
+            </div>
+
+        </section>
+        <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
+        <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/vendors/select2.min.js"></script>
+        <script src="assets/js/vendors/perfect-scrollbar.js"></script>
+        <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+        <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
+
+        <!-- <script>
+            const submitAddress = document.getElementById('submitAddress');
+            const name = document.getElementById('name')
+            const addressType = document.getElementById('addressType')
+            const phone = document.getElementById('phone')
+            const pincode = document.getElementById('pincode')
+            const city = document.getElementById('city')
+            const state = document.getElementById('state')
+            const landMark = document.getElementById('landMark')
+            const address = document.getElementById('address')
+            submitAddress.addEventListener('click', (e) => {
+                e.preventDefault()
+                console.log(name.value)
+                const addressData = {
+                    name: name.value,
+                    addressType: addressType.value,
+                    phone: phone.value,
+                    pincode: pincode.value,
+                    city: city.value,
+                    state: state.value,
+                    landMark: landMark.value,
+                    address: address.value,
+                }
+                console.log(addressData);
+                fetch('/addAddress', {
+                    method: "post",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(addressData)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Your address has been added successfully.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(()=>{
+                                window.location.reload()
+                            })
+
+                        }
+                    })
+            })
+
+            console.log(name)
+        </script> -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    </body>
+
+</html>
+<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+	<script>
+		$(".js-select2").each(function(){
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+	<script>
+		$('.js-pscroll').each(function(){
+			$(this).css('position','relative');
+			$(this).css('overflow','hidden');
+			var ps = new PerfectScrollbar(this, {
+				wheelSpeed: 1,
+				scrollingThreshold: 1000,
+				wheelPropagation: false,
+			});
+
+			$(window).on('resize', function(){
+				ps.update();
+			})
+		});
+	</script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+
+    <script>
+        document.getElementById('editAddBtn').addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent form submission
+            console.log('Submit button clicked.');
+    
+            // Capture form input values
+            const name = document.getElementById('name').value;
+            const addressType = document.getElementById('addressType').value;
+            const phone = document.getElementById('phone').value;
+            const landMark = document.getElementById('landMark').value;
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const pincode = document.getElementById('pincode').value;
+    
+            // Prepare the payload (data to send to the server)
+            const data = {
+                name,
+                addressType,
+                phone,
+                landMark,
+                address,
+                city,
+                state,
+                pincode
+            };
+    
+            try {
+                // Send data to the backend using Fetch
+                const response = await fetch(`/editAddress?id=<%= addressId %>`, {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify(data),
+});
+
+                const result = await response.json();
+    
+                if (response.ok) {
+                    // Success - Show a SweetAlert confirmation
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Address Updated!',
+                        text: 'Your address has been successfully updated.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Redirect to the address page
+                        window.location.href = '/address';
+                    });
+                } else {
+                    // Failure - Show an error notification
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message || 'Failed to update address. Please try again.',
+                        confirmButtonText: 'Retry'
+                    });
+                }
+            } catch (error) {
+                console.log(error)
+                console.error('Error submitting form:', error);
+    
+                // Show a generic error notification
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again later.',
+                    confirmButtonText: 'Retry'
+                });
+            }
+        });
+    </script>
+    

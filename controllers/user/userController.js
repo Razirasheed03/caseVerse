@@ -5,6 +5,7 @@ const env = require("dotenv").config();
 const nodemailer=require('nodemailer')
 const bcrypt=require("bcrypt");
 const Category = require("../../models/categorySchema");
+const Address =require("../../models/addressSchema");
 
 const logout=async(req,res)=>{
     try {
@@ -34,7 +35,7 @@ const login= async (req,res)=>{
         if(findUser.isBlocked){
             return res.render("login",{message:"User is Blocked by admin"})
         }
-        const passwordMatch= bcrypt.compare(password,findUser.password);
+        const passwordMatch=bcrypt.compare(password,findUser.password);
 
         if(!passwordMatch){
             return res.render("login",{message:"Incorrect Password"})
@@ -52,7 +53,9 @@ const login= async (req,res)=>{
 const loadLogin=async(req,res)=>{
     try {
         if(!req.session.user){
-            return res.render("login")
+            const msg=req.session.msg;
+            req.session.msg=null;
+            return res.render("login",{message:msg})
         }else{
             res.redirect('/')
         }
@@ -217,6 +220,10 @@ const loadSignup = async (req, res) => {
 
 const loadshopping = async (req, res) => {
     try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+
         const search = req.query.search || ""; 
         const page = parseInt(req.query.page) || 1;
         const limit = 8; 
@@ -241,11 +248,12 @@ const loadshopping = async (req, res) => {
             .exec();
         const totalPages = Math.ceil(totalProducts / limit);
 
-        res.render('shop', {
+        res.render('shop',{
             product: productData, 
             currentPage: page, 
             totalPages, 
             search, 
+            user
         });
     } catch (error) {
         console.error("Error loading shopping page:", error);
@@ -297,6 +305,200 @@ const productDetail=async(req,res)=>{
         
     }
 }
+
+const profile=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+      
+        res.render('profile',{user})
+        
+    } catch (error) {
+        res.render("pageerror")
+        
+    }
+}
+
+const address=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        console.log("user id: ",userSession);
+        
+        const user =userSession ? await User.findById(userSession._id):null;
+        console.log('session user ;',userSession)
+        const addressData=await Address.findOne({userId:userSession._id});
+        res.render('address',{user,userAddress:addressData})
+        
+    } catch (error) {
+        console.log("in address",error)
+        res.render("pageerror")
+        
+    }
+
+
+}
+
+const postAddAddress=async(req,res)=>{
+    try {
+        const userId=req.session.user;
+
+        const {addressType,name,address,city,landMark,state,pincode,phone,altPhone}=req.body;
+
+        const userAddress=await Address.findOne({userId:userId});
+        if(!userAddress){
+            const newAddress=new Address({
+                userId,
+                address:[{addressType,name,address,city,landMark,state,pincode,phone,altPhone}]
+            
+            });
+            await newAddress.save();
+            console.log("successfully added address")
+            
+        }else{
+            userAddress.address.push({addressType,name,address,city,landMark,state,pincode,phone,altPhone})
+            await userAddress.save();
+        }
+        res.status(200).json({success:true})
+        // res.redirect('/profile')
+
+        
+    } catch (error) {
+        console.log("Error adding address",error);
+        res.redirect("/pageNotFound");
+        
+    }
+}
+
+
+
+
+const cart=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+        res.render('cart',{user})
+        
+    } catch (error) {
+        res.render('pageerror')
+        
+    }
+}
+
+const wishlist=async(req,res)=>{
+    try {
+        const id=req.params.id;
+        const userSession=req.session.user;
+        const user=userSession?await User.findById(userSession._id):null;
+        res.render('wishlist',{user})
+        
+    } catch (error) {
+        res.render('pageerror')
+        
+    }
+}
+
+const wallet=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+        res.render('wallet',{user})
+        
+    } catch (error) {
+        res.render('pageerror')
+        
+    }
+}
+
+const editAddress=async(req,res)=>{
+    try {
+        
+        
+        
+        const addressId=req.query.id;
+        const user=req.session.user;
+        console.log(addressId,':   addressId')
+        console.log("user session id;",user)
+        const username=await User.findOne({_id:user._id});
+
+
+        const currAddress=await Address.findOne({userId: user._id});
+
+        if(!currAddress){
+            return res.redirect("/pageNotFound")
+        }
+        const addressData=currAddress.address.find((item)=>{
+            return item._id.toString()===addressId.toString();
+        });
+        console.log(addressData);
+        
+        if(!addressData){
+            return res.redirect('/pageNotFound')
+        }else{
+            res.render('edit-address', { userAddress: addressData, user:username,addressId});
+
+        }
+    } catch (error) {
+        console.error("error in edit address",error)
+        res.redirect('/pageNotFound')      
+    }
+};
+
+const postEditAddress = async (req, res) => {
+    try {
+        console.log("in controller");
+        const data = req.body;
+        const addressId = req.query.id;
+        const user = req.session.user;
+
+        // Find the address document
+        const findAddress = await Address.findOne({ "address._id": addressId });
+        if (!findAddress) {
+
+            return res.status(404).json({ message: 'Address not found' });
+        }
+
+        // Update the address in the database
+        await Address.updateOne(
+            { "address._id": addressId },
+            {
+                $set: {
+                    "address.$": {
+                        _id: addressId,
+                        addressType: data.addressType,
+                        name: data.name,
+                        city: data.city,
+                        landMark: data.landMark,
+                        state: data.state,
+                        pincode: data.pincode,
+                        phone: data.phone,
+                        address: data.address,
+                    }
+                }
+            }
+        );
+
+        console.log('Address updated successfully.');
+        res.status(200).json({ message: 'Address updated successfully' });
+    } catch (error) {
+        console.error("Error in postEditAddress controller:", error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
 module.exports = {
     loadHomepage,
     pageNotFound,
@@ -310,4 +512,12 @@ module.exports = {
     login,
     logout,
     productDetail,
+    profile,
+    address,
+    cart,
+    wishlist,
+    wallet,
+    postAddAddress,
+    editAddress,
+    postEditAddress,
 }

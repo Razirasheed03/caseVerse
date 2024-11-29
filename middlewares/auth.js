@@ -7,7 +7,8 @@ const userAuth=(req,res,next)=>{
             if(data &&!data.isBlocked){
                 next();
             }else{
-                res.redirect("/login")
+                req.session.user=null;
+                next();
             }
         })
         .catch(error=>{
@@ -15,7 +16,16 @@ const userAuth=(req,res,next)=>{
             res.status(500).send("Internal Server error")
         })
     }else{
-        res.redirect("/login")
+      next();
+    }
+}
+
+const profileAuth=(req,res,next)=>{
+    if(req.session.user){
+        next();
+    }else{
+        req.session.msg="Please Login First";
+        res.redirect('/login')
     }
 }
 
@@ -36,5 +46,6 @@ const adminAuth=(req,res,next)=>{
 
 module.exports={
     userAuth,
-    adminAuth
+    adminAuth,
+    profileAuth,
 }
