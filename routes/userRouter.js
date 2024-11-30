@@ -44,7 +44,7 @@ router.get('/wallet',userAuth,userController.wallet)
 ///address management
 router.post('/addAddress',userController.postAddAddress);
 router.get('/editAddress',userAuth,userController.editAddress);
-// router.get('/deleteAddress',userAuth,userController.deleteAddress)
+router.get('/deleteAddress',userAuth,userController.deleteAddress)
 router.post('/editAddress',userAuth,userController.postEditAddress);
 
 

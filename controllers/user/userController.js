@@ -490,6 +490,32 @@ const postEditAddress = async (req, res) => {
 };
 
 
+const deleteAddress=async(req,res)=>{
+    try {
+        const addressId=req.query.id;
+        const findAddress=await Address.findOne({'address._id':addressId});
+        if(!findAddress){
+            return res.status(404).send("Address not found")
+        }
+
+        await Address.updateOne({
+            "address._id":addressId
+        },{
+            $pull:{
+                address:{
+                    _id:addressId,
+                }
+            }
+        })
+        res.redirect("/address")
+
+        
+    } catch (error) {
+        console.error("Error in delete Address",error)
+        res.redirect("/pageNotFound")
+        
+    }
+}
 
 
 
@@ -520,4 +546,5 @@ module.exports = {
     postAddAddress,
     editAddress,
     postEditAddress,
+    deleteAddress,
 }
