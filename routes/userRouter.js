@@ -47,5 +47,29 @@ router.get('/editAddress',userAuth,userController.editAddress);
 router.get('/deleteAddress',userAuth,userController.deleteAddress)
 router.post('/editAddress',userAuth,userController.postEditAddress);
 
+////forgot password
+router.get("/forgotPassword",userController.getForgetPassPage);
+router.post("/forgotEmailValid",userController.forgotEmailValid)
+// router.get('/forgetPassOtp',userController.forgotEmailValid)
+router.post("/verifyPassForgotOtp",userController.verifyForgotPassOtp);
+router.post("/resendForgotOtp",userController.resendOtp)
+router.get('/resetPassword',userController.getResetPassPage)
+router.post('/resetPassword',userController.postNewPassword);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports=router;

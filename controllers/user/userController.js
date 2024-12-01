@@ -6,6 +6,7 @@ const nodemailer=require('nodemailer')
 const bcrypt=require("bcrypt");
 const Category = require("../../models/categorySchema");
 const Address =require("../../models/addressSchema");
+const session =require("express-session");
 
 const logout=async(req,res)=>{
     try {
@@ -29,23 +30,27 @@ const login= async (req,res)=>{
     try {
         const {email,password}=req.body;
         const findUser= await User.findOne({isAdmin:0,email:email});
+        console.log(findUser);
+        
         if(!findUser){
-            return res.render("login",{message:"User not found"})
+            return res.json({success:false,message:"User not found"})
         }
         if(findUser.isBlocked){
-            return res.render("login",{message:"User is Blocked by admin"})
+            return res.json({success:false,message:"User is Blocked by admin"})
+            
         }
-        const passwordMatch=bcrypt.compare(password,findUser.password);
+        const passwordMatch= await bcrypt.compare(password,findUser.password);
 
         if(!passwordMatch){
-            return res.render("login",{message:"Incorrect Password"})
+            return res.json({success:false,message:"Incorrect Password"})
         }
-        req.session.user={_id:findUser._id,name:findUser.name};
-        res.redirect("/")
+        req.session.user={_id:findUser._id,name:findUser.username};
+        
+        res.status(200).json({success:true,message:`${findUser.username} is logIn Successfully`})
         
     } catch (error) {
         console.error("login error",error)
-        res.render("login",{message:"login failed. Please try again later"})
+        res.status(500).json({success:false,message:"login failed. Please try again later"})
         
     }
 }
@@ -95,7 +100,7 @@ const resendOtp=async(req,res)=>{
         }
     } catch (error) {
         console.error("Error resending OTP",error)
-        res.status(500).json({success:false,message:"Internl server Error . Please try again"})
+        res.status(500).json({success:false,message:"Internal server Error . Please try again"})
         
     }
 }
@@ -323,11 +328,8 @@ const profile=async(req,res)=>{
 const address=async(req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
-        console.log("user id: ",userSession);
-        
+        const userSession=req.session.user; 
         const user =userSession ? await User.findById(userSession._id):null;
-        console.log('session user ;',userSession)
         const addressData=await Address.findOne({userId:userSession._id});
         res.render('address',{user,userAddress:addressData})
         
@@ -507,7 +509,8 @@ const deleteAddress=async(req,res)=>{
                 }
             }
         })
-        res.redirect("/address")
+        return res.status(200).json({message:true})
+        // res.redirect("/address")
 
         
     } catch (error) {
@@ -517,10 +520,101 @@ const deleteAddress=async(req,res)=>{
     }
 }
 
+const getForgetPassPage=async (req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+       
+        res.render("forgotPassword",{user});
+        
+    } catch (error) {
+        res.redirect('/pageNotFound')
+        
+    }
+}
 
+const forgotEmailValid=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user; 
+        const user =userSession ? await User.findById(userSession._id):null;
 
+        const {email}=req.body;
+        const findUser=await User.findOne({email:email});
+        if(findUser){
+            const otp=generateOtp();
+            const emailSent=await sendVerificationEmail(email,otp);
+            if(emailSent){
+                req.session.userOtp=otp;
+                req.session.email=email;
+                res.render("forgotPassOtp",{user})
+                console.log("otp is :",otp)
+            }
+            else{
+                res.json({success:false,message:"failed to send otp Please try again"});
+            }
+        }else{
+            res.render("forgotPassword",{user,
+                message:"User With this email does not exist"
+            })
+        }
+        
+    } catch (error) {
+        res.redirect("/pageNotFound")
+        
+    }
+}
 
+const verifyForgotPassOtp=async(req,res)=>{
+    try {
+        const enteredOtp=req.body.otp;
+        if(enteredOtp=== req.session.userOtp){
+            res.json({success:true,redirectUrl:'/resetPassword'})
+        }else{
+            res.json({success:false,message:"Otp not matching"});
+        }
+        
+    } catch (error) {
+        res.status(500).json({success:false,message:"An error occured Please try again"})
+        
+    }
+}
 
+const getResetPassPage=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+    
+        res.render("resetPassword",{user})
+        
+    } catch (error) {
+        res.render("/pageNotFound")
+        
+    }
+}
+
+const postNewPassword=async(req,res)=>{
+    try {
+        const {newPass1,newPass2}=req.body;
+        const email=req.session.email;
+        if(newPass1===newPass2){
+            const passwordHash =await securePassword(newPass1)
+            await User.updateOne(
+                {email:email},
+                {$set:{password:passwordHash}}
+            )
+            res.redirect("/login")
+        }else{
+            res.render("resetPassword",{message:'Password do not match'});
+        }
+        
+    } catch (error) {
+        res.redirect('/pageNotFound')
+        
+    }
+}
 
 
 
@@ -547,4 +641,9 @@ module.exports = {
     editAddress,
     postEditAddress,
     deleteAddress,
+    getForgetPassPage,
+    forgotEmailValid,
+    verifyForgotPassOtp,
+    getResetPassPage,
+    postNewPassword,
 }

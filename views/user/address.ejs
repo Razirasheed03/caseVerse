@@ -119,7 +119,7 @@
                                             <p>Pincode : <%=address.pincode%></p>
                                             <p>Phone : <%=address.phone%></p>
                                             <a class="btn btn-sm btn-secondary" href="/editAddress?id=<%=address._id%>">Edit</a>
-                                            <a class="btn btn-sm btn-danger" href="/deleteAddress?id=<%=address._id%>" onclick="return confirm('Are You Sure You Want To Delete This Address?')">Delete</a>
+                                            <a class="btn btn-sm btn-danger" href="#" onclick="deleteFn('<%=address._id%>')">Delete</a>
                                         </div>
                                     </div>
                                 </div>
@@ -197,8 +197,31 @@
                         }
                     })
             })
+        </script>
+        <script>
+            function deleteFn(id){
 
-            console.log(name)
+              fetch(`/deleteAddress?id=${id}`)
+              .then((res)=>res.json())
+              .then(data=>{
+
+                if (data) {
+                    
+                    Swal.fire({
+                                title: 'Success!',
+                                text: 'Your address has been deleted successfully.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            })
+                            .then(()=>{
+                                window.location.reload()
+                            })
+                }
+              })
+
+
+              
+            }
         </script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
