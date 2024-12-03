@@ -31,8 +31,7 @@ const login= async (req,res)=>{
     try {
         const {email,password}=req.body;
         const findUser= await User.findOne({isAdmin:0,email:email});
-        console.log(findUser);
-        
+       
         if(!findUser){
             return res.json({success:false,message:"User not found"})
         }
@@ -373,9 +372,6 @@ const postAddAddress=async(req,res)=>{
         
     }
 }
-
-
-
 
 const wishlist=async(req,res)=>{
     try {
@@ -843,7 +839,18 @@ const placeOrder = async (req, res) => {
     }
 };
 
-
+const orderComplete=async(req,res)=>{
+    try {
+        const userSession = req.session.user;
+        const user = userSession ? await User.findById(userSession._id) : null;
+        res.render('orderComplete',{user});
+        
+    } catch (error) {
+        res.render('pageerror')
+        
+    }
+   
+    }
 
 
 
@@ -881,4 +888,5 @@ module.exports = {
     updateCart,
     checkout,
     placeOrder,
+    orderComplete
 }

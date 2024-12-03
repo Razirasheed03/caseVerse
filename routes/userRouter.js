@@ -68,6 +68,7 @@ router.post('/update-cart', userController.updateCart);
 router.get('/checkout', userController.checkout);
 router.post('/place-order', userController.placeOrder);
 
+router.get('/orderComplete',userController.orderComplete)
 
 
 

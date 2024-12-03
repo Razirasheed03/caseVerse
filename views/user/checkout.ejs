@@ -114,9 +114,12 @@
             <span class="mtext-110 cl2">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
           </div>
         </div>
-        <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer mt-4" id="placeOrderBtn">
-          Place Order
-        </button>
+        <a href="orderComplete">
+
+            <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer mt-4" id="placeOrderBtn">
+                Place Order
+            </button>
+        </a>
       </div>
     </div>
   </div>
@@ -164,6 +167,3 @@ document.getElementById('addressForm').addEventListener('submit', async function
 </script>
 
 <%- include("../../views/partials/user/footer") %>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
