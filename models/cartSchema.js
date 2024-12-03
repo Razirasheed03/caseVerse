@@ -10,7 +10,7 @@ const cartSchema = new Schema({
     items: [{
         productId: {
             type: Schema.Types.ObjectId,
-            ref: 'Product',
+            ref: 'Product', // Correctly references the Product model
             required: true
         },
         quantity: {
@@ -31,11 +31,10 @@ const cartSchema = new Schema({
         },
         cancellationReason: {
             type: String,
-            default:"none"
+            default: "none"
         }
     }]
 });
 
-const Cart = mongoose.model("Cart",cartSchema);
+const Cart = mongoose.model("Cart", cartSchema);
 module.exports = Cart;
- 

@@ -76,13 +76,13 @@
                     <section class="content-body">
                         <!-- Form Section -->
                         <h2 class="section-title">Edit Profile</h2>
-                        <form>
+                        <form id="userForm" enctype="multipart/form-data" onsubmit="submitForm(event)">
                             <div class="row">
                                 <div class="col-lg-8">
                                     <div class="row gx-3">
                                         <div class="col-12 mb-3">
                                             <label class="form-label">User Name</label>
-                                            <input class="form-control" type="text" value="<%=user.username%>" />
+                                            <input class="form-control" name="username" type="text" value="<%=user.username%>" />
                                         </div>
                                       
                                         <div class="col-lg-12 mb-3">
@@ -100,17 +100,16 @@
                         <hr class="my-5" />
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="card-placeholder">
-                                    <h5>Account Information</h5>
-                                    <p>Keep your profile information up-to-date to ensure smooth communication and account security.</p>
+                                <div class="col-md">
+                                    <article class="box mb-3 bg-light">
+                                        <a class="btn float-end btn-success btn-sm rounded font-md" href="/changePassword">Change</a>
+                                        <h6>Password</h6>
+                                        <small class="text-muted d-block" style="width: 70%">You can reset or change your password by clicking here</small>
+                                    </article>
+                                </div>        
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="card-placeholder">
-                                    <h5>Privacy Settings</h5>
-                                    <p>Review your privacy settings regularly to stay in control of your personal information.</p>
-                                </div>
-                            </div>
+                         
                         </div>
                     </section>
                 </div>
@@ -124,4 +123,39 @@
         <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
     </body>
 </html>
+<script>
+    async function submitForm(event){
+        event.preventDefault();
+        const formData=new FormData(document.getElementById('userForm'));
+        try {
+            const response=await fetch('/saveUserData',{
+                method:'POST',
+                body:formData,
 
+
+            })
+            const result=await response.json();
+            if(response.ok){
+                Swal.fire({
+                                title: 'Success!',
+                                text: 'Your Username Updated successfully.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+            }).then(()=>{
+                location.reload();
+            })
+        }else{
+            Swal.fire('Error',result.message||"Failed to update user Data",'error')
+        }
+        } catch (error) {
+            console.log('Error saving Address',error);
+            Swal.fire("Error",'an unexpected error occured While updating user Data','error')
+            
+        }
+    }
+
+
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

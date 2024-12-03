@@ -6,6 +6,7 @@ const nodemailer=require('nodemailer')
 const bcrypt=require("bcrypt");
 const Category = require("../../models/categorySchema");
 const Address =require("../../models/addressSchema");
+const Cart =require("../../models/cartSchema");
 const session =require("express-session");
 
 const logout=async(req,res)=>{
@@ -376,19 +377,6 @@ const postAddAddress=async(req,res)=>{
 
 
 
-const cart=async(req,res)=>{
-    try {
-        const id = req.params.id;
-        const userSession=req.session.user;
-        const user =userSession ? await User.findById(userSession._id):null;
-        res.render('cart',{user})
-        
-    } catch (error) {
-        res.render('pageerror')
-        
-    }
-}
-
 const wishlist=async(req,res)=>{
     try {
         const id=req.params.id;
@@ -425,10 +413,10 @@ const editAddress=async(req,res)=>{
         console.log(addressId,':   addressId')
         console.log("user session id;",user)
         const username=await User.findOne({_id:user._id});
-
-
+        
+        
         const currAddress=await Address.findOne({userId: user._id});
-
+        
         if(!currAddress){
             return res.redirect("/pageNotFound")
         }
@@ -441,7 +429,7 @@ const editAddress=async(req,res)=>{
             return res.redirect('/pageNotFound')
         }else{
             res.render('edit-address', { userAddress: addressData, user:username,addressId});
-
+            
         }
     } catch (error) {
         console.error("error in edit address",error)
@@ -455,14 +443,14 @@ const postEditAddress = async (req, res) => {
         const data = req.body;
         const addressId = req.query.id;
         const user = req.session.user;
-
+        
         // Find the address document
         const findAddress = await Address.findOne({ "address._id": addressId });
         if (!findAddress) {
-
+            
             return res.status(404).json({ message: 'Address not found' });
         }
-
+        
         // Update the address in the database
         await Address.updateOne(
             { "address._id": addressId },
@@ -482,7 +470,7 @@ const postEditAddress = async (req, res) => {
                 }
             }
         );
-
+        
         console.log('Address updated successfully.');
         res.status(200).json({ message: 'Address updated successfully' });
     } catch (error) {
@@ -499,7 +487,7 @@ const deleteAddress=async(req,res)=>{
         if(!findAddress){
             return res.status(404).send("Address not found")
         }
-
+        
         await Address.updateOne({
             "address._id":addressId
         },{
@@ -511,7 +499,7 @@ const deleteAddress=async(req,res)=>{
         })
         return res.status(200).json({message:true})
         // res.redirect("/address")
-
+        
         
     } catch (error) {
         console.error("Error in delete Address",error)
@@ -525,7 +513,7 @@ const getForgetPassPage=async (req,res)=>{
         const id = req.params.id;
         const userSession=req.session.user;
         const user =userSession ? await User.findById(userSession._id):null;
-       
+        
         res.render("forgotPassword",{user});
         
     } catch (error) {
@@ -539,7 +527,7 @@ const forgotEmailValid=async(req,res)=>{
         const id = req.params.id;
         const userSession=req.session.user; 
         const user =userSession ? await User.findById(userSession._id):null;
-
+        
         const {email}=req.body;
         const findUser=await User.findOne({email:email});
         if(findUser){
@@ -586,7 +574,7 @@ const getResetPassPage=async(req,res)=>{
         const id = req.params.id;
         const userSession=req.session.user;
         const user =userSession ? await User.findById(userSession._id):null;
-    
+        
         res.render("resetPassword",{user})
         
     } catch (error) {
@@ -615,6 +603,246 @@ const postNewPassword=async(req,res)=>{
         
     }
 }
+
+const loadChangePassword=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+        
+        res.render('changePassword',{user})
+        
+    } catch (error) {
+        res.render('pageNotFound')
+        
+    }
+}
+
+const changePassword = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+        
+        
+        const { currentPassword, newPassword } = req.body;
+        const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+        
+        if (passwordMatch) {
+            if (currentPassword == newPassword) {
+                return res.render('changePassword', { message: "New password cannot be the same as the current password.", user, title: "Update Password" });
+            }
+            const passwordHash = await securePassword(newPassword);
+            await User.updateOne({ _id: user._id }, { $set: { password: passwordHash } });
+            console.log('password updated Successfully');
+            return res.redirect('/profile');
+        } else {
+            return res.render('changePassword', { message: "Wrong Password", user, title: "Update Password" });
+        }
+        
+    } catch (error) {
+        console.log(error);
+        res.redirect('/pageNotfound');
+    }
+}
+
+const saveUserData=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+        const data=req.body
+        if(!user){
+            return res.status(400).json('Error User not Found');
+        }
+        await User.updateOne({_id:user._id},{
+            username:data.username,
+        })
+        res.status(200).json("success")
+        
+    } catch (error) {
+        
+    }
+}
+
+const addToCart = async (req, res) => {
+    try {
+        const userSession = req.session.user;
+        const { productId, quantity } = req.body;
+        const user = userSession ? await User.findById(userSession._id) : null;
+        if (!user) return res.redirect('/login');
+
+        // Fetch the product to get the price
+        const product = await Product.findById(productId);
+        if (!product) return res.status(404).send('Product not found');
+
+        // Find the user's cart or create a new one
+        let cart = await Cart.findOne({ userId: user._id });
+        if (!cart) {
+            cart = new Cart({ userId: user._id, items: [] });
+        }
+
+        // Check if the product is already in the cart
+        const existingItem = cart.items.find(item => item.productId.toString() === productId);
+        if (existingItem) {
+            // Update the quantity and total price if the product already exists in the cart
+            existingItem.quantity += Number(quantity);
+            existingItem.totalPrice = existingItem.quantity * existingItem.price;
+        } else {
+            // Add the product to the cart if it's not there
+            cart.items.push({
+                productId: product._id,
+                quantity,
+                price: product.salePrice,
+                totalPrice: product.salePrice * quantity,
+            });
+        }
+
+        // Save the cart
+        await cart.save();
+
+        // Redirect to the cart page after adding the item
+        res.redirect('/cart');
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        res.status(500).send('Internal server error');
+    }
+};
+
+// Update Cart (for quantity update and item removal)
+const updateCart = async (req, res) => {
+    try {
+        const userSession = req.session.user;
+        const user = userSession ? await User.findById(userSession._id) : null;
+        if (!user) return res.redirect('/login');
+
+        // Fetch the user's cart
+        let cart = await Cart.findOne({ userId: user._id });
+        if (!cart) return res.redirect('/cart'); // If no cart, redirect to cart
+
+        // Handle removing item from cart
+        if (req.body.removeItem) {
+            const itemId = req.body.removeItem;
+            cart.items = cart.items.filter(item => item._id.toString() !== itemId);
+            await cart.save();
+            return res.redirect('/cart'); // After removal, redirect to the cart
+        }
+
+        // Handle quantity update
+        if (req.body.quantity) {
+            const updatedQuantities = req.body.quantity;
+            for (let itemId in updatedQuantities) {
+                const quantity = updatedQuantities[itemId];
+                const cartItem = cart.items.find(item => item._id.toString() === itemId);
+
+                if (cartItem) {
+                    const product = await Product.findById(cartItem.productId);
+                    cartItem.quantity = quantity;
+                    cartItem.totalPrice = product.salePrice * quantity;
+                }
+            }
+            await cart.save();
+        }
+
+        // Redirect to the cart page after the update
+        res.redirect('/cart');
+    } catch (error) {
+        console.error('Error updating cart:', error);
+        res.status(500).send('Internal server error');
+    }
+};
+
+// Render Cart Page
+const cart = async (req, res) => {
+    try {
+        const userSession = req.session.user;
+        const user = userSession ? await User.findById(userSession._id) : null;
+        if (!user) return res.redirect('/login');
+
+        // Fetch the user's cart and populate product details
+        const cart = await Cart.findOne({ userId: user._id }).populate('items.productId').exec();
+        
+        if (!cart || cart.items.length === 0) {
+            return res.render('cart', { user, cart: { items: [] } });
+        }
+
+        // Render the cart page
+        res.render('cart', { user, cart });
+    } catch (error) {
+        console.error('Error fetching cart:', error);
+        res.status(500).render('pageerror', { error: 'An error occurred while fetching the cart.' });
+    }
+};
+
+const checkout = async (req, res) => {
+    try {
+        const userSession = req.session.user;
+        if (!userSession) return res.redirect('/login');
+
+        const user = await User.findById(userSession._id);
+        const addressData = await Address.findOne({ userId: userSession._id });
+        const cart = await Cart.findOne({ userId: user._id }).populate('items.productId');
+
+        if (!cart || cart.items.length === 0) {
+            return res.redirect('/cart');
+        }
+
+        res.render('checkout', {
+            user,
+            cart,
+            addresses: addressData ? addressData.address : [], // Pass addresses to the template
+        });
+    } catch (error) {
+        console.error('Error rendering checkout:', error);
+        res.status(500).render('pageerror');
+    }
+};
+
+const placeOrder = async (req, res) => {
+    try {
+        const userSession = req.session.user;
+        if (!userSession) return res.redirect('/login');
+
+        const { addressId, paymentMethod } = req.body;
+
+        // Validate address
+        const addressData = await Address.findOne({ userId: userSession._id });
+        const selectedAddress = addressData ? addressData.address.find(addr => addr._id.toString() === addressId) : null;
+
+        if (!selectedAddress) {
+            return res.status(400).json({ success: false, message: 'Invalid address selected' });
+        }
+
+        // Handle payment logic (COD or Wallet)
+        if (!['COD', 'Wallet'].includes(paymentMethod)) {
+            return res.status(400).json({ success: false, message: 'Invalid payment method' });
+        }
+
+        // Mock order placement logic
+        const cart = await Cart.findOne({ userId: userSession._id });
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ success: false, message: 'Cart is empty' });
+        }
+
+        const order = new Order({
+            userId: userSession._id,
+            items: cart.items,
+            total: cart.items.reduce((sum, item) => sum + item.totalPrice, 0),
+            address: selectedAddress,
+            paymentMethod,
+            status: 'Pending',
+        });
+
+        await order.save();
+        await Cart.deleteOne({ userId: userSession._id }); // Clear the cart after placing the order
+
+        res.status(200).json({ success: true, message: 'Order placed successfully' });
+    } catch (error) {
+        console.error('Error placing order:', error);
+        res.status(500).render('pageerror');
+    }
+};
+
 
 
 
@@ -646,4 +874,11 @@ module.exports = {
     verifyForgotPassOtp,
     getResetPassPage,
     postNewPassword,
+    changePassword,
+    loadChangePassword,
+    saveUserData,
+    addToCart,
+    updateCart,
+    checkout,
+    placeOrder,
 }

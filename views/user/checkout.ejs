@@ -1,0 +1,169 @@
+<%- include("../../views/partials/user/header") %>
+<br><br><br><br>
+
+<nav>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item"><a href="/cart">Cart</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+  </ol>
+</nav>
+
+<div class="container bg0 p-t-75 p-b-85">
+  <div class="row">
+    <!-- Left Section: Address Form & Address Selection -->
+    <div class="col-lg-7">
+      <h4 class="mtext-109 cl2 p-b-30">Shipping Address</h4>
+
+      <!-- Add Address Form -->
+      <form id="addressForm">
+        <div class="row">
+          <div class="col-lg-3 mb-3">
+            <label class="form-label">Name</label>
+            <input class="form-control" id="name" type="text" placeholder="Enter Your Full Name" name="name" required />
+          </div>
+          <div class="col-lg-3 mb-3">
+            <label class="form-label">Address Type</label>
+            <input class="form-control" id="addressType" type="text" placeholder="e.g., Home, Office" name="addressType" required />
+          </div>
+          <div class="col-lg-6 mb-3">
+            <label class="form-label">Phone</label>
+            <input class="form-control" id="phone" type="tel" placeholder="+1234567890" name="phone" required />
+          </div>
+          <div class="col-lg-6 mb-3">
+            <label class="form-label">Address</label>
+            <input class="form-control" id="address" placeholder="Enter Full Address" name="address" required />
+          </div>
+          <div class="col-lg-6 mb-3">
+            <label class="form-label">Landmark</label>
+            <input class="form-control" id="landMark" placeholder="Enter Landmark" name="landMark" />
+          </div>
+          <div class="col-lg-3 mb-3">
+            <label class="form-label">City</label>
+            <input class="form-control" id="city" type="text" placeholder="City" name="city" required />
+          </div>
+          <div class="col-lg-3 mb-3">
+            <label class="form-label">State</label>
+            <input class="form-control" id="state" type="text" placeholder="State" name="state" required />
+          </div>
+          <div class="col-lg-3 mb-3">
+            <label class="form-label">Pin Code</label>
+            <input class="form-control" id="pincode" type="tel" placeholder="Pin Code" name="pincode" required />
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit" id="submitAddress">Add Address</button>
+      </form>
+
+      <hr>
+
+      <!-- Select Saved Address -->
+      <h5>Or, Select Saved Address</h5>
+      <br>
+      <% if (addresses.length === 0) { %>
+        <p>No saved address. Please add a new address above.</p>
+      <% } else { %>
+        <div class="row">
+          <% addresses.forEach(address => { %>
+            <div class="col-md-6 mb-3">
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <span><%= address.addressType %></span>
+                  <input type="radio" name="savedAddress" value="<%= address._id %>" class="form-check-input">
+                </div>
+                <div class="card-body">
+                  <p><strong>Name:</strong> <%= address.name %></p>
+                  <p><strong>Address:</strong> <%= address.address %>, <%= address.city %>, <%= address.state %> - <%= address.pincode %></p>
+                  <p><strong>Landmark:</strong> <%= address.landMark %></p>
+                  <p><strong>Phone:</strong> <%= address.phone %></p>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+
+      <h5 class="mt-4">Payment Method</h5>
+      <br>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="COD" required>
+        <label class="form-check-label" for="cod">Cash on Delivery</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="Wallet" required>
+        <label class="form-check-label" for="wallet">Wallet Payment</label>
+      </div>
+    </div>
+
+    <!-- Right Section: Cart Totals -->
+    <div class="col-lg-5">
+      <div class="bor10 p-lr-40 p-t-30 p-b-40">
+        <h4 class="mtext-109 cl2 p-b-30">Cart Totals</h4>
+        <div class="flex-w flex-t bor12 p-b-13">
+          <div class="size-208">
+            <span class="stext-110 cl2">Subtotal:</span>
+          </div>
+          <div class="size-209">
+            <span class="mtext-110 cl2">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
+          </div>
+        </div>
+        <div class="flex-w flex-t p-t-27 p-b-33">
+          <div class="size-208">
+            <span class="mtext-101 cl2">Total:</span>
+          </div>
+          <div class="size-209 p-t-1">
+            <span class="mtext-110 cl2">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
+          </div>
+        </div>
+        <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer mt-4" id="placeOrderBtn">
+          Place Order
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById('addressForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+
+    const data = {
+        addressType: formData.get('addressType'),
+        name: formData.get('name'),
+        address: formData.get('address'),
+        city: formData.get('city'),
+        landMark: formData.get('landMark'),
+        state: formData.get('state'),
+        pincode: formData.get('pincode'),
+        phone: formData.get('phone'),
+        altPhone: formData.get('altPhone') || null,
+    };
+
+    try {
+        const response = await fetch('/addAddress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert('Address added successfully!');
+            location.reload(); // Reload the page to show the updated address list
+        } else {
+            alert(result.message || 'Failed to add address');
+        }
+    } catch (error) {
+        console.error('Error adding address:', error);
+        alert('Something went wrong. Please try again.');
+    }
+});
+</script>
+
+<%- include("../../views/partials/user/footer") %>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>

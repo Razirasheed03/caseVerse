@@ -3,7 +3,8 @@ const router=express.Router();
 const userController=require("../controllers/user/userController");
 const passport = require("passport");
 const { profileAuth,userAuth } = require("../middlewares/auth");
-
+const multer=require('multer');
+const upload=multer();
 
 
 //////////-----route to home
@@ -56,16 +57,16 @@ router.post("/resendForgotOtp",userController.resendOtp)
 router.get('/resetPassword',userController.getResetPassPage)
 router.post('/resetPassword',userController.postNewPassword);
 
+router.get("/changePassword",userController.loadChangePassword)
+router.post('/changePassword',userController.changePassword);
+router.post('/saveUserData',upload.none(),userController.saveUserData)
 
 
-
-
-
-
-
-
-
-
+///cart management
+router.post('/add-to-cart', userController.addToCart);
+router.post('/update-cart', userController.updateCart);
+router.get('/checkout', userController.checkout);
+router.post('/place-order', userController.placeOrder);
 
 
 

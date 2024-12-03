@@ -8,28 +8,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Main Image Styling */
-/* Main Image Styling */
-.main-image-container {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid #ddd;
-    width: 70%;
-    height: 500px;
-}
+        .main-image-container {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            width: 70%;
+            height: 500px;
+        }
 
-.main-image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.2s ease; /* Smooth transition for zooming in and out */
-}
+        .main-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s ease;
+        }
 
-/* Zoom Effect */
-.main-image-container img.zoomed {
-    transform: scale(2); /* Adjust zoom level here */
-    transition: transform 0.2s ease, transform-origin 0.2s ease; /* Smooth zoom effect */
-}
-
+        .main-image-container img.zoomed {
+            transform: scale(2);
+            transition: transform 0.2s ease, transform-origin 0.2s ease;
+        }
 
         /* Thumbnails Styling */
         .thumbnails-container {
@@ -53,7 +50,6 @@
             font-size: 1.2rem;
         }
 
-        /* Customer Reviews */
         .review-container {
             display: flex;
             justify-content: space-between;
@@ -69,12 +65,10 @@
             color: red;
         }
 
-        /* Spacer */
         .spacer {
             height: 250px;
         }
 
-        /* Breadcrumb Styling */
         .breadcrumb {
             background-color: #f8f9fa;
             padding: 10px 15px;
@@ -108,32 +102,25 @@
     <div class="row">
         <!-- Thumbnails Section -->
         <div class="col-md-2 thumbnails-container d-flex flex-column">
-            <div class="thumbnail">
-                <img src="/uploads/product-images/<%=product.productImage[0]%>" alt="Image 1" class="img-thumbnail" onclick="changeMainImage(this)">
-            </div>
-            <div class="thumbnail">
-                <img src="/uploads/product-images/<%=product.productImage[1]%>" alt="Image 2" class="img-thumbnail" onclick="changeMainImage(this)">
-            </div>
-            <div class="thumbnail">
-                <img src="/uploads/product-images/<%=product.productImage[2]%>" alt="Image 3" class="img-thumbnail" onclick="changeMainImage(this)">
-            </div>
-            <div class="thumbnail">
-                <img src="/uploads/product-images/<%=product.productImage[3]%>" alt="Image 4" class="img-thumbnail" onclick="changeMainImage(this)">
-            </div>
+            <% product.productImage.forEach((image, index) => { %>
+                <div class="thumbnail">
+                    <img src="/uploads/product-images/<%= image %>" alt="Image <%= index + 1 %>" class="img-thumbnail" onclick="changeMainImage(this)">
+                </div>
+            <% }); %>
         </div>
 
         <!-- Main Image Section -->
         <div class="col-md-6">
             <div class="main-image-container" id="mainImageContainer">
-                <img src="/uploads/product-images/<%=product.productImage[0]%>" id="mainProductImage" alt="Product">
+                <img src="/uploads/product-images/<%= product.productImage[0] %>" id="mainProductImage" alt="Product">
             </div>
         </div>
 
         <!-- Product Details -->
         <div class="col-md-4">
-            <h1><%=product.productName%></h1>
-            <p class="text-muted">Category: <%=category.name%></p>
-            <h3 class="text-black"> ₹<%=product.salePrice%></h3>
+            <h1><%= product.productName %></h1>
+            <p class="text-muted">Category: <%= category.name %></p>
+            <h3 class="text-black">₹<%= product.salePrice %></h3>
             <div>
                 <span class="rating">
                     <i class="fas fa-star"></i>
@@ -145,32 +132,32 @@
                 <span class="text-muted">(45 reviews)</span>
             </div>
             <br>
-            <p><%=product.description%></p>
+            <p><%= product.description %></p>
 
-            <div class="flex-w flex-r-m p-b-10">
-                <div class="size-204 respon6-next">
-                    <div class="rs1-select2 bor8 bg0">
-                        <select class="js-select2" name="time">
-                            <option>Choose Your Device</option>
-                            <option>Iphone 14 Pro</option>
-                            <option>Iphone 15 Pro</option>
-                            <option>Iphone 16 Pro</option>
-                            <option>Ipad M2</option>
-                            <option>Ipad M3</option>
-                            <option>Ipad M4</option>
-                            <option>IWatch 9</option>
-                            <option>IWatch 10</option>
-                            <option>IWatch Ultra</option>
-                            <option>Macbook M2</option>
-                            <option>Macbook M3</option>
-                        </select>
-                        <div class="dropDownSelect2"></div>
+            <!-- Add to Cart Form -->
+            <form action="/add-to-cart" method="POST">
+                <input type="hidden" name="productId" value="<%= product._id %>">
+                <div class="flex-w flex-r-m p-b-10">
+                    <div class="size-204 respon6-next">
+                        <div class="rs1-select2 bor8 bg0">
+                            <select class="js-select2" name="quantity">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                            <div class="dropDownSelect2"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="d-flex mt-5">
-                <button class="btn btn-primary me-2">Add to Cart</button>
+                <div class="d-flex mt-5">
+                    <button type="submit" class="btn btn-primary me-2">Add to Cart</button>
+                </div>
+            </form>
+
+            <div class="d-flex mt-2">
                 <button class="btn btn-outline-danger">Add to Wishlist</button>
             </div>
         </div>
@@ -215,23 +202,19 @@
         button.classList.toggle('liked');
     }
 
-    
-</script>
-<script>
     const mainImageContainer = document.getElementById("mainImageContainer");
     const mainImage = document.getElementById("mainProductImage");
 
     // Mouse movement logic for zoom
     mainImageContainer.addEventListener("mousemove", (event) => {
         const rect = mainImageContainer.getBoundingClientRect();
-        const x = event.clientX - rect.left; // X coordinate relative to the image container
-        const y = event.clientY - rect.top; // Y coordinate relative to the image container
+        const x = event.clientX - rect.left; 
+        const y = event.clientY - rect.top;
 
         // Calculate the zoom origin based on mouse position
         const xPercent = (x / rect.width) * 100;
         const yPercent = (y / rect.height) * 100;
 
-        // Apply the zoom and set transform-origin
         mainImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
         mainImage.classList.add("zoomed");
     });
@@ -239,10 +222,9 @@
     // Reset image on mouse leave
     mainImageContainer.addEventListener("mouseleave", () => {
         mainImage.classList.remove("zoomed");
-        mainImage.style.transformOrigin = "center center"; // Reset transform origin
+        mainImage.style.transformOrigin = "center center";
     });
 </script>
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
