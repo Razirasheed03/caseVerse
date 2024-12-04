@@ -7,7 +7,9 @@ const bcrypt=require("bcrypt");
 const Category = require("../../models/categorySchema");
 const Address =require("../../models/addressSchema");
 const Cart =require("../../models/cartSchema");
+const Order =require("../../models/orderSchema");
 const session =require("express-session");
+const { default: mongoose } = require("mongoose");
 
 const logout=async(req,res)=>{
     try {
@@ -39,12 +41,13 @@ const login= async (req,res)=>{
             return res.json({success:false,message:"User is Blocked by admin"})
             
         }
-        const passwordMatch= await bcrypt.compare(password,findUser.password);
+        const passwordMatch= bcrypt.compare(password,findUser.password);
 
         if(!passwordMatch){
             return res.json({success:false,message:"Incorrect Password"})
         }
         req.session.user={_id:findUser._id,name:findUser.username};
+       
         
         res.status(200).json({success:true,message:`${findUser.username} is logIn Successfully`})
         
@@ -398,6 +401,23 @@ const wallet=async(req,res)=>{
         
     }
 }
+
+const orders=async(req,res)=>{
+    try {
+        const id = req.params.id;
+        const userSession=req.session.user;
+        const user =userSession ? await User.findById(userSession._id):null;
+
+        if (!userSession) return res.redirect('/login');
+
+        const orders = await Order.find({ userId: userSession._id }).sort({ createdAt: -1 });
+        res.render('orders', { user: userSession, orders ,user});
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).render('pageerror');
+    }
+}
+
 
 const editAddress=async(req,res)=>{
     try {
@@ -796,48 +816,74 @@ const checkout = async (req, res) => {
 
 const placeOrder = async (req, res) => {
     try {
+        // Check if the user is authenticated
         const userSession = req.session.user;
-        if (!userSession) return res.redirect('/login');
+        if (!userSession) {
+            return res.status(401).json({ success: false, message: 'User is not authenticated' });
+        }
+
+        const user = await User.findById(userSession._id);
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'User not found' });
+        }
 
         const { addressId, paymentMethod } = req.body;
 
-        // Validate address
-        const addressData = await Address.findOne({ userId: userSession._id });
-        const selectedAddress = addressData ? addressData.address.find(addr => addr._id.toString() === addressId) : null;
+        const userId = new mongoose.Types.ObjectId(userSession._id);
+        const objectAddressId = new mongoose.Types.ObjectId(addressId);
 
-        if (!selectedAddress) {
-            return res.status(400).json({ success: false, message: 'Invalid address selected' });
+        // Fetch the address
+        const address = await Address.aggregate([
+            { $match: { userId } },
+            { $unwind: "$address" },
+            { $match: { "address._id": objectAddressId } },
+        ]);
+
+        if (!address.length) {
+            return res.status(400).json({ success: false, message: 'Address not found' });
         }
 
-        // Handle payment logic (COD or Wallet)
-        if (!['COD', 'Wallet'].includes(paymentMethod)) {
-            return res.status(400).json({ success: false, message: 'Invalid payment method' });
-        }
+        const selectedAddress = address[0].address;
 
-        // Mock order placement logic
-        const cart = await Cart.findOne({ userId: userSession._id });
-        if (!cart || cart.items.length === 0) {
+        // Fetch cart items
+        const cartItems = await Cart.findOne({ userId: user._id }).populate('items.productId');
+        if (!cartItems || !cartItems.items.length) {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
 
-        const order = new Order({
-            userId: userSession._id,
-            items: cart.items,
-            total: cart.items.reduce((sum, item) => sum + item.totalPrice, 0),
+        const totalAmount = cartItems.items.reduce((total, item) => total + item.totalPrice, 0);
+        const shippingCharge = 50;
+        const finalAmount = totalAmount + shippingCharge;
+
+        // Create the order
+        const newOrder = new Order({
+            userId: user._id,
             address: selectedAddress,
+            items: cartItems.items,
             paymentMethod,
-            status: 'Pending',
+            totalAmount,
+            finalAmount,
         });
 
-        await order.save();
-        await Cart.deleteOne({ userId: userSession._id }); // Clear the cart after placing the order
+        console.log('Generated Order ID:', newOrder.orderId); // Debugging the generated order ID
 
-        res.status(200).json({ success: true, message: 'Order placed successfully' });
+        // Save the order
+        await newOrder.save();
+
+        // Clear the cart after order placement
+        await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] } });
+
+        // Respond with success message
+        res.status(200).json({ success: true, message: 'Order placed successfully', orderId: newOrder.orderId });
     } catch (error) {
         console.error('Error placing order:', error);
-        res.status(500).render('pageerror');
+        res.status(500).json({ success: false, message: 'Failed to place order' });
     }
 };
+
+
+
+
 
 const orderComplete=async(req,res)=>{
     try {
@@ -872,6 +918,7 @@ module.exports = {
     cart,
     wishlist,
     wallet,
+    orders,
     postAddAddress,
     editAddress,
     postEditAddress,

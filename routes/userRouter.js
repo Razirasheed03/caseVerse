@@ -38,6 +38,7 @@ router.get('/address',userAuth,userController.address)
 router.get('/cart',userAuth,userController.cart)
 router.get('/wishlist',userAuth,userController.wishlist)
 router.get('/wallet',userAuth,userController.wallet)
+router.get('/orders',userAuth,userController.orders)
 
 
 
@@ -69,7 +70,7 @@ router.get('/checkout', userController.checkout);
 router.post('/place-order', userController.placeOrder);
 
 router.get('/orderComplete',userController.orderComplete)
-
+router.post('/placeOrder',userAuth,userController.placeOrder);
 
 
 

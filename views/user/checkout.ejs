@@ -116,9 +116,12 @@
         </div>
         <a href="orderComplete">
 
-            <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer mt-4" id="placeOrderBtn">
-                Place Order
-            </button>
+          <button 
+          class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer mt-4" 
+          id="placeOrderBtn">
+          Place Order
+        </button>
+        
         </a>
       </div>
     </div>
@@ -164,6 +167,47 @@ document.getElementById('addressForm').addEventListener('submit', async function
         alert('Something went wrong. Please try again.');
     }
 });
+</script>
+
+<script>
+  document.getElementById('placeOrderBtn').addEventListener('click', async function (event) {
+    event.preventDefault();
+
+    const selectedAddress = document.querySelector('input[name="savedAddress"]:checked');
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+
+    if (!selectedAddress || !paymentMethod) {
+        alert('Please select an address and a payment method.');
+        return;
+    }
+
+    const orderData = {
+        addressId: selectedAddress.value,
+        paymentMethod: paymentMethod.value,
+        
+    };
+
+    try {
+        const response = await fetch('/placeOrder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('Order placed successfully!');
+            window.location.href = '/orderComplete';
+        } else {
+            alert(result.message || 'Failed to place order');
+        }
+    } catch (error) {
+        console.error('Error placing order:', error);
+        alert('Something went wrong. Please try again.');
+    }
+  });
 </script>
 
 <%- include("../../views/partials/user/footer") %>
