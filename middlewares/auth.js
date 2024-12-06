@@ -1,8 +1,9 @@
 const User=require("../models/userSchema");
 
 const userAuth=(req,res,next)=>{
-    if(req.session.user){
-        User.findById(req.session.user)
+    const user = req.session.user || req.session.googleUser
+    if(user){
+        User.findById(user)
         .then(data=>{
             if(data &&!data.isBlocked){
                 next();
@@ -21,7 +22,8 @@ const userAuth=(req,res,next)=>{
 }
 
 const profileAuth=(req,res,next)=>{
-    if(req.session.user){
+    const user = req.session.user || req.session.googleUser
+    if(user ){
         next();
     }else{
         req.session.msg="Please Login First";

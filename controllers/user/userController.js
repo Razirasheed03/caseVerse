@@ -33,17 +33,19 @@ const login= async (req,res)=>{
     try {
         const {email,password}=req.body;
         const findUser= await User.findOne({isAdmin:0,email:email});
-       
-        if(!findUser){
-            return res.json({success:false,message:"User not found"})
+   
+       if(!findUser){
+           return res.json({success:false,message:"User not found"})
         }
         if(findUser.isBlocked){
             return res.json({success:false,message:"User is Blocked by admin"})
             
         }
-        const passwordMatch= bcrypt.compare(password,findUser.password);
 
+        const passwordMatch=await bcrypt.compare(password,findUser.password);
+        
         if(!passwordMatch){
+      
             return res.json({success:false,message:"Incorrect Password"})
         }
         req.session.user={_id:findUser._id,name:findUser.username};
@@ -191,14 +193,17 @@ const signup = async (req, res) => {
         const { username, email, phone, password} = req.body;
         const findUser=await User.findOne({email});
         if(findUser){
-            res.render('signup',{ message: "User With this Email Already exists"})
+            console.log("1")
+    return res.json({success:false,message:"User With this Email Already exists"})
+        
         }
+
 
         const otp = generateOtp();
         const emailSent = await sendVerificationEmail(email, otp);
         console.log("email sent:",emailSent)
         if(!emailSent){
-            return res.json({status: false, message: 'email already exist'})
+            return res.render({status: false, message: 'email already exist'})
         }
         req.session.userOtp=otp;
         req.session.userData={username,phone,email,password};
@@ -207,10 +212,8 @@ const signup = async (req, res) => {
         console.log("OTP :",otp)
 
     } catch (error) {
-        if (error.code == 11000) return res.status(500).json({ success: true, message: "name already exist" })
-        res.status(500).json({ success: false, message: error.message })
-        console.error("signup error",error)
-        
+        console.log("error in otp")
+        res.render('pageerror')
     }
 }
 
@@ -229,8 +232,9 @@ const loadSignup = async (req, res) => {
 const loadshopping = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user|| req.session.googleUser;
         const user =userSession ? await User.findById(userSession._id):null;
+        
 
         const search = req.query.search || ""; 
         const page = parseInt(req.query.page) || 1;
@@ -245,11 +249,10 @@ const loadshopping = async (req, res) => {
         });
   
 
-        const productData = await Product.find({
-            $or: [
-                { productName: { $regex: new RegExp('.*' + search + '.*', 'i') } },
-            ],
-        })
+        const productData = await Product.find(
+    
+                { productName: { $regex: new RegExp('.*' + search + '.*', 'i') },isBlocked:false }
+        )
             .limit(limit)
             .skip((page - 1) * limit)
             .populate('category')
@@ -283,10 +286,11 @@ const pageNotFound = async (req, res) => {
 
 const loadHomepage = async (req, res) => {
     try {
-  
+        // const googleUser=req.session.user;
+        req.session.googleUser = req.user
         const product = await Product.find({isBlocked:false})
         const category=await Category.findOne({_id:product.category})
-        const userSession = req.session.user;
+        const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
         res.render('home', { user,product,category}); // Pass user as null if not logged in
 
@@ -302,7 +306,7 @@ const productDetail=async(req,res)=>{
     try {
        
         const id = req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user|| req.session.googleUser;
         const user =userSession ? await User.findById(userSession._id):null;
         const product = await Product.findOne({_id:id})
         const category=await Category.findOne({_id:product.category})
@@ -317,7 +321,7 @@ const productDetail=async(req,res)=>{
 const profile=async(req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user|| req.session.googleUser;
         const user =userSession ? await User.findById(userSession._id):null;
       
         res.render('profile',{user})
@@ -331,7 +335,7 @@ const profile=async(req,res)=>{
 const address=async(req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user; 
+        const userSession=req.session.user|| req.session.googleUser; 
         const user =userSession ? await User.findById(userSession._id):null;
         const addressData=await Address.findOne({userId:userSession._id});
         res.render('address',{user,userAddress:addressData})
@@ -379,7 +383,7 @@ const postAddAddress=async(req,res)=>{
 const wishlist=async(req,res)=>{
     try {
         const id=req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user|| req.session.googleUser;
         const user=userSession?await User.findById(userSession._id):null;
         res.render('wishlist',{user})
         
@@ -392,7 +396,7 @@ const wishlist=async(req,res)=>{
 const wallet=async(req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user|| req.session.googleUser;
         const user =userSession ? await User.findById(userSession._id):null;
         res.render('wallet',{user})
         
@@ -402,21 +406,28 @@ const wallet=async(req,res)=>{
     }
 }
 
-const orders=async(req,res)=>{
+const orders = async (req, res) => {
     try {
-        const id = req.params.id;
-        const userSession=req.session.user;
-        const user =userSession ? await User.findById(userSession._id):null;
-
+        const userSession = req.session.user || req.session.googleUser;
         if (!userSession) return res.redirect('/login');
 
+        const user = await User.findById(userSession._id);
+        if (!user) return res.redirect('/login');
+
+        // Fetch the orders along with the address
         const orders = await Order.find({ userId: userSession._id }).sort({ createdAt: -1 });
-        res.render('orders', { user: userSession, orders ,user});
+
+        res.render('orders', {
+            user: userSession,
+            orders,
+            user, // Pass the user information as well
+        });
     } catch (error) {
         console.error('Error fetching orders:', error);
         res.status(500).render('pageerror');
     }
-}
+};
+
 
 
 const editAddress=async(req,res)=>{
@@ -425,7 +436,7 @@ const editAddress=async(req,res)=>{
         
         
         const addressId=req.query.id;
-        const user=req.session.user;
+        const user=req.session.user|| req.session.googleUser;
         console.log(addressId,':   addressId')
         console.log("user session id;",user)
         const username=await User.findOne({_id:user._id});
@@ -527,7 +538,7 @@ const deleteAddress=async(req,res)=>{
 const getForgetPassPage=async (req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user|| req.session.googleUser;
         const user =userSession ? await User.findById(userSession._id):null;
         
         res.render("forgotPassword",{user});
@@ -541,7 +552,7 @@ const getForgetPassPage=async (req,res)=>{
 const forgotEmailValid=async(req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user; 
+        const userSession=req.session.user|| req.session.googleUser; 
         const user =userSession ? await User.findById(userSession._id):null;
         
         const {email}=req.body;
@@ -588,7 +599,7 @@ const verifyForgotPassOtp=async(req,res)=>{
 const getResetPassPage=async(req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user|| req.session.googleUser;
         const user =userSession ? await User.findById(userSession._id):null;
         
         res.render("resetPassword",{user})
@@ -623,7 +634,7 @@ const postNewPassword=async(req,res)=>{
 const loadChangePassword=async(req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user|| req.session.googleUser;
         const user =userSession ? await User.findById(userSession._id):null;
         
         res.render('changePassword',{user})
@@ -728,7 +739,7 @@ const addToCart = async (req, res) => {
 // Update Cart (for quantity update and item removal)
 const updateCart = async (req, res) => {
     try {
-        const userSession = req.session.user;
+        const userSession = req.session.user|| req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
         if (!user) return res.redirect('/login');
 
@@ -771,7 +782,7 @@ const updateCart = async (req, res) => {
 // Render Cart Page
 const cart = async (req, res) => {
     try {
-        const userSession = req.session.user;
+        const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
         if (!user) return res.redirect('/login');
 
@@ -792,7 +803,7 @@ const cart = async (req, res) => {
 
 const checkout = async (req, res) => {
     try {
-        const userSession = req.session.user;
+        const userSession = req.session.user|| req.session.googleUser;
         if (!userSession) return res.redirect('/login');
 
         const user = await User.findById(userSession._id);
@@ -817,7 +828,7 @@ const checkout = async (req, res) => {
 const placeOrder = async (req, res) => {
     try {
         // Check if the user is authenticated
-        const userSession = req.session.user;
+        const userSession = req.session.user || req.session.googleUser;
         if (!userSession) {
             return res.status(401).json({ success: false, message: 'User is not authenticated' });
         }
@@ -845,8 +856,12 @@ const placeOrder = async (req, res) => {
 
         const selectedAddress = address[0].address;
 
-        // Fetch cart items
-        const cartItems = await Cart.findOne({ userId: user._id }).populate('items.productId');
+        // Fetch cart items and populate product details including images
+        const cartItems = await Cart.findOne({ userId: user._id }).populate({
+            path: 'items.productId',
+            select: 'name price image', // Ensure 'image' is included in the population
+        });
+
         if (!cartItems || !cartItems.items.length) {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
@@ -859,7 +874,7 @@ const placeOrder = async (req, res) => {
         const newOrder = new Order({
             userId: user._id,
             address: selectedAddress,
-            items: cartItems.items,
+            items: cartItems.items, // Includes the populated product details
             paymentMethod,
             totalAmount,
             finalAmount,
@@ -874,7 +889,11 @@ const placeOrder = async (req, res) => {
         await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] } });
 
         // Respond with success message
-        res.status(200).json({ success: true, message: 'Order placed successfully', orderId: newOrder.orderId });
+        res.status(200).json({ 
+            success: true, 
+            message: 'Order placed successfully', 
+            orderId: newOrder.orderId 
+        });
     } catch (error) {
         console.error('Error placing order:', error);
         res.status(500).json({ success: false, message: 'Failed to place order' });
@@ -887,7 +906,7 @@ const placeOrder = async (req, res) => {
 
 const orderComplete=async(req,res)=>{
     try {
-        const userSession = req.session.user;
+        const userSession = req.session.user|| req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
         res.render('orderComplete',{user});
         

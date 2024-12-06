@@ -33,7 +33,7 @@ router.get('/productDetail/:id',userAuth,userController.productDetail)
 
 
 ///user profile
-router.get('/profile',profileAuth,userAuth,userController.profile)
+router.get('/profile',userAuth,userController.profile)
 router.get('/address',userAuth,userController.address)
 router.get('/cart',userAuth,userController.cart)
 router.get('/wishlist',userAuth,userController.wishlist)
@@ -47,7 +47,7 @@ router.get('/orders',userAuth,userController.orders)
 router.post('/addAddress',userController.postAddAddress);
 router.get('/editAddress',userAuth,userController.editAddress);
 router.get('/deleteAddress',userAuth,userController.deleteAddress)
-router.post('/editAddress',userAuth,userController.postEditAddress);
+router.post('/editAddress',userController.postEditAddress);
 
 ////forgot password
 router.get("/forgotPassword",userController.getForgetPassPage);
