@@ -1,104 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>CaseVerse Orders</title>
-        <meta http-equiv="x-ua-compatible" content="ie=edge" />
-        <meta name="description" content="" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta property="og:title" content="" />
-        <meta property="og:type" content="" />
-        <meta property="og:url" content="" />
-        <meta property="og:image" content="" />
 
-        <!-- Template CSS -->
-        <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
-        <style>
-            .content-main {
-                background: none;
-                box-shadow: none;
-                border: none;
-            }
-            .content-body {
-                padding: 20px;
-                background-color: #f8f9fa;
-                border-radius: 10px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            }
-            h2.section-title {
-                font-size: 24px;
-                margin-bottom: 20px;
-                color: #343a40;
-                font-weight: 600;
-            }
-            .order-card {
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 20px;
-                background-color: #ffffff;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                transition: transform 0.3s, box-shadow 0.3s;
-            }
-            .order-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            }
-            .order-card h5 {
-                font-size: 18px;
-                font-weight: 600;
-                margin-bottom: 10px;
-            }
-            .order-card p {
-                font-size: 14px;
-                color: #555;
-            }
-            .btn-view {
-                background-color: #007bff;
-                color: #fff;
-                border: none;
-                padding: 8px 12px;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: all 0.3s ease-in-out;
-            }
-            .btn-view:hover {
-                background-color: #0056b3;
-            }
-        </style>
-    </head>
-    <%-include("../../views/partials/user/header")%>
+<head>
+    <meta charset="utf-8" />
+    <title>CaseVerse Orders</title>
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:title" content="" />
+    <meta property="og:type" content="" />
+    <meta property="og:url" content="" />
+    <meta property="og:image" content="" />
+
+    <!-- Template CSS -->
+    <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
+    <style>
+        .content-main {
+            background: none;
+            box-shadow: none;
+            border: none;
+        }
+
+        .content-body {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2.section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #343a40;
+            font-weight: 600;
+        }
+
+        .order-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .order-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .order-card h5 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .order-card p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .btn-view {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-view:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<%-include("../../views/partials/user/header")%>
+
     <body>
         <section class="content-main">
             <div class="content-header"></div>
             <div class="row gx-5">
                 <%- include("../../views/partials/user/profileAside") %>
-                <div class="col-lg-9">
-                    <section class="content-body">
-                        <h2 class="section-title">Your Orders</h2>
-        
-                        <% if (orders && orders.length > 0) { %>
-                            <% orders.forEach(order => { %>
-                                <div class="order-card">
-                                    <h5>Order #<%= order._id %></h5>
-                                    <p><strong>Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
-                                    <p><strong>Status:</strong> <%= order.status %></p>
-                                    <p><strong>Total:</strong> ₹ <%= order.finalAmount %></p>
-        
-                                    <div class="order-address">
-                                        <p><strong>Shipping Address:</strong></p>
-                                        <p>Name : <%= order.address.name %>, <br> Address : <%= order.address.address %><br><%= order.address.city %>, <%= order.address.state %> - <%= order.address.pincode %></p>
-                                        <p>Phone : <%= order.address.phone %></p>
+                    <div class="col-lg-9">
+                        <section class="content-body">
+                            <h2 class="section-title">Your Orders</h2>
+
+                            <% if (orders && orders.length> 0) { %>
+                                <% orders.forEach(order=> { %>
+                                    <div class="order-card">
+                                        <h5>Order #<%= order._id %>
+                                        </h5>
+                                        <p><strong>Date:</strong>
+                                            <%= new Date(order.createdAt).toLocaleDateString() %>
+                                        </p>
+                                        <p><strong>Status:</strong>
+                                            <%= order.status %>
+                                        </p>
+                                        <p><strong>Total:</strong> ₹ <%= order.finalAmount %>
+                                        </p>
+
+                                        <div class="order-address">
+                                            <p><strong>Shipping Address:</strong></p>
+                                            <p>Name : <%= order.address.name %>, <br> Address : <%=
+                                                        order.address.address %><br>
+                                                        <%= order.address.city %>, <%= order.address.state %> - <%=
+                                                                    order.address.pincode %>
+                                            </p>
+                                            <p>Phone : <%= order.address.phone %>
+                                            </p>
+                                        </div>
+                                      <!-- Cancel Button -->
+<!-- Cancel Button -->
+<!-- Cancel Button -->
+<button id="cancel-btn-<%= order._id %>" 
+    class="btn btn-danger" 
+    onclick="cancelOrder('<%= order._id %>')" 
+    <%= order.status === 'Cancelled' || order.status === 'Returned' || order.status === 'Delivered' ? 'disabled' : '' %>>
+    Cancel
+</button>
+
+<!-- Return Button -->
+<button id="return-btn-<%= order._id %>" 
+    class="btn btn-success" 
+    onclick="returnOrder('<%= order._id %>')" 
+    <%= order.status === 'Delivered' ? '' : 'disabled' %>>
+    Return
+</button>
+
+
+
+                                    
+                                    
+
                                     </div>
-                                    <button class="btn btn-secondary">Return</button>
-                                    <button class="btn btn-danger">Cancel</button>
-                                </div>
-                            <% }) %>
-                        <% } else { %>
-                            <p>No orders found.</p>
-                        <% } %>
-                    </section>
-                </div>
+                                    <% }) %>
+                                        <% } else { %>
+                                            <p>No orders found.</p>
+                                            <% } %>
+                        </section>
+                    </div>
             </div>
         </section>
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
@@ -109,46 +151,141 @@
         <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
         <script>
             function viewOrder(orderId) {
-                // Redirect to order details page
+
                 window.location.href = `/orderDetails/${orderId}`;
             }
         </script>
     </body>
+
 </html>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+async function cancelOrder(orderId) {
+    try {
+        const confirmation = await Swal.fire({
+            title: "Are you sure?",
+            text: "Do you really want to cancel this order?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, Cancel",
+            cancelButtonText: "No"
+        });
+
+        if (confirmation.isConfirmed) {
+            const response = await fetch(`/cancelOrder/${orderId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                await Swal.fire({
+                    title: "Order Cancelled",
+                    text: "Your order status has been changed to 'Cancelled'.",
+                    icon: "success"
+                });
+                document.getElementById(`cancel-btn-${orderId}`).disabled = true;
+                document.getElementById(`return-btn-${orderId}`).disabled = true;
+
+
+
+                window.location.reload();
+
+            } else {
+                throw new Error(result.message);
+            }
+        }
+    } catch (err) {
+        console.error('Error canceling order:', err.message);
+        await Swal.fire("Oops!", "Internal server error occurred.", "error");
+    }
+}
+
+async function returnOrder(orderId) {
+    try {
+        const confirmation = await Swal.fire({
+            title: "Are you sure?",
+            text: "Do you want to mark this order as 'Returned'?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#28a745",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, Return",
+            cancelButtonText: "No"
+        });
+
+        if (confirmation.isConfirmed) {
+            const response = await fetch(`/returnOrder/${orderId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                await Swal.fire({
+                    title: "Order Returned",
+                    text: "Your order status has been changed to 'Returned'.",
+                    icon: "success"
+                });
+                document.getElementById(`cancel-btn-${orderId}`).disabled = true;
+                document.getElementById(`return-btn-${orderId}`).disabled = true;
+
+
+
+                window.location.reload();
+
+            } else {
+                throw new Error(result.message);
+            }
+        }
+    } catch (err) {
+        console.error('Error returning order:', err.message);
+        await Swal.fire("Oops!", "Internal server error occurred.", "error");
+    }
+}
+</script>
+
+
 <script src="vendor/jquery/jquery-3.2.1.min.js"></script>
 <!--===============================================================================================-->
-	<script src="vendor/animsition/js/animsition.min.js"></script>
+<script src="vendor/animsition/js/animsition.min.js"></script>
 <!--===============================================================================================-->
-	<script src="vendor/bootstrap/js/popper.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<script src="vendor/bootstrap/js/popper.js"></script>
+<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 <!--===============================================================================================-->
-	<script src="vendor/select2/select2.min.js"></script>
-	<script>
-		$(".js-select2").each(function(){
-			$(this).select2({
-				minimumResultsForSearch: 20,
-				dropdownParent: $(this).next('.dropDownSelect2')
-			});
-		})
-	</script>
+<script src="vendor/select2/select2.min.js"></script>
+<script>
+    $(".js-select2").each(function () {
+        $(this).select2({
+            minimumResultsForSearch: 20,
+            dropdownParent: $(this).next('.dropDownSelect2')
+        });
+    })
+</script>
 <!--===============================================================================================-->
-	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
 <!--===============================================================================================-->
-	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-	<script>
-		$('.js-pscroll').each(function(){
-			$(this).css('position','relative');
-			$(this).css('overflow','hidden');
-			var ps = new PerfectScrollbar(this, {
-				wheelSpeed: 1,
-				scrollingThreshold: 1000,
-				wheelPropagation: false,
-			});
+<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+<script>
+    $('.js-pscroll').each(function () {
+        $(this).css('position', 'relative');
+        $(this).css('overflow', 'hidden');
+        var ps = new PerfectScrollbar(this, {
+            wheelSpeed: 1,
+            scrollingThreshold: 1000,
+            wheelPropagation: false,
+        });
 
-			$(window).on('resize', function(){
-				ps.update();
-			})
-		});
-	</script>
+        $(window).on('resize', function () {
+            ps.update();
+        })
+    });
+</script>
 <!--===============================================================================================-->
-	<script src="js/main.js"></script>
+<script src="js/main.js"></script>

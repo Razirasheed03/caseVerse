@@ -413,14 +413,12 @@ const orders = async (req, res) => {
 
         const user = await User.findById(userSession._id);
         if (!user) return res.redirect('/login');
-
-        // Fetch the orders along with the address
         const orders = await Order.find({ userId: userSession._id }).sort({ createdAt: -1 });
 
         res.render('orders', {
             user: userSession,
             orders,
-            user, // Pass the user information as well
+            user, 
         });
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -471,14 +469,12 @@ const postEditAddress = async (req, res) => {
         const addressId = req.query.id;
         const user = req.session.user;
         
-        // Find the address document
         const findAddress = await Address.findOne({ "address._id": addressId });
         if (!findAddress) {
             
             return res.status(404).json({ message: 'Address not found' });
         }
-        
-        // Update the address in the database
+ 
         await Address.updateOne(
             { "address._id": addressId },
             {
@@ -676,7 +672,7 @@ const changePassword = async (req, res) => {
 const saveUserData=async(req,res)=>{
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
+        const userSession=req.session.user||req.session.googleUser;
         const user =userSession ? await User.findById(userSession._id):null;
         const data=req.body
         if(!user){
@@ -694,29 +690,28 @@ const saveUserData=async(req,res)=>{
 
 const addToCart = async (req, res) => {
     try {
-        const userSession = req.session.user;
+        const userSession = req.session.user||req.session.googleUser;
         const { productId, quantity } = req.body;
         const user = userSession ? await User.findById(userSession._id) : null;
         if (!user) return res.redirect('/login');
 
-        // Fetch the product to get the price
+   
         const product = await Product.findById(productId);
         if (!product) return res.status(404).send('Product not found');
 
-        // Find the user's cart or create a new one
+      
         let cart = await Cart.findOne({ userId: user._id });
         if (!cart) {
             cart = new Cart({ userId: user._id, items: [] });
         }
 
-        // Check if the product is already in the cart
         const existingItem = cart.items.find(item => item.productId.toString() === productId);
         if (existingItem) {
-            // Update the quantity and total price if the product already exists in the cart
+       
             existingItem.quantity += Number(quantity);
             existingItem.totalPrice = existingItem.quantity * existingItem.price;
         } else {
-            // Add the product to the cart if it's not there
+
             cart.items.push({
                 productId: product._id,
                 quantity,
@@ -736,7 +731,7 @@ const addToCart = async (req, res) => {
     }
 };
 
-// Update Cart (for quantity update and item removal)
+
 const updateCart = async (req, res) => {
     try {
         const userSession = req.session.user|| req.session.googleUser;
@@ -779,21 +774,41 @@ const updateCart = async (req, res) => {
     }
 };
 
-// Render Cart Page
+const quantityChange=async(req,res)=>{
+    try {
+        const {quantity,id}=req.body;
+        console.log("id:",id)
+
+        const updateOrder = await Cart.updateOne(
+            { "items._id": id },
+            { $set: { "items.$.quantity": quantity } },
+        );
+        console.log("hii2")
+        
+
+
+
+
+
+    } catch (error) {
+        console.error("error in quantity",error)
+        
+    }
+}
+
 const cart = async (req, res) => {
     try {
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
         if (!user) return res.redirect('/login');
 
-        // Fetch the user's cart and populate product details
         const cart = await Cart.findOne({ userId: user._id }).populate('items.productId').exec();
         
         if (!cart || cart.items.length === 0) {
             return res.render('cart', { user, cart: { items: [] } });
         }
 
-        // Render the cart page
+   
         res.render('cart', { user, cart });
     } catch (error) {
         console.error('Error fetching cart:', error);
@@ -817,7 +832,7 @@ const checkout = async (req, res) => {
         res.render('checkout', {
             user,
             cart,
-            addresses: addressData ? addressData.address : [], // Pass addresses to the template
+            addresses: addressData ? addressData.address : [], 
         });
     } catch (error) {
         console.error('Error rendering checkout:', error);
@@ -827,7 +842,7 @@ const checkout = async (req, res) => {
 
 const placeOrder = async (req, res) => {
     try {
-        // Check if the user is authenticated
+        
         const userSession = req.session.user || req.session.googleUser;
         if (!userSession) {
             return res.status(401).json({ success: false, message: 'User is not authenticated' });
@@ -843,7 +858,7 @@ const placeOrder = async (req, res) => {
         const userId = new mongoose.Types.ObjectId(userSession._id);
         const objectAddressId = new mongoose.Types.ObjectId(addressId);
 
-        // Fetch the address
+      
         const address = await Address.aggregate([
             { $match: { userId } },
             { $unwind: "$address" },
@@ -856,10 +871,10 @@ const placeOrder = async (req, res) => {
 
         const selectedAddress = address[0].address;
 
-        // Fetch cart items and populate product details including images
+
         const cartItems = await Cart.findOne({ userId: user._id }).populate({
             path: 'items.productId',
-            select: 'name price image', // Ensure 'image' is included in the population
+            select: 'name price image', 
         });
 
         if (!cartItems || !cartItems.items.length) {
@@ -870,11 +885,10 @@ const placeOrder = async (req, res) => {
         const shippingCharge = 50;
         const finalAmount = totalAmount + shippingCharge;
 
-        // Create the order
         const newOrder = new Order({
             userId: user._id,
             address: selectedAddress,
-            items: cartItems.items, // Includes the populated product details
+            items: cartItems.items,
             paymentMethod,
             totalAmount,
             finalAmount,
@@ -918,6 +932,49 @@ const orderComplete=async(req,res)=>{
     }
 
 
+    const cancelOrder = async (req, res) => {
+        try {
+            const orderId = req.params.id;
+    
+            const updatedOrder = await Order.findByIdAndUpdate(
+                orderId,
+                { status: 'Cancelled' },
+                { new: true }
+            );
+    
+            if (!updatedOrder) {
+                return res.status(404).json({ success: false, message: 'Order not found' });
+            }
+    
+            res.json({ success: true });
+        } catch (error) {
+            console.error("Server Error while canceling order:", error.message);
+            console.error(error.stack); // Log the stack trace for detailed debugging
+            res.status(500).json({ success: false, message: 'Internal server error', error });
+        }
+    };
+    
+    const returnOrder = async (req, res) => {
+        try {
+            const orderId = req.params.id;
+    
+            const updatedOrder = await Order.findByIdAndUpdate(
+                orderId,
+                { status: 'Returned' },
+                { new: true }
+            );
+    
+            if (!updatedOrder) {
+                return res.status(404).json({ success: false, message: 'Order not found' });
+            }
+    
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Error returning order:', error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+    };
+
 
 module.exports = {
     loadHomepage,
@@ -951,8 +1008,11 @@ module.exports = {
     loadChangePassword,
     saveUserData,
     addToCart,
+    quantityChange,
     updateCart,
     checkout,
     placeOrder,
-    orderComplete
+    orderComplete,
+    cancelOrder,
+    returnOrder,
 }

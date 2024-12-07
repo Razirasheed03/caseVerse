@@ -1,0 +1,73 @@
+
+            <%- include("../../views/partials/admin/header") %>
+            <section class="content-main"> 
+                    <h2 >Orders List</h2>
+                    <br>
+                <div class="card mb-4">
+                   
+                    <!-- card-header end// -->
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">OrderId</th>
+                                        <th scope="col">Payment Method</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Date</th>
+                                        
+                                        <th scope="col" class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (orders && orders.length> 0) { %>
+                                        <% orders.forEach(order=> { %>
+                                    <tr>
+                                        <td><%=order._id%></td>
+                                        <td><%=order.paymentMethod%></td>
+                                        <td> ₹ <%=order.totalAmount%></td>
+                                        <td><span class=""><%=order.status%></span></td>
+                                        <td><%=order.createdAt.toLocaleDateString()%></td>
+                                        <td class="text-end">
+                                            <a href="/admin/orders?id=<%= order._id %>" class="btn btn-md rounded font-sm">Detail</a>
+                                        
+                                        </td>
+                                    </tr>
+                                        <% }) %>
+                                        <% } else { %>
+                                            <p>No orders found.</p>
+                                            <% } %>
+                                  
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>            
+                </div>
+                <!-- card end// -->
+                <!-- <div class="pagination-area mt-15 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <li class="page-item active"><a class="page-link" href="#">01</a></li>
+                            <li class="page-item"><a class="page-link" href="#">02</a></li>
+                            <li class="page-item"><a class="page-link" href="#">03</a></li>
+                            <li class="page-item"><a class="page-link dot" href="#">...</a></li>
+                            <li class="page-item"><a class="page-link" href="#">16</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div> -->
+            </section>
+            <!-- content-main end// -->
+        </main>
+        <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
+        <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
+        <script src="assets/js/vendors/select2.min.js"></script>
+        <script src="assets/js/vendors/perfect-scrollbar.js"></script>
+        <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
+        <!-- Main Script -->
+        <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
+    </body>
+</html> 

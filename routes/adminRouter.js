@@ -11,6 +11,7 @@ const adminController = require('../controllers/admin/adminController');
 const customerController= require('../controllers/admin/customerController');
 const categoryController= require('../controllers/admin/categoryController');
 const productController = require('../controllers/admin/productController');
+const orderController = require('../controllers/admin/orderController');
 
 //Admin Routes
 router.get('/pageerror',adminController.pageerror)
@@ -49,7 +50,10 @@ router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productContro
 router.post("/deleteImage",adminAuth,productController.deleteSingleImage)
 router.post('/deleteProduct/:id',adminAuth,productController.deleteProduct)
 
-
+//order Management
+router.get('/adminOrders',adminAuth,orderController.adminOrders)
+router.get('/orders',orderController.orderDetail)
+router.post('/changeStatus',orderController.changeStatus)
 module.exports=router;
 
 

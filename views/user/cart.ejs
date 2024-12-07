@@ -35,7 +35,7 @@
                     <td class="column-2"><%= item.productId.productName %></td>
                     <td class="column-3">₹<%= item.price %></td>
                     <td class="column-4">
-                      <input type="number" name="quantity[<%= item._id %>]" value="<%= item.quantity %>" class="quantity-input" min="1" data-price="<%= item.price %>" data-item-id="<%= item._id %>">
+                      <input type="number" oninput="quantityChange(this.value,'<%=item._id%>')" name="quantity[<%= item._id %>]" value="<%= item.quantity %>" class="quantity-input" min="1" data-price="<%= item.price %>" data-item-id="<%= item._id %>">
                     </td>
                     <td class="column-5">₹<span class="total-price" data-item-id="<%= item._id %>"><%= item.totalPrice %></span></td>
                     <td class="column-6">
@@ -107,6 +107,15 @@
 <script src="/js/main.js"></script>
 
 <script>
+
+async function quantityChange(quantity,id){
+             await fetch(`/quantityChange`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body:JSON.stringify({quantity,id})
+            });
+}
+  const data=document.getElementById('')
   // Dynamically update price when quantity is changed
   document.querySelectorAll('.quantity-input').forEach(input => {
     input.addEventListener('input', function() {
