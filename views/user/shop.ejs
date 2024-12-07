@@ -1,6 +1,13 @@
 
 <%-include("../../views/partials/user/header")%>
-	
+	<style>
+		.sizing{
+			border-radius: 10px;
+			height:5vh;
+			width: 40vh;
+			border-color: rgb(188, 186, 186);
+		}
+	</style>
 <br>
 <br>
 <br>
@@ -10,6 +17,19 @@
 		<div class="container">
 			<div class="flex-w flex-sb-m p-b-52">
 				<div class="flex-w flex-l-m filter-tope-group m-tb-10">
+					<form action="/shop" method="GET" class="panel-search w-full p-t-5 p-b-5">
+						<div class="sizing bor8 dis-flex p-l-10">
+							<button class=" flex-c-m fs-16 cl2 hov-cl1 trans-04 p-b-0">
+								<i class="zmdi zmdi-search"></i>
+							</button>
+							<input 
+								class="mtext-107 cl2  plh2 p-l-5" 
+								type="text" 
+								name="search" 
+								value="<%= search %>" 
+								placeholder="Search">
+						</div>
+					</form>
 
 				</div>
 
@@ -20,14 +40,10 @@
 						 Filter
 					</div>
 
-					<div class="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 js-show-search">
-						<i class="icon-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-search"></i>
-						<i class="icon-close-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-						Search
-					</div>
-				</div>
+
 				
-				<!-- Search product -->
+				</div>
+
 				<div class="dis-none panel-search w-full p-t-10 p-b-15">
 					<div class="bor8 dis-flex p-l-15">
 						<button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
@@ -38,6 +54,8 @@
 					</div>	
 				</div>
 
+		
+				
 				<!-- Filter -->
 				<div class="dis-none panel-filter w-full p-t-10">
 					<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
@@ -48,37 +66,37 @@
 
 							<ul>
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
+									<!-- <a  href="#" onclick="sortItem('New Arrival',`<%=JSON.stringify(product)%>`)" class="filter-link stext-106 trans-04 sorting">
+										New Arrival
+									</a> -->
+									<a href="#" class="filter-link stext-106 trans-04 sorting" data-product='<%= JSON.stringify(product) %>' onclick="sortItem('New Arrival', this.dataset.product)">
 										New Arrival
 									</a>
+									
 								</li>
 
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
-										Popularity
-									</a>
-								</li>
+					
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
+									<a href="#" class="filter-link stext-106 trans-04 sorting" data-product='<%= JSON.stringify(product) %>' onclick="sortItem('Price: High to Low', this.dataset.product)">
 										Price: High to Low
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04 filter-link">
+									<a href="#" class="filter-link stext-106 trans-04 filter-link sorting" data-product='<%= JSON.stringify(product) %>' onclick="sortItem('Price: Low to High', this.dataset.product)">
 										Price: Low to High
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
+									<a href="#" class="filter-link stext-106 trans-04 sorting"data-product='<%= JSON.stringify(product) %>' onclick="sortItem('Aa-Zz', this.dataset.product)">
 										Aa-Zz
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
+									<a href="#" class="filter-link stext-106 trans-04 sorting" data-product='<%= JSON.stringify(product) %>' onclick="sortItem('Zz-Aa', this.dataset.product)">
 										Zz-Aa
 									</a>
 								</li>
@@ -99,25 +117,13 @@
 
 								<li class="p-b-6">
 									<a href="#" class="filter-link stext-106 trans-04">
-										₹199 - ₹299
+										₹199 - ₹499
 									</a>
 								</li>
 
 								<li class="p-b-6">
 									<a href="#" class="filter-link stext-106 trans-04">
-										₹299 - ₹499
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
-										₹499 - ₹699
-									</a>
-								</li>
-
-								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04">
-										₹699 - ₹999
+										₹499 - ₹999
 									</a>
 								</li>
 
@@ -162,7 +168,7 @@
 				</div>
 			</div>
 
-			<div class="row isotope-grid">
+			<div class="row isotope-grid" id="shopList">
 				<!-- ======================================= -->
 				<%for(let i=0;i<product.length;i++){%>
 				<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
@@ -227,260 +233,115 @@
  </div>
 		</div>
 	</div>
-		
+	<script>
+		function sortItem(item,data){
+			const product = JSON.parse(data);
+			const shopList = document.getElementById('shopList')
+			console.log(item);
+			console.log("products:", product)
+			switch (item) {
+                case 'New Arrival':
+                product.sort((a, b) => {
+                        const dateA = a.createdAt;
+                        const dateB = b.createdAt;
 
-	<!-- Footer -->
-	<footer class="bg3 p-t-75 p-b-32">
-		<div class="container">
-			<div class="row">
-				<div class="col-sm-6 col-lg-3 p-b-50">
-					<h4 class="stext-301 cl0 p-b-30">
-						Categories
-					</h4>
+                        if (dateA < dateB) return 1;
+                        if (dateA > dateB) return -1;
+                        return 0;
+                    })
+                    console.log('sort by new')
+                    break;
+                case 'Price: Low to High':
+                product.sort((a, b) => {
+                        const priceA = a.salePrice;
+                        const priceB = b.salePrice;
 
-					<ul>
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Iphone Cases
+                        if (priceA < priceB) return -1;
+                        if (priceA > priceB) return 1;
+                        return 0;
+                    })
+                    console.log('sort by price asc')
+                    break;
+                case 'Price: High to Low':
+                product.sort((a, b) => {
+                        const priceA = a.salePrice;
+                        const priceB = b.salePrice;
+
+                        if (priceA < priceB) return 1;
+                        if (priceA > priceB) return -1;
+                        return 0;
+                    })
+                    console.log('sort by price desc')
+                    break;
+                case 'Aa-Zz':
+                    product.sort((a, b) => {
+                        const nameA = a.productName.toLowerCase();
+                        const nameB = b.productName.toLowerCase();
+
+                        if (nameA < nameB) return -1;
+                        if (nameA > nameB) return 1;
+                        return 0;
+                    })
+                    console.log('sort by name asc')
+                    break;
+                case 'Zz-Aa':
+                product.sort((a, b) => {
+                        const nameA = a.productName.toLowerCase();
+                        const nameB = b.productName.toLowerCase();
+
+                        if (nameA < nameB) return 1;
+                        if (nameA > nameB) return -1;
+                        return 0;
+                    })
+                    console.log('sort by name desc')
+                    break;
+                default:
+                    console.log("default case")
+                    break;
+            }
+			shopList.innerHTML = ''
+			product.map(product=>{
+				let element = `
+			<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
+					<!-- Block2 -->
+					<div class="block2">
+						<div class="block2-pic hov-img0">
+							<a href="/productDetail/${product._id}">
+
+								<img src='/uploads/product-images/${product.productImage[0]}' alt="IMG-PRODUCT">
 							</a>
-						</li>
+						</div>
 
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Ipads Cases
-							</a>
-						</li>
+						<div class="block2-txt flex-w flex-t p-t-14">
+							<div class="block2-txt-child1 flex-col-l ">
+								<a href="/productDetail/${product._id}" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+									${product.productName}
+								</a>
 
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Macbook Cases
-							</a>
-						</li>
+								<span class="stext-105 cl3">
+									<strike>₹${product.regularPrice}</strike>&nbsp;
+									<strong>₹${product.salePrice}</strong>
+								</span>
+							</div>
 
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								IWatch Cases
-							</a>
-						</li>
-					</ul>
-				</div>
-
-				<div class="col-sm-6 col-lg-3 p-b-50">
-					<h4 class="stext-301 cl0 p-b-30">
-						Help
-					</h4>
-
-					<ul>
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Track Order
-							</a>
-						</li>
-
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Returns 
-							</a>
-						</li>
-
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								Shipping
-							</a>
-						</li>
-
-						<li class="p-b-10">
-							<a href="#" class="stext-107 cl7 hov-cl1 trans-04">
-								FAQs
-							</a>
-						</li>
-					</ul>
-				</div>
-
-				<div class="col-sm-6 col-lg-3 p-b-50">
-					<h4 class="stext-301 cl0 p-b-30">
-						GET IN TOUCH
-					</h4>
-
-					<p class="stext-107 cl7 size-201">
-						Any questions? Let us know in store at 8th floor, 379 Hudson St, New York, NY 10018 or call us on (+1) 96 716 6879
-					</p>
-
-					<div class="p-t-27">
-						<a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
-							<i class="fa fa-facebook"></i>
-						</a>
-
-						<a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
-							<i class="fa fa-instagram"></i>
-						</a>
-
-						<a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
-							<i class="fa fa-pinterest-p"></i>
-						</a>
+							<div class="block2-txt-child2 flex-r p-t-3">
+								<a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+									<img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+									<img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+								</a>
+							</div>
+						</div>
 					</div>
 				</div>
-
-				<div class="col-sm-6 col-lg-3 p-b-50">
-					<h4 class="stext-301 cl0 p-b-30">
-						Follow us on instagram
-					</h4>
-
-					<form>
-						<div class="wrap-input1 w-full p-b-4">
-							<input class="input1 bg-none plh1 stext-107 cl7" type="text" name="email" placeholder="caseverseofficial@gmail.com">
-							<div class="focus-input1 trans-04"></div>
-						</div>
-
-						<div class="p-t-18">
-							<button class="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04">
-								CaseVerse
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
-
-			<div class="p-t-40">
-				<div class="flex-c-m flex-w p-b-18">
-					<a href="#" class="m-all-1">
-						<img src="images/icons/icon-pay-01.png" alt="ICON-PAY">
-					</a>
-
-					<a href="#" class="m-all-1">
-						<img src="images/icons/icon-pay-02.png" alt="ICON-PAY">
-					</a>
-
-					<a href="#" class="m-all-1">
-						<img src="images/icons/icon-pay-03.png" alt="ICON-PAY">
-					</a>
-
-					<a href="#" class="m-all-1">
-						<img src="images/icons/icon-pay-04.png" alt="ICON-PAY">
-					</a>
-
-					<a href="#" class="m-all-1">
-						<img src="images/icons/icon-pay-05.png" alt="ICON-PAY">
-					</a>
-				</div>
-
-				<p class="stext-107 cl6 txt-center">
-
-				</p>
-			</div>
-		</div>
-	</footer>
-
-
-	<!-- Back to top -->
-	<div class="btn-back-to-top" id="myBtn">
-		<span class="symbol-btn-back-to-top">
-			<i class="zmdi zmdi-chevron-up"></i>
-		</span>
-	</div>
-
-
-<!--===============================================================================================-->	
-	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/animsition/js/animsition.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/bootstrap/js/popper.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/select2/select2.min.js"></script>
-	<script>
-		$(".js-select2").each(function(){
-			$(this).select2({
-				minimumResultsForSearch: 20,
-				dropdownParent: $(this).next('.dropDownSelect2')
-			});
-		})
-	</script>
-<!--===============================================================================================-->
-	<script src="vendor/daterangepicker/moment.min.js"></script>
-	<script src="vendor/daterangepicker/daterangepicker.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/slick/slick.min.js"></script>
-	<script src="js/slick-custom.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/parallax100/parallax100.js"></script>
-	<script>
-        $('.parallax100').parallax100();
-	</script>
-<!--===============================================================================================-->
-	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
-	<script>
-		$('.gallery-lb').each(function() { // the containers for all your galleries
-			$(this).magnificPopup({
-		        delegate: 'a', // the selector for gallery item
-		        type: 'image',
-		        gallery: {
-		        	enabled:true
-		        },
-		        mainClass: 'mfp-fade'
-		    });
-		});
-	</script>
-<!--===============================================================================================-->
-	<script src="vendor/isotope/isotope.pkgd.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/sweetalert/sweetalert.min.js"></script>
-	<script>
-		$('.js-addwish-b2, .js-addwish-detail').on('click', function(e){
-			e.preventDefault();
-		});
-
-		$('.js-addwish-b2').each(function(){
-			var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
-
-				$(this).addClass('js-addedwish-b2');
-				$(this).off('click');
-			});
-		});
-
-		$('.js-addwish-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
-
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
-
-				$(this).addClass('js-addedwish-detail');
-				$(this).off('click');
-			});
-		});
-
-		/*---------------------------------------------*/
-
-		$('.js-addcart-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to cart !", "success");
-			});
-		});
-	
-	</script>
-<!--===============================================================================================-->
-	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-	<script>
-		$('.js-pscroll').each(function(){
-			$(this).css('position','relative');
-			$(this).css('overflow','hidden');
-			var ps = new PerfectScrollbar(this, {
-				wheelSpeed: 1,
-				scrollingThreshold: 1000,
-				wheelPropagation: false,
-			});
-
-			$(window).on('resize', function(){
-				ps.update();
+			`
+			shopList.innerHTML+=element
 			})
-		});
-	</script>
-<!--===============================================================================================-->
-	<script src="js/main.js"></script>
 
-</body>
-</html>
+			
+
+		}
+
+		</script>	
+	
+	<!-- Footer -->
+<%-include("../../views/partials/user/footer")%>

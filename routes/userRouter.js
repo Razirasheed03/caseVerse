@@ -66,12 +66,12 @@ router.post('/saveUserData',upload.none(),userController.saveUserData)
 ///cart management
 router.post('/add-to-cart', userController.addToCart);
 router.post('/update-cart', userController.updateCart);
-router.get('/checkout', userController.checkout);
+router.get('/checkout', userAuth,userController.checkout);
 router.post('/place-order', userController.placeOrder);
 router.post('/quantityChange',userController.quantityChange)
 
 //order management
-router.get('/orderComplete',userController.orderComplete)
+router.get('/orderComplete',userAuth,userController.orderComplete)
 router.post('/placeOrder',userAuth,userController.placeOrder);
 router.post('/cancelOrder/:id', userController.cancelOrder);
 router.post('/returnOrder/:id', userController.returnOrder);

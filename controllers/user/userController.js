@@ -74,18 +74,6 @@ const loadLogin=async(req,res)=>{
         res.redirect("/pageNotFound")
     }
 }
-// const signup=async(req,res)=>{
-//     try {
-
-//         const {email,password,confirmPassword}=req.body;
-//         if(password!==confirmPassword){
-//             return res.render()
-//         }
-
-//     } catch (error) {
-
-//     }
-// }////new creation of signup at 7-10 at 8th episode not done
 const resendOtp=async(req,res)=>{
     try {
         const {email}=req.session.userData;
@@ -238,7 +226,7 @@ const loadshopping = async (req, res) => {
 
         const search = req.query.search || ""; 
         const page = parseInt(req.query.page) || 1;
-        const limit = 8; 
+        const limit = 12; 
 
      
         const totalProducts = await Product.countDocuments({
@@ -246,6 +234,7 @@ const loadshopping = async (req, res) => {
                 { productName: { $regex: new RegExp('.*' + search + '.*', 'i') } },
         
             ],
+            isBlocked:false,
         });
   
 
@@ -271,6 +260,7 @@ const loadshopping = async (req, res) => {
         res.status(500).send("Server error");
     }
 };
+
 
 
 const pageNotFound = async (req, res) => {
@@ -781,8 +771,14 @@ const quantityChange=async(req,res)=>{
 
         const updateOrder = await Cart.updateOne(
             { "items._id": id },
-            { $set: { "items.$.quantity": quantity } },
+            {
+                $set: {
+                    "items.$.quantity": quantity,
+                    "items.$.totalPrice": quantity * (await Cart.findOne({ "items._id": id }, { "items.$": 1 })).items[0].price,
+                },
+            }
         );
+        
         console.log("hii2")
         
 
@@ -842,7 +838,6 @@ const checkout = async (req, res) => {
 
 const placeOrder = async (req, res) => {
     try {
-        
         const userSession = req.session.user || req.session.googleUser;
         if (!userSession) {
             return res.status(401).json({ success: false, message: 'User is not authenticated' });
@@ -858,7 +853,7 @@ const placeOrder = async (req, res) => {
         const userId = new mongoose.Types.ObjectId(userSession._id);
         const objectAddressId = new mongoose.Types.ObjectId(addressId);
 
-      
+        // Fetch the address
         const address = await Address.aggregate([
             { $match: { userId } },
             { $unwind: "$address" },
@@ -871,15 +866,39 @@ const placeOrder = async (req, res) => {
 
         const selectedAddress = address[0].address;
 
-
+        // Fetch cart items
         const cartItems = await Cart.findOne({ userId: user._id }).populate({
             path: 'items.productId',
-            select: 'name price image', 
+            select: 'productName salePrice quantity status',
         });
 
         if (!cartItems || !cartItems.items.length) {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
+
+        // Deduct quantities and update product status
+        for (const item of cartItems.items) {
+            const product = item.productId;
+            const purchasedQuantity = item.quantity;
+
+            // Check stock availability
+            if (product.quantity < purchasedQuantity) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Insufficient stock for product: ${product.productName}` 
+                });
+            }
+
+       
+            product.quantity -= purchasedQuantity;
+
+            if (product.quantity === 0) {
+                product.status = "out of stock";
+            }
+
+            await product.save();
+        }
+
 
         const totalAmount = cartItems.items.reduce((total, item) => total + item.totalPrice, 0);
         const shippingCharge = 50;
@@ -894,15 +913,12 @@ const placeOrder = async (req, res) => {
             finalAmount,
         });
 
-        console.log('Generated Order ID:', newOrder.orderId); // Debugging the generated order ID
+        console.log('Generated Order ID:', newOrder.orderId); 
 
-        // Save the order
         await newOrder.save();
 
-        // Clear the cart after order placement
         await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] } });
 
-        // Respond with success message
         res.status(200).json({ 
             success: true, 
             message: 'Order placed successfully', 
@@ -913,9 +929,6 @@ const placeOrder = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to place order' });
     }
 };
-
-
-
 
 
 const orderComplete=async(req,res)=>{
@@ -935,24 +948,42 @@ const orderComplete=async(req,res)=>{
     const cancelOrder = async (req, res) => {
         try {
             const orderId = req.params.id;
+
+            const order = await Order.findById(orderId).populate({
+                path: 'items.productId',
+                select: 'productName quantity',
+            });
     
+            if (!order) {
+                return res.status(404).json({ success: false, message: 'Order not found' });
+            }
+    
+            const items = order.items;
+
+            for (const item of items) {
+                const product = item.productId;
+                const purchasedQuantity = item.quantity;
+                product.quantity += purchasedQuantity;
+                if (product.status === 'out of stock') {
+                    product.status = 'Available';
+                }
+    
+                await product.save();
+            }
             const updatedOrder = await Order.findByIdAndUpdate(
                 orderId,
                 { status: 'Cancelled' },
                 { new: true }
             );
     
-            if (!updatedOrder) {
-                return res.status(404).json({ success: false, message: 'Order not found' });
-            }
-    
-            res.json({ success: true });
+            res.status(200).json({ success: true, message: 'Order cancelled and stock updated' });
         } catch (error) {
             console.error("Server Error while canceling order:", error.message);
-            console.error(error.stack); // Log the stack trace for detailed debugging
+            console.error(error.stack);
             res.status(500).json({ success: false, message: 'Internal server error', error });
         }
     };
+    
     
     const returnOrder = async (req, res) => {
         try {

@@ -52,8 +52,12 @@ router.post('/deleteProduct/:id',adminAuth,productController.deleteProduct)
 
 //order Management
 router.get('/adminOrders',adminAuth,orderController.adminOrders)
-router.get('/orders',orderController.orderDetail)
+router.get('/orders',adminAuth,orderController.orderDetail)
 router.post('/changeStatus',orderController.changeStatus)
+
+////stock mangement
+router.get('/stock',adminAuth,productController.stock)
+router.post('/addStock',productController.addstock)
 module.exports=router;
 
 

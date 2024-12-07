@@ -104,7 +104,7 @@
         <div class="col-md-2 thumbnails-container d-flex flex-column">
             <% product.productImage.forEach((image, index) => { %>
                 <div class="thumbnail">
-                    <img src="/uploads/product-images/<%= image %>" alt="Image <%= index + 1 %>" class="img-thumbnail" onclick="changeMainImage(this)">
+                    <img src="/uploads/re-images/<%= image %>" alt="Image <%= index + 1 %>" class="img-thumbnail" onclick="changeMainImage(this)">
                 </div>
             <% }); %>
         </div>
@@ -112,7 +112,7 @@
         <!-- Main Image Section -->
         <div class="col-md-6">
             <div class="main-image-container" id="mainImageContainer">
-                <img src="/uploads/product-images/<%= product.productImage[0] %>" id="mainProductImage" alt="Product">
+                <img src="/uploads/re-images/<%= product.productImage[0] %>" id="mainProductImage" alt="Product">
             </div>
         </div>
 
@@ -142,21 +142,22 @@
                     <div class="size-204 respon6-next">
                         <div class="rs1-select2 bor8 bg0">
                             <select class="js-select2" name="quantity">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
+                                <% for (let i = 1; i <= product.quantity/3; i++) { %>
+                                    <option value="<%= i %>"><%= i %></option>
+                                <% } %>
                             </select>
                             <div class="dropDownSelect2"></div>
                         </div>
                     </div>
                 </div>
-
+            
+                <p class="text-muted">Available Quantity: <%= product.quantity %></p>
+            
                 <div class="d-flex mt-5">
                     <button type="submit" class="btn btn-primary me-2">Add to Cart</button>
                 </div>
             </form>
+            
 
             <div class="d-flex mt-2">
                 <button class="btn btn-outline-danger">Add to Wishlist</button>
