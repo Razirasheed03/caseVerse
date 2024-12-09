@@ -1,172 +1,84 @@
-<style>
-    /* Breadcrumb Styling */
-    .breadcrumb {
-       background-color: #ce0a0a;
-       padding: 10px 50px;
-       border-radius: 5px;
-       margin-bottom: 0px;
-   }
+<%- include("../../views/partials/user/header") %>
+<br><br><br><br>
 
-   .breadcrumb a {
-       text-decoration: none;
-       color: #007bff;
-   }
-
-   .breadcrumb a:hover {
-       text-decoration: underline;
-   }
-
-</style>
-<%-include("../../views/partials/user/header")%>
-<br>
-<br>
-<br>
-<br>
-<nav >
-<ol class="breadcrumb">
-   <li class="breadcrumb-item"><a href="/">Home</a></li> 
-   <li class="breadcrumb-item " aria-current="page">Wishlist</li>
-</ol>
+<!-- Breadcrumb -->
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Wishlist</li>
+    </ol>
 </nav>
 
-
-
-<!-- breadcrumb -->
-<!-- <div class="container">
-   <div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
-       <a href="index.html" class="stext-109 cl8 hov-cl1 trans-04">
-           Home
-           <i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
-       </a>
-
-       <span class="stext-109 cl4">
-           Shoping Cart
-       </span>
-   </div>
-</div> -->
-   
-
-<!-- Shoping Cart -->
-<form class="bg0 p-t-75 p-b-85">
-   <!-- <div class="container"> -->
-       <div class="row">
-           <div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
-               <div class="m-l-25 m-r--38 m-lr-0-xl">
-                   <div class="wrap-table-shopping-cart">
-                       <table class="table-shopping-cart">
-                           <tr class="table_head">
-                               <th class="column-1">Product</th>
-                               <th class="column-2"></th>
-                               <th class="column-3">Price</th>
-                               <th class="column-4">Quantity</th>
-                          
-                           </tr>
-
-                           <tr class="table_row">
-                               <td class="column-1">
-                                   <div class="how-itemcart1">
-                                       <img src="images/item-cart-04.jpg" alt="IMG">
-                                   </div>
-                               </td>
-                               <td class="column-2">Fresh Strawberries</td>
-                               <td class="column-3">$ 36.00</td>
-                               <td class="column-4">
-                                   <div class="wrap-num-product flex-w m-l-auto m-r-0">
-                                       <div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-                                           <i class="fs-16 zmdi zmdi-minus"></i>
-                                       </div>
-
-                                       <input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product1" value="1">
-
-                                       <div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-                                           <i class="fs-16 zmdi zmdi-plus"></i>
-                                       </div>
-                                   </div>
-                               </td>
+<div class="container">
+    <h2 class="text-center">Your Wishlist</h2>
+    <div class="row">
+        <% if (wishlist.length > 0) { %>
+            <% wishlist.forEach(item => { %>
+                <div class="col-md-4 mb-4">
+                    <div class="product-card">
+                        <img src="/uploads/product-images/<%= item.imageUrl %>" alt="<%= item.name %>" class="img-fluid">
+                        <h3><%= item.name %></h3>
+                        <p>Price: ₹<%= item.price %></p>
+                        <div>
+                            <form action="/add-to-cart-from-wishlist" method="POST" class="d-inline">
+                                <input type="hidden" name="productId" value="<%= item.productId %>">
+                                <button type="submit" class="btn btn-primary">Add to Cart</button>
+                            </form>
                             
-                           </tr>
-
-                           <tr class="table_row">
-                               <td class="column-1">
-                                   <div class="how-itemcart1">
-                                       <img src="images/item-cart-05.jpg" alt="IMG">
-                                   </div>
-                               </td>
-                               <td class="column-2">Lightweight Jacket</td>
-                               <td class="column-3">$ 16.00</td>
-                               <td class="column-4">
-                                   <div class="wrap-num-product flex-w m-l-auto m-r-0">
-                                       <div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-                                           <i class="fs-16 zmdi zmdi-minus"></i>
-                                       </div>
-
-                                       <input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product2" value="1">
-
-                                       <div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-                                           <i class="fs-16 zmdi zmdi-plus"></i>
-                                       </div>
-                                   </div>
-                               </td>
-                             
-                           </tr>
-                       </table>
-                   </div>
-
-                   <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
-                    <div class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
-                        Add To Cart
+                            <form action="/remove-from-wishlist" method="POST" class="d-inline">
+                                <input type="hidden" name="productId" value="<%= item.productId._id %>">
+                                <button type="submit" class="btn btn-danger">Remove</button>
+                            </form>
+                            
+                        </div>
                     </div>
-                       <!-- <div class="flex-w flex-m m-r-20 m-tb-5">
-                           <input class="stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5" type="text" name="coupon" placeholder="Coupon Code">
-                               
-                           <div class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
-                               Apply coupon
-                           </div>
-                       </div> -->
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p class="text-center">Your wishlist is empty.</p>
+        <% } %>
+    </div>
+</div>
 
-                     
-                   </div>
-               </div>
-               
-           </div>
+<%- include("../../views/partials/user/footer") %>
 
-</body>
-
-</html>
-<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/animsition/js/animsition.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/bootstrap/js/popper.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/select2/select2.min.js"></script>
-	<script>
-		$(".js-select2").each(function(){
-			$(this).select2({
-				minimumResultsForSearch: 20,
-				dropdownParent: $(this).next('.dropDownSelect2')
-			});
-		})
-	</script>
-<!--===============================================================================================-->
-	<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-	<script>
-		$('.js-pscroll').each(function(){
-			$(this).css('position','relative');
-			$(this).css('overflow','hidden');
-			var ps = new PerfectScrollbar(this, {
-				wheelSpeed: 1,
-				scrollingThreshold: 1000,
-				wheelPropagation: false,
-			});
-
-			$(window).on('resize', function(){
-				ps.update();
-			})
-		});
-	</script>
-<!--===============================================================================================-->
-	<script src="js/main.js"></script>
+<style>
+    .breadcrumb {
+        background-color: #ffffff;
+        padding: 10px 50px;
+        border-radius: 5px;
+        margin-bottom: 0px;
+    }
+    .breadcrumb a {
+        text-decoration: none;
+        color: #007bff;
+    }
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    .product-card {
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin: 10px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+    .product-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 5px;
+    }
+    .product-card h3 {
+        font-size: 1.2rem;
+        margin: 10px 0;
+    }
+    .product-card p {
+        font-size: 1rem;
+        color: #555;
+    }
+    .product-card button {
+        margin: 5px;
+    }
+</style>

@@ -7,6 +7,7 @@ const bcrypt=require("bcrypt");
 const Category = require("../../models/categorySchema");
 const Address =require("../../models/addressSchema");
 const Cart =require("../../models/cartSchema");
+const Wishlist =require("../../models/wishlistSchema");
 const Order =require("../../models/orderSchema");
 const session =require("express-session");
 const { default: mongoose } = require("mongoose");
@@ -370,18 +371,6 @@ const postAddAddress=async(req,res)=>{
     }
 }
 
-const wishlist=async(req,res)=>{
-    try {
-        const id=req.params.id;
-        const userSession=req.session.user|| req.session.googleUser;
-        const user=userSession?await User.findById(userSession._id):null;
-        res.render('wishlist',{user})
-        
-    } catch (error) {
-        res.render('pageerror')
-        
-    }
-}
 
 const wallet=async(req,res)=>{
     try {
@@ -403,18 +392,27 @@ const orders = async (req, res) => {
 
         const user = await User.findById(userSession._id);
         if (!user) return res.redirect('/login');
-        const orders = await Order.find({ userId: userSession._id }).sort({ createdAt: -1 });
+
+        // Populate product details in order items
+        const orders = await Order.find({ userId: userSession._id })
+            .sort({ createdAt: -1 })
+            .populate({
+                path: 'items.productId',
+                select: 'productName productImage',
+            })
+            .lean();
 
         res.render('orders', {
             user: userSession,
             orders,
-            user, 
+            user,
         });
     } catch (error) {
         console.error('Error fetching orders:', error);
         res.status(500).render('pageerror');
     }
 };
+
 
 
 
@@ -721,6 +719,174 @@ const addToCart = async (req, res) => {
     }
 };
 
+const wishlist = async (req, res) => {
+    try {
+        const userSession = req.session.user || req.session.googleUser;
+
+        if (!userSession) return res.redirect('/login');
+
+        const user = await User.findById(userSession._id);
+        if (!user) return res.redirect('/login');
+
+        // Fetch Wishlist and populate product details
+        const wishlist = await Wishlist.findOne({ userId: user._id })
+            .populate('products.productId') // Populate product details
+            .exec();
+
+        if (!wishlist || wishlist.products.length === 0) {
+            return res.render('wishlist', { user, wishlist: [] });
+        }
+
+        const wishlistItems = wishlist.products.map((item) => ({
+            itemId: item._id, // Unique ID of the wishlist item
+            productId: item.productId._id, // ID of the product
+            name: item.productId.productName, // Product name
+            price: item.productId.salePrice || item.productId.regularPrice, // Product price
+            imageUrl: item.productId.productImage[0], // First product image
+        }));
+
+        res.render('wishlist', { user, wishlist: wishlistItems });
+    } catch (error) {
+        console.error('Error fetching wishlist:', error.message);
+        res.render('pageerror');
+    }
+};
+
+
+const addToWishlist = async (req, res) => {
+    try {
+        const userSession = req.session.user || req.session.googleUser;
+        const { productId } = req.body;
+
+        if (!userSession) return res.redirect('/login');
+
+        const user = await User.findById(userSession._id);
+        if (!user) return res.redirect('/login');
+
+        const product = await Product.findById(productId);
+        if (!product) return res.status(404).send('Product not found');
+
+        // Find or create a wishlist for the user
+        let wishlist = await Wishlist.findOne({ userId: user._id });
+
+        if (!wishlist) {
+            wishlist = new Wishlist({
+                userId: user._id,
+                products: [],
+            });
+        }
+
+        // Check if product is already in the wishlist
+        const existingItem = wishlist.products.find((item) =>
+            item.productId.toString() === productId
+        );
+
+        if (existingItem) {
+            return res.redirect('/wishlist');
+        }
+
+        // Add product to the wishlist
+        wishlist.products.push({
+            productId: product._id,
+            addedOn: new Date(),
+        });
+
+        await wishlist.save();
+
+        res.redirect('/wishlist');
+    } catch (err) {
+        console.error('Error adding product to wishlist:', err.message);
+        res.status(500).send('Error adding product to wishlist');
+    }
+};
+
+const addToCartFromWishlist = async (req, res) => {
+    try {
+        const userSession = req.session.user || req.session.googleUser;
+        const { productId } = req.body; // Only productId is passed from wishlist
+        const quantity = 1; // Default quantity for items added from wishlist
+
+        if (!userSession) return res.redirect('/login');
+
+        const user = await User.findById(userSession._id);
+        if (!user) return res.redirect('/login');
+
+        const product = await Product.findById(productId);
+        if (!product) return res.status(404).send('Product not found');
+
+        // Find or create the cart
+        let cart = await Cart.findOne({ userId: user._id });
+        if (!cart) {
+            cart = new Cart({ userId: user._id, items: [] });
+        }
+
+        // Check if the product already exists in the cart
+        const existingItem = cart.items.find(item => item.productId.toString() === productId);
+        if (existingItem) {
+            existingItem.quantity += quantity; // Increment quantity
+            existingItem.totalPrice = existingItem.quantity * existingItem.price; // Recalculate total price
+        } else {
+            cart.items.push({
+                productId: product._id,
+                quantity,
+                price: product.salePrice || product.regularPrice, // Default to salePrice or regularPrice
+                totalPrice: (product.salePrice || product.regularPrice) * quantity,
+            });
+        }
+
+        // Save the cart
+        await cart.save();
+
+        // Remove the item from the wishlist
+        await Wishlist.updateOne(
+            { userId: user._id },
+            { $pull: { products: { productId: product._id } } }
+        );
+
+        // Redirect to the cart page
+        res.redirect('/cart');
+    } catch (error) {
+        console.error('Error adding product to cart from wishlist:', error);
+        res.status(500).send('Internal server error');
+    }
+};
+
+const removeFromWishlist = async (req, res) => {
+    try {
+        const userSession = req.session.user || req.session.googleUser;
+        const { productId } = req.body; // Assuming `productId` is sent from the form
+
+        if (!userSession) {
+            return res.redirect('/login');
+        }
+
+        // Validate the productId
+        if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).send('Invalid product ID');
+        }
+
+        // Fetch user
+        const userId = userSession._id;
+
+        // Remove the product from the wishlist
+        const result = await Wishlist.updateOne(
+            { userId },
+            { $pull: { products: { productId } } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).send('Product not found in wishlist');
+        }
+
+        res.redirect('/wishlist'); // Redirect to wishlist page after removing
+    } catch (error) {
+        console.error('Error removing product from wishlist:', error.message);
+        res.status(500).send('Internal server error');
+    }
+};
+
+
+
 
 const updateCart = async (req, res) => {
     try {
@@ -898,17 +1064,22 @@ const placeOrder = async (req, res) => {
 
             await product.save();
         }
-
-
         const totalAmount = cartItems.items.reduce((total, item) => total + item.totalPrice, 0);
-        const shippingCharge = 50;
-        const finalAmount = totalAmount + shippingCharge;
+
+        const gst = totalAmount * 0.02; // 2% GST
+        const discount = Math.ceil(gst / 1.2); // Discount: rounded up GST divided by 1.2
+        const shippingCharge = totalAmount > 499 ? 0 : 40; // Free shipping for total > 499, otherwise 40
+        
+        const finalAmount = totalAmount + gst - discount + shippingCharge;
 
         const newOrder = new Order({
             userId: user._id,
             address: selectedAddress,
             items: cartItems.items,
             paymentMethod,
+            gst,
+            discount,
+            shippingCharge,
             totalAmount,
             finalAmount,
         });
@@ -991,7 +1162,7 @@ const orderComplete=async(req,res)=>{
     
             const updatedOrder = await Order.findByIdAndUpdate(
                 orderId,
-                { status: 'Returned' },
+                { status: 'Return Request Sent' },
                 { new: true }
             );
     
@@ -1046,4 +1217,7 @@ module.exports = {
     orderComplete,
     cancelOrder,
     returnOrder,
+    addToWishlist,
+    addToCartFromWishlist,
+    removeFromWishlist,
 }

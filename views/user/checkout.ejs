@@ -98,22 +98,46 @@
     <div class="col-lg-5">
       <div class="bor10 p-lr-40 p-t-30 p-b-40">
         <h4 class="mtext-109 cl2 p-b-30">Cart Totals</h4>
-        <div class="flex-w flex-t bor12 p-b-13">
-          <div class="size-208">
-            <span class="stext-110 cl2">Subtotal:</span>
+            <div class="flex-w flex-t p-b-13">
+              <div class="size-208">
+                  <span class="stext-110 cl2">Subtotal:</span>
+              </div>
+              <div class="size-209">
+                  <span class="mtext-110 cl2" id="subtotal">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
+              </div>
           </div>
-          <div class="size-209">
-            <span class="mtext-110 cl2">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
+          <div class="flex-w flex-t p-b-13">
+              <div class="size-208">
+                  <span class="stext-110 cl2">GST:</span>
+              </div>
+              <div class="size-209">
+                  <span class="mtext-110 cl2" id="gst">₹ <%= (cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02).toFixed(2) %></span>
+              </div>
           </div>
-        </div>
-        <div class="flex-w flex-t p-t-27 p-b-33">
-          <div class="size-208">
-            <span class="mtext-101 cl2">Total:</span>
+          <div class="flex-w flex-t bor12 p-b-13">
+              <div class="size-208">
+                  <span class="stext-110 cl2">Discount:</span>
+              </div>
+              <div class="size-209">
+                  <span class="mtext-110 cl2" id="discount">₹ <%= Math.ceil((cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) / 1.2) %></span>
+              </div>
           </div>
-          <div class="size-209 p-t-1">
-            <span class="mtext-110 cl2">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
+          
+          <!-- Total -->
+          <div class="flex-w flex-t p-t-27 p-b-33">
+              <div class="size-208">
+                <span class="mtext-101 cl2">Total:</span>
+              </div>
+              <div class="size-209 p-t-1">
+                  <span class="mtext-110 cl2" id="total">
+                      ₹ <%= (
+                          cart.items.reduce((total, item) => total + item.totalPrice, 0) + 
+                          (cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) - 
+                          Math.ceil((cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) / 1.2)
+                      ).toFixed(2) %>
+                  </span>
+              </div>
           </div>
-        </div>
         <a href="orderComplete">
 
           <button 

@@ -52,7 +52,7 @@ const orderSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['In Transit', 'Delivered', 'Cancelled','Returned'],
+        enum: ['In Transit', 'Delivered', 'Cancelled','Return Request Sent','Returned'],
         default: 'In Transit',
     },
     createdAt: {

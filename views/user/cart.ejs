@@ -66,24 +66,66 @@
           <h4 class="mtext-109 cl2 p-b-30">Cart Totals</h4>
 
           <!-- Subtotal -->
-          <div class="flex-w flex-t bor12 p-b-13">
+          <div class="flex-w flex-t p-b-13">
             <div class="size-208">
-              <span class="stext-110 cl2">Subtotal:</span>
+                <span class="stext-110 cl2">Subtotal:</span>
             </div>
             <div class="size-209">
-              <span class="mtext-110 cl2" id="subtotal">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
+                <span class="mtext-110 cl2" id="subtotal">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
             </div>
-          </div>
-
-          <!-- Total -->
-          <div class="flex-w flex-t p-t-27 p-b-33">
+        </div>
+        <div class="flex-w flex-t p-b-13">
             <div class="size-208">
-              <span class="mtext-101 cl2">Total:</span>
+                <span class="stext-110 cl2">GST:</span>
+            </div>
+            <div class="size-209">
+                <span class="mtext-110 cl2" id="gst">₹ <%= (cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02).toFixed(2) %></span>
+            </div>
+        </div>
+        <div class="flex-w flex-t  p-b-13">
+          <div class="size-208">
+              <span class="stext-110 cl2">Discount:</span>
+          </div>
+          <div class="size-209">
+              <span class="mtext-110 cl2" id="discount">₹ <%= Math.ceil((cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) / 1.2) %></span>
+          </div>
+      </div>
+        <div class="flex-w flex-t bor12 p-b-13">
+            <div class="size-208">
+                <span class="stext-110 cl2">Shipping Charge:</span>
+            </div>
+            <div class="size-209">
+                <span class="mtext-110 cl2" id="shipping">
+                    <% if (cart.items.reduce((total, item) => total + item.totalPrice, 0) > 499) { %>
+                        <span style="color: green;">Free</span>
+                    <% } else { %>
+                        ₹ <%= (40).toFixed(2) %>
+                    <% } %>
+                </span>
+            </div>
+        </div>
+        
+
+        
+        <!-- Total -->
+        <div class="flex-w flex-t p-t-27  p-b-33">
+            <div class="size-208">
+                <span class="mtext-101 cl2">Total:</span>
             </div>
             <div class="size-209 p-t-1">
-              <span class="mtext-110 cl2" id="total">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
+                <span class="mtext-110 cl2" id="total">
+                    ₹ <%= (
+                        cart.items.reduce((total, item) => total + item.totalPrice, 0) + 
+                        (cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) - 
+                        Math.ceil((cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) / 1.2) +
+                        (cart.items.reduce((total, item) => total + item.totalPrice, 0) > 499 ? 0 : 40)
+                    ).toFixed(2) %>
+                </span>
             </div>
-          </div>
+        </div>
+        
+        
+        
           <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
     <a href="/checkout">
     Proceed to Checkout

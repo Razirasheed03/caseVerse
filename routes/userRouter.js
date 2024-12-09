@@ -76,7 +76,9 @@ router.post('/placeOrder',userAuth,userController.placeOrder);
 router.post('/cancelOrder/:id', userController.cancelOrder);
 router.post('/returnOrder/:id', userController.returnOrder);
 
-
-
+//wishlist management
+router.post('/add-to-wishlist',userController.addToWishlist)
+router.post('/add-to-cart-from-wishlist',userController.addToCartFromWishlist)
+router.post('/remove-from-wishlist',userController.removeFromWishlist);
 
 module.exports=router;

@@ -84,6 +84,13 @@
         .breadcrumb a:hover {
             text-decoration: underline;
         }
+        .fewLeft{
+            color:red
+        }
+        .js-select2{
+            color:rgb(7, 0, 0);
+            width: 15vh;
+        }
     </style>
 </head>
 
@@ -142,26 +149,38 @@
                     <div class="size-204 respon6-next">
                         <div class="rs1-select2 bor8 bg0">
                             <select class="js-select2" name="quantity">
-                                <% for (let i = 1; i <= product.quantity/3; i++) { %>
-                                    <option value="<%= i %>"><%= i %></option>
-                                <% } %>
+                                <% for (let i = 1; i <= 10; i++) { %>
+                                  
+                                        <option value="<%= i %>"><%= i %></option>
+
+                                
+                                <%} %>
                             </select>
                             <div class="dropDownSelect2"></div>
                         </div>
                     </div>
                 </div>
             
-                <p class="text-muted">Available Quantity: <%= product.quantity %></p>
-            
+                <% if (product.quantity < 80) { %>
+                    <p class="fewLeft mt-2">Few Pieces Left !!</p>
+                <% } %>
+                  
+                
                 <div class="d-flex mt-5">
-                    <button type="submit" class="btn btn-primary me-2">Add to Cart</button>
+                    <form action="/add-to-cart" method="POST">
+                        <input type="hidden" name="productId" value="<%= product._id %>">
+                        <button type="submit" class="btn btn-primary me-2">Add to Cart</button>
+                    </form>
+                
+                    <!-- Add to Wishlist Button -->
+                    <form action="/add-to-wishlist" method="POST">
+                        <input type="hidden" name="productId" value="<%= product._id %>">
+                        <button type="submit" class="btn btn-outline-danger">Add to Wishlist</button>
+                    </form>
                 </div>
+                
             </form>
-            
-
-            <div class="d-flex mt-2">
-                <button class="btn btn-outline-danger">Add to Wishlist</button>
-            </div>
+        
         </div>
     </div>
 
