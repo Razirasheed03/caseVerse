@@ -81,4 +81,8 @@ router.post('/add-to-wishlist',userController.addToWishlist)
 router.post('/add-to-cart-from-wishlist',userController.addToCartFromWishlist)
 router.post('/remove-from-wishlist',userController.removeFromWishlist);
 
+
+router.post('/verifyPayment', userController.verifyPayment);
+
+
 module.exports=router;

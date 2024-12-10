@@ -92,6 +92,10 @@
         <input class="form-check-input" type="radio" name="paymentMethod" id="wallet" value="Wallet" required>
         <label class="form-check-label" for="wallet">Wallet Payment</label>
       </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay" required>
+        <label class="form-check-label" for="razorpay">RazorPay</label>
+      </div>
     </div>
 
     <!-- Right Section: Cart Totals -->
@@ -192,9 +196,92 @@ document.getElementById('addressForm').addEventListener('submit', async function
     }
 });
 </script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-  document.getElementById('placeOrderBtn').addEventListener('click', async function (event) {
+document.getElementById('placeOrderBtn').addEventListener('click', async function (event) {
+  event.preventDefault();
+
+  const selectedAddress = document.querySelector('input[name="savedAddress"]:checked');
+  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+
+  if (!selectedAddress || !paymentMethod) {
+      alert('Please select an address and a payment method.');
+      return;
+  }
+
+  if (paymentMethod.value === 'razorpay') {
+      try {
+          const response = await fetch('/placeOrder', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ amount: document.getElementById('total').innerText.replace('₹ ', '') }),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+              const { order } = result;
+
+              const options = {
+                  key: '<%= process.env.RAZORPAY_KEY %>', // Replace with Razorpay key
+                  amount: order.amount,
+                  currency: order.currency,
+                  name: "Your Shop Name",
+                  description: "Test Transaction",
+                  order_id: order.id,
+                  handler: async function (response) {
+                      // Send Razorpay payment details to the server for verification
+                      try {
+                          const verificationResponse = await fetch('/verifyPayment', {
+                              method: 'POST',
+                              headers: {
+                                  'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                  razorpay_payment_id: response.razorpay_payment_id,
+                                  razorpay_order_id: response.razorpay_order_id,
+                                  razorpay_signature: response.razorpay_signature,
+                              }),
+                          });
+
+                          const verificationResult = await verificationResponse.json();
+
+                          if (verificationResult.success) {
+                              alert('Payment Verified and Order Placed Successfully!');
+                              window.location.href = '/orderComplete';
+                          } else {
+                              alert(verificationResult.message || 'Payment Verification Failed');
+                          }
+                      } catch (error) {
+                          console.error('Error verifying payment:', error);
+                          alert('Something went wrong during payment verification. Please try again.');
+                      }
+                  },
+                  prefill: {
+                      name: 'Your Name',
+                      email: 'test@example.com',
+                      contact: '9999999999',
+                  },
+              };
+
+              const razorpay = new Razorpay(options);
+              razorpay.open();
+          } else {
+              alert(result.message);
+          }
+      } catch (error) {
+          console.error('Error initializing Razorpay:', error);
+          alert('Failed to process Razorpay payment. Please try again.');
+      }
+  } else {
+      // Handle other payment methods here
+  }
+});
+</script>
+<script>
+document.getElementById('placeOrderBtn').addEventListener('click', async function (event) {
     event.preventDefault();
 
     const selectedAddress = document.querySelector('input[name="savedAddress"]:checked');
@@ -205,33 +292,52 @@ document.getElementById('addressForm').addEventListener('submit', async function
         return;
     }
 
-    const orderData = {
-        addressId: selectedAddress.value,
-        paymentMethod: paymentMethod.value,
-        
-    };
+    if (paymentMethod.value === 'razorpay') {
+        try {
+            const response = await fetch('/placeOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ amount: document.getElementById('total').innerText.replace('₹ ', '') }),
+            });
 
-    try {
-        const response = await fetch('/placeOrder', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(orderData),
-        });
+            const result = await response.json();
+            if (result.success) {
+                const { order } = result;
 
-        const result = await response.json();
-        if (result.success) {
-            alert('Order placed successfully!');
-            window.location.href = '/orderComplete';
-        } else {
-            alert(result.message || 'Failed to place order');
+                const options = {
+                    key: '<%= process.env.RAZORPAY_KEY %>', // Replace with Razorpay key
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: "Caseverse",
+                    description: "Test Transaction",
+                    order_id: order.id,
+                    handler: function (response) {
+                        alert('Payment Successful');
+                        window.location.href = '/orderComplete';
+                    },
+                    prefill: {
+                        name: 'Your Name',
+                        email: 'test@example.com',
+                        contact: '9999999999',
+                    },
+                };
+
+                const razorpay = new Razorpay(options);
+                razorpay.open();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error initializing Razorpay:', error);
+            alert('Failed to process Razorpay payment. Please try again.');
         }
-    } catch (error) {
-        console.error('Error placing order:', error);
-        alert('Something went wrong. Please try again.');
+    } else {
+        // Other payment method handling
     }
-  });
+});
 </script>
+
 
 <%- include("../../views/partials/user/footer") %>

@@ -11,6 +11,9 @@ const Wishlist =require("../../models/wishlistSchema");
 const Order =require("../../models/orderSchema");
 const session =require("express-session");
 const { default: mongoose } = require("mongoose");
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
+
 
 const logout=async(req,res)=>{
     try {
@@ -1002,6 +1005,10 @@ const checkout = async (req, res) => {
     }
 };
 
+const razorpayInstance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY, // Fetch key from environment variable
+    key_secret: process.env.RAZORPAY_SECRET, // Fetch secret from environment variable
+});
 const placeOrder = async (req, res) => {
     try {
         const userSession = req.session.user || req.session.googleUser;
@@ -1016,14 +1023,14 @@ const placeOrder = async (req, res) => {
 
         const { addressId, paymentMethod } = req.body;
 
-        const userId = new mongoose.Types.ObjectId(userSession._id);
-        const objectAddressId = new mongoose.Types.ObjectId(addressId);
+        const userId = mongoose.Types.ObjectId(userSession._id);
+        const objectAddressId = mongoose.Types.ObjectId(addressId);
 
-        // Fetch the address
+        // Fetch address
         const address = await Address.aggregate([
             { $match: { userId } },
-            { $unwind: "$address" },
-            { $match: { "address._id": objectAddressId } },
+            { $unwind: '$address' },
+            { $match: { 'address._id': objectAddressId } },
         ]);
 
         if (!address.length) {
@@ -1042,35 +1049,30 @@ const placeOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
 
-        // Deduct quantities and update product status
-        for (const item of cartItems.items) {
-            const product = item.productId;
-            const purchasedQuantity = item.quantity;
-
-            // Check stock availability
-            if (product.quantity < purchasedQuantity) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: `Insufficient stock for product: ${product.productName}` 
-                });
-            }
-
-       
-            product.quantity -= purchasedQuantity;
-
-            if (product.quantity === 0) {
-                product.status = "out of stock";
-            }
-
-            await product.save();
-        }
+        // Calculate order details
         const totalAmount = cartItems.items.reduce((total, item) => total + item.totalPrice, 0);
-
         const gst = totalAmount * 0.02; // 2% GST
         const discount = Math.ceil(gst / 1.2); // Discount: rounded up GST divided by 1.2
         const shippingCharge = totalAmount > 499 ? 0 : 40; // Free shipping for total > 499, otherwise 40
-        
         const finalAmount = totalAmount + gst - discount + shippingCharge;
+
+        if (paymentMethod === 'razorpay') {
+            const options = {
+                amount: finalAmount * 100, // Convert to paisa
+                currency: 'INR',
+                receipt: `receipt_${Date.now()}`,
+            };
+
+            //////////////////ivide
+
+            const order = await razorpayInstance.orders.create(options);
+
+            return res.json({
+                success: true,
+                razorpayOrderId: order.id,
+                finalAmount,
+            });
+        }
 
         const newOrder = new Order({
             userId: user._id,
@@ -1084,22 +1086,51 @@ const placeOrder = async (req, res) => {
             finalAmount,
         });
 
-        console.log('Generated Order ID:', newOrder.orderId); 
-
         await newOrder.save();
-
         await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] } });
 
-        res.status(200).json({ 
-            success: true, 
-            message: 'Order placed successfully', 
-            orderId: newOrder.orderId 
-        });
+        res.status(200).json({ success: true, message: 'Order placed successfully', orderId: newOrder.orderId });
     } catch (error) {
         console.error('Error placing order:', error);
         res.status(500).json({ success: false, message: 'Failed to place order' });
     }
 };
+
+const verifyPayment = async (req, res) => {
+    try {
+        const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+        const expectedSignature = crypto
+            .createHmac('sha256', process.env.RAZORPAY_SECRET)
+            .update(body.toString())
+            .digest('hex');
+
+        if (expectedSignature === razorpay_signature) {
+            // Payment is verified
+            // Process order logic (e.g., save order details in the database)
+
+            return res.status(200).json({
+                success: true,
+                message: 'Payment verified successfully!',
+            });
+        } else {
+            // Signature mismatch
+            return res.status(400).json({
+                success: false,
+                message: 'Payment verification failed! Signature mismatch.',
+            });
+        }
+    } catch (error) {
+        console.error('Error verifying payment:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
 
 
 const orderComplete=async(req,res)=>{
@@ -1220,4 +1251,5 @@ module.exports = {
     addToWishlist,
     addToCartFromWishlist,
     removeFromWishlist,
+    verifyPayment,
 }
