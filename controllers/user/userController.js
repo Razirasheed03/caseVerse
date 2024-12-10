@@ -1074,6 +1074,7 @@ const placeOrder = async (req, res) => {
                 finalAmount,
             });
         }
+        ///////
 
         const newOrder = new Order({
             userId: user._id,
