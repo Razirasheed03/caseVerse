@@ -1,4 +1,5 @@
 <%- include("../../views/partials/user/header") %>
+
 <br><br><br><br>
 
 <nav>
@@ -155,6 +156,92 @@
     </div>
   </div>
 </div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link rel="preload" href="https://checkout-static-next.razorpay.com/build/assets/fonts/Inter-Medium.279dd673.woff2" 
+as="font" 
+type="font/woff2" 
+crossorigin="anonymous">
+<script>
+  document.getElementById('placeOrderBtn').addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      const selectedAddress = document.querySelector('input[name="savedAddress"]:checked');
+      const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+
+      if (!selectedAddress) {
+          alert('Please select an address.');
+          return;
+      }
+
+      if (!paymentMethod) {
+          alert('Please select a payment method.');
+          return;
+      }
+
+      try {
+          const response = await fetch('/placeOrder', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  addressId: selectedAddress.value,
+                  paymentMethod: paymentMethod.value,
+              }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+              if (paymentMethod.value === 'razorpay') {
+                  const options = {
+                      key: data.razorpayKey,
+                      amount: data.totalAmount * 100, // Amount in paise
+                      currency: 'INR',
+                      order_id: data.razorpayOrderId,
+                      handler: async function (response) {
+                          try {
+                              const verifyResponse = await fetch('/verifyPayment', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                      razorpay_payment_id: response.razorpay_payment_id,
+                                      razorpay_order_id: response.razorpay_order_id,
+                                      razorpay_signature: response.razorpay_signature,
+                                  }),
+                              });
+
+                              const verifyData = await verifyResponse.json();
+
+                              if (verifyData.success) {
+                                  alert('Payment successful!');
+                                  window.location.href = '/orderComplete';
+                              } else {
+                                  alert('Payment verification failed.');
+                              }
+                          } catch (error) {
+                              console.error('Error verifying payment:', error);
+                              alert('An error occurred during payment verification.');
+                          }
+                      },
+                  };
+
+                  const razorpay = new Razorpay(options);
+                  razorpay.open();
+              } else if (paymentMethod.value === 'COD') {
+                  alert('Order placed successfully with Cash on Delivery!');
+                  window.location.href = '/orderComplete';
+              }
+          } else {
+              alert(data.message || 'Failed to place order.');
+          }
+      } catch (error) {
+          console.error('Error placing order:', error);
+          alert('An error occurred. Please try again.');
+      }
+  });
+</script>
+
+
+
 <script>
 document.getElementById('addressForm').addEventListener('submit', async function (event) {
     event.preventDefault();
@@ -196,148 +283,8 @@ document.getElementById('addressForm').addEventListener('submit', async function
     }
 });
 </script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!-- <script src="https://checkout.razorpay.com/v1/checkout.js"></script> -->
 
-<script>
-document.getElementById('placeOrderBtn').addEventListener('click', async function (event) {
-  event.preventDefault();
-
-  const selectedAddress = document.querySelector('input[name="savedAddress"]:checked');
-  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-
-  if (!selectedAddress || !paymentMethod) {
-      alert('Please select an address and a payment method.');
-      return;
-  }
-
-  if (paymentMethod.value === 'razorpay') {
-      try {
-          const response = await fetch('/placeOrder', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ amount: document.getElementById('total').innerText.replace('₹ ', '') }),
-          });
-
-          const result = await response.json();
-          if (result.success) {
-              const { order } = result;
-
-              const options = {
-                  key: '<%= process.env.RAZORPAY_KEY %>', // Replace with Razorpay key
-                  amount: order.amount,
-                  currency: order.currency,
-                  name: "Your Shop Name",
-                  description: "Test Transaction",
-                  order_id: order.id,
-                  handler: async function (response) {
-                      // Send Razorpay payment details to the server for verification
-                      try {
-                          const verificationResponse = await fetch('/verifyPayment', {
-                              method: 'POST',
-                              headers: {
-                                  'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify({
-                                  razorpay_payment_id: response.razorpay_payment_id,
-                                  razorpay_order_id: response.razorpay_order_id,
-                                  razorpay_signature: response.razorpay_signature,
-                              }),
-                          });
-
-                          const verificationResult = await verificationResponse.json();
-
-                          if (verificationResult.success) {
-                              alert('Payment Verified and Order Placed Successfully!');
-                              window.location.href = '/orderComplete';
-                          } else {
-                              alert(verificationResult.message || 'Payment Verification Failed');
-                          }
-                      } catch (error) {
-                          console.error('Error verifying payment:', error);
-                          alert('Something went wrong during payment verification. Please try again.');
-                      }
-                  },
-                  prefill: {
-                      name: 'Your Name',
-                      email: 'test@example.com',
-                      contact: '9999999999',
-                  },
-              };
-
-              const razorpay = new Razorpay(options);
-              razorpay.open();
-          } else {
-              alert(result.message);
-          }
-      } catch (error) {
-          console.error('Error initializing Razorpay:', error);
-          alert('Failed to process Razorpay payment. Please try again.');
-      }
-  } else {
-      // Handle other payment methods here
-  }
-});
-</script>
-<script>
-document.getElementById('placeOrderBtn').addEventListener('click', async function (event) {
-    event.preventDefault();
-
-    const selectedAddress = document.querySelector('input[name="savedAddress"]:checked');
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
-
-    if (!selectedAddress || !paymentMethod) {
-        alert('Please select an address and a payment method.');
-        return;
-    }
-
-    if (paymentMethod.value === 'razorpay') {
-        try {
-            const response = await fetch('/placeOrder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ amount: document.getElementById('total').innerText.replace('₹ ', '') }),
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                const { order } = result;
-
-                const options = {
-                    key: '<%= process.env.RAZORPAY_KEY %>', // Replace with Razorpay key
-                    amount: order.amount,
-                    currency: order.currency,
-                    name: "Caseverse",
-                    description: "Test Transaction",
-                    order_id: order.id,
-                    handler: function (response) {
-                        alert('Payment Successful');
-                        window.location.href = '/orderComplete';
-                    },
-                    prefill: {
-                        name: 'Your Name',
-                        email: 'test@example.com',
-                        contact: '9999999999',
-                    },
-                };
-
-                const razorpay = new Razorpay(options);
-                razorpay.open();
-            } else {
-                alert(result.message);
-            }
-        } catch (error) {
-            console.error('Error initializing Razorpay:', error);
-            alert('Failed to process Razorpay payment. Please try again.');
-        }
-    } else {
-        // Other payment method handling
-    }
-});
-</script>
 
 
 <%- include("../../views/partials/user/footer") %>

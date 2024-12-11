@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Razorpay = require('razorpay');
 const { Schema } = mongoose;
 
 const orderSchema = new Schema({
@@ -47,7 +48,7 @@ const orderSchema = new Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['COD', 'Wallet'],
+        enum: ['COD', 'Wallet','razorpay'],
         required: true,
     },
     status: {
@@ -60,9 +61,14 @@ const orderSchema = new Schema({
         default: Date.now,
     },
     updatedAt: {
-        type: Date,
+        type: Date, 
         default: Date.now,
     },
+    razorpayDetails:{
+        orderId:{type:String},
+        paymentId:{type:String},
+        signature:{type:String}
+    }
 });
 
 // Pre-save hook for calculating final amounts and timestamps
