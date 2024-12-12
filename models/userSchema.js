@@ -32,8 +32,19 @@ const userSchema=new Schema({
       },
       isBlocked:{
         type:Boolean,
-      }
-
+      },
+      walletBalance: {
+        type: Number,
+        default: 0,
+    },
+    walletTransactions: [
+        {
+            detail: { type: String, required: true },
+            amount: { type: Number, required: true },
+            type: { type: String, enum: ['credit', 'debit'], required: true },
+            date: { type: Date, default: Date.now },
+        },
+    ],
 
 },{timestamp:true})
 

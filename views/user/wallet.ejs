@@ -179,48 +179,38 @@
          
                 <div class="col-lg-9">
                     <section class="content-body">
-                        <!-- Form Section -->
                         <h2 class="section-title">Wallet</h2>
                 
-
                         <!-- Wallet Balance -->
                         <div class="wallet-balance">
                             <h3>Current Balance</h3>
-                            <p>₹5,200.00</p>
+                            <p>₹<%= walletBalance.toFixed(2) %></p>
                         </div>
                 
-
-                        <!-- Add Funds Button -->
-                        <div class="add-funds">
-                            <button>Add Funds</button>
-                        </div>
-
                         <!-- Placeholder Content Section -->
                         <hr class="my-5" />
                         <div class="transactions">
                             <h3>Recent Transactions</h3>
                             <ul class="transaction-list">
-                                <li class="credit">
-                                    <span class="transaction-detail">Order Refund</span>
-                                    <span class="transaction-amount">+ ₹1,000.00</span>
-                                </li>
-                                <li class="debit">
-                                    <span class="transaction-detail">Order Payment #1234</span>
-                                    <span class="transaction-amount">- ₹2,000.00</span>
-                                </li>
-                                <li class="credit">
-                                    <span class="transaction-detail">Added Funds</span>
-                                    <span class="transaction-amount">+ ₹3,000.00</span>
-                                </li>
-                                <li class="debit">
-                                    <span class="transaction-detail">Order Payment #1233</span>
-                                    <span class="transaction-amount">- ₹1,500.00</span>
-                                </li>
+                                <% if (transactions.length > 0) { %>
+                                    <% transactions.forEach(transaction => { %>
+                                        <li class="<%= transaction.type === 'credit' ? 'credit' : 'debit' %>">
+                                            <span class="transaction-detail"><%= transaction.detail %></span>
+                                            <span class="transaction-amount">
+                                                <%= transaction.type === 'credit' ? '+ ₹' : '- ₹' %><%= transaction.amount.toFixed(2) %>
+                                            </span>
+                                        </li>
+                                    <% }); %>
+                                <% } else { %>
+                                    <li>
+                                        <span class="transaction-detail">No transactions yet.</span>
+                                    </li>
+                                <% } %>
                             </ul>
                         </div>
-                    </div>
                     </section>
                 </div>
+                
             </div>
         </section>
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>

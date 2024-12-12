@@ -83,6 +83,7 @@ router.post('/remove-from-wishlist',userController.removeFromWishlist);
 
 
 router.post('/verifyPayment', userController.verifyPayment);
+router.post('/refundToWallet', userController.refundToWallet);
 
 
 module.exports=router;

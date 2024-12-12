@@ -106,7 +106,7 @@
 
                                         <button id="cancel-btn-<%= order._id %>" class="btn btn-danger"
                                             onclick="cancelOrder('<%= order._id %>')" <%=order.status==='Cancelled' ||
-                                            order.status==='Returned' || order.status==='Delivered' ? 'disabled' : ''
+                                            order.status==='Returned' || order.status==='Delivered' ||order.status==='Return Request Sent'||order.status==='Return Request Denied'? 'disabled' : ''
                                             %>>
                                             Cancel
                                         </button>
@@ -144,8 +144,11 @@
                                             <div style="flex: 1; min-width: 300px;">
                                         <p><strong>Order id:</strong> #<%= order._id %>
                                         </p>
-                                        <p><strong>Status:</strong>
+                                        <p><strong>Order Status:</strong>
                                             <%= order.status %>
+                                        </p>
+                                        <p><strong>Payment Status:</strong>
+                                            <%= order.paymentStatus %>
                                         </p>
                                         <p><strong>Date:</strong>
                                             <%= new Date(order.createdAt).toLocaleDateString() %>

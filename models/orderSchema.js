@@ -48,12 +48,17 @@ const orderSchema = new Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['COD', 'Wallet','razorpay'],
+        enum: ['COD', 'wallet','razorpay'],
         required: true,
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['Pending', 'Paid', 'Refunded'],
+        default: 'Pending',
     },
     status: {
         type: String,
-        enum: ['In Transit', 'Delivered', 'Cancelled','Return Request Sent','Returned'],
+        enum: ['In Transit', 'Delivered', 'Cancelled','Return Request Sent','Returned','Return Request Denied'],
         default: 'In Transit',
     },
     createdAt: {
