@@ -8,6 +8,7 @@ const Category = require("../../models/categorySchema");
 const Address =require("../../models/addressSchema");
 const Cart =require("../../models/cartSchema");
 const Wishlist =require("../../models/wishlistSchema");
+const Coupon =require("../../models/couponSchema");
 const Order =require("../../models/orderSchema");
 const session =require("express-session");
 const { default: mongoose } = require("mongoose");
@@ -982,18 +983,101 @@ const cart = async (req, res) => {
         if (!user) return res.redirect('/login');
 
         const cart = await Cart.findOne({ userId: user._id }).populate('items.productId').exec();
-        
         if (!cart || cart.items.length === 0) {
-            return res.render('cart', { user, cart: { items: [] } });
+            console.log(0)
+            return res.render('cart', {
+                user,
+                cart: { items: [] },
+                couponDiscount: 0,
+                appliedCoupon: null,
+                couponError: null,
+                couponSuccess: null
+            });
+        }
+        console.log("in cart")
+
+        let couponDiscount = 0;
+        let appliedCoupon = null;
+        let couponError = null;
+        let couponSuccess = null;
+
+        if (req.query.coupon) {
+            const couponName = req.query.coupon.trim();
+            const coupon = await Coupon.findOne({ name: couponName, isList: true });
+            console.log(coupon,"controller")
+
+            if (coupon) {
+                const currentDate = new Date();
+                const cartTotal = cart.items.reduce((total, item) => total + item.totalPrice, 0);
+
+                if (currentDate <= coupon.expireOn && cartTotal >= coupon.minimumPrice) {
+                    console.log("datechecking")
+                    couponDiscount = coupon.offerPrice;
+                    appliedCoupon = couponName;
+                    couponSuccess = 'Coupon applied successfully!';
+                } else {
+                    couponError = 'Coupon is expired or minimum cart total not met.';
+                }
+            } else {
+                console.log("coupon invalid")
+                couponError = 'Invalid coupon code.';
+            }
         }
 
-   
-        res.render('cart', { user, cart });
+        res.render('cart', {
+            user,
+            cart,
+            couponDiscount,
+            appliedCoupon,
+            couponError,
+            couponSuccess
+        });
     } catch (error) {
         console.error('Error fetching cart:', error);
         res.status(500).render('pageerror', { error: 'An error occurred while fetching the cart.' });
     }
 };
+
+const applyCoupon = async (req, res) => {
+    try {
+        const { couponCode } = req.body;
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+        if (!user) return res.status(401).json({ error: 'User not authenticated.' });
+
+        const cart = await Cart.findOne({ userId: user._id }).populate('items.productId').exec();
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ error: 'Cart is empty.' });
+        }
+
+        const coupon = await Coupon.findOne({ name: couponCode.trim(), isList: true });
+
+        if (!coupon) {
+            return res.status(404).json({ error: 'Invalid coupon code.' });
+        }
+
+        const currentDate = new Date();
+        const cartTotal = cart.items.reduce((total, item) => total + item.totalPrice, 0);
+
+        if (currentDate > coupon.expireOn) {
+            return res.status(400).json({ error: 'Coupon is expired.' });
+        }
+
+        if (cartTotal < coupon.minimumPrice) {
+            return res.status(400).json({ error: `Minimum cart total of ₹${coupon.minimumPrice} is required to apply this coupon.` });
+        }
+
+        res.status(200).json({
+            success: 'Coupon applied successfully!',
+            discount: coupon.offerPrice,
+            appliedCoupon: coupon.name
+        });
+    } catch (error) {
+        console.error('Error applying coupon:', error);
+        res.status(500).json({ error: 'Internal server error. Please try again later.' });
+    }
+};
+
 
 const checkout = async (req, res) => {
     try {
@@ -1395,6 +1479,7 @@ module.exports = {
     profile,
     address,
     cart,
+    applyCoupon,
     wishlist,
     wallet,
     orders,

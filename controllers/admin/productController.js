@@ -307,6 +307,8 @@ const addstock = async (req, res) => {
       });
     }
   };
+
+
   
 module.exports = {
     getProductAddPage,
@@ -322,6 +324,7 @@ module.exports = {
     deleteProduct,
     stock,
     addstock,
+
 
 
 }

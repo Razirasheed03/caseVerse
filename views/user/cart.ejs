@@ -1,6 +1,12 @@
 <%- include("../../views/partials/user/header") %>
 <br><br><br><br>
-
+<style>
+  .couponInput{
+    color:rgb(0, 0, 0);
+    border: 1px solid;
+    border-radius: 10px;
+  }
+</style>
 <nav>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/">Home</a></li>
@@ -53,11 +59,24 @@
           </div>
 
           <!-- Cart Totals and Actions -->
-          <!-- <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
-            <div class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
-              Update Cart
-            </div>
-          </div> -->
+          <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
+            <input 
+                type="text" 
+                class="couponInput" 
+                name="couponCode" 
+                id="couponCode" 
+                placeholder="Enter coupon code" 
+                value="<%= appliedCoupon || '' %>"
+            >
+            <button 
+    type="button"
+    class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5" 
+    id="applyCouponBtn">
+    Apply Coupon
+</button>
+
+        </div>
+        
         </div>
       </div>
 
@@ -104,25 +123,36 @@
                 </span>
             </div>
         </div>
+        <div class="flex-w flex-t p-b-13">
+          <div class="size-208">
+              <span class="stext-110 cl2">Coupon Discount:</span>
+          </div>
+          <div class="size-209">
+              <span class="mtext-110 cl2" id="discount">₹ <%= couponDiscount.toFixed(2) %></span>
+          </div>
+      </div>
+      
         
 
         
         <!-- Total -->
-        <div class="flex-w flex-t p-t-27  p-b-33">
-            <div class="size-208">
-                <span class="mtext-101 cl2">Total:</span>
-            </div>
-            <div class="size-209 p-t-1">
-                <span class="mtext-110 cl2" id="total">
-                    ₹ <%= (
-                        cart.items.reduce((total, item) => total + item.totalPrice, 0) + 
-                        (cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) - 
-                        Math.ceil((cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) / 1.2) +
-                        (cart.items.reduce((total, item) => total + item.totalPrice, 0) > 499 ? 0 : 40)
-                    ).toFixed(2) %>
-                </span>
-            </div>
-        </div>
+        <div class="flex-w flex-t p-t-27 p-b-33">
+          <div class="size-208">
+              <span class="mtext-101 cl2">Total:</span>
+          </div>
+          <div class="size-209 p-t-1">
+              <span class="mtext-110 cl2" id="total">
+                  ₹ <%= (
+                      cart.items.reduce((total, item) => total + item.totalPrice, 0) +
+                      (cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) -
+                      couponDiscount +
+                      (cart.items.reduce((total, item) => total + item.totalPrice, 0) > 499 ? 0 : 40)
+                  ).toFixed(2) %>
+              </span>
+          </div>
+      </div>
+      
+      
         
         
         
@@ -146,7 +176,35 @@
 
 <%- include("../../views/partials/user/footer") %>
 
+
+
 <script src="/js/main.js"></script>
+<script>
+document.getElementById('applyCouponBtn').addEventListener('click', function(event) {
+    const couponCode = document.getElementById('couponCode').value.trim();
+    if (couponCode) {
+        fetch('/applyCoupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ couponCode })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert(data.success);
+                document.getElementById('couponDiscount').textContent = `₹ ${data.discount.toFixed(2)}`;
+                updateCartTotals();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    } else {
+        alert('Please enter a valid coupon code.');
+    }
+});
+</script>
+
 
 <script>
 

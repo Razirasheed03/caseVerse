@@ -12,6 +12,7 @@ const customerController= require('../controllers/admin/customerController');
 const categoryController= require('../controllers/admin/categoryController');
 const productController = require('../controllers/admin/productController');
 const orderController = require('../controllers/admin/orderController');
+const couponController = require('../controllers/admin/couponController');
 
 //Admin Routes
 router.get('/pageerror',adminController.pageerror)
@@ -58,6 +59,31 @@ router.post('/changeStatus',orderController.changeStatus)
 ////stock mangement
 router.get('/stock',adminAuth,productController.stock)
 router.post('/addStock',productController.addstock)
+
+//coupon management
+router.get('/coupon',couponController.coupons)
+router.post('/coupons/add',couponController. addCoupon);
+router.post('/coupons/delete/:id',couponController. deleteCoupon);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports=router;
 
 
