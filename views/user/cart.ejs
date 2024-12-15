@@ -61,21 +61,20 @@
           <!-- Cart Totals and Actions -->
           <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
             <input 
-                type="text" 
-                class="couponInput" 
-                name="couponCode" 
-                id="couponCode" 
-                placeholder="Enter coupon code" 
-                value="<%= appliedCoupon || '' %>"
+              type="text" 
+              class="couponInput" 
+              name="couponCode" 
+              id="couponCode" 
+              placeholder="Enter coupon code" 
+              value="<%= appliedCoupon || '' %>"
             >
             <button 
-    type="button"
-    class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5" 
-    id="applyCouponBtn">
-    Apply Coupon
-</button>
-
-        </div>
+              type="button"
+              class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5" onclick="applyCoupon('<%= totalPrice.toFixed(2) %>')"
+              id="applyCouponBtn">
+              Apply Coupon
+            </button>
+          </div>
         
         </div>
       </div>
@@ -83,84 +82,63 @@
       <div class="col-sm-10 col-lg-7 col-xl-5 m-lr-auto m-b-50">
         <div class="bor10 p-lr-40 p-t-30 p-b-40 m-l-63 m-r-40 m-lr-0-xl p-lr-15-sm">
           <h4 class="mtext-109 cl2 p-b-30">Cart Totals</h4>
-
+        
           <!-- Subtotal -->
           <div class="flex-w flex-t p-b-13">
             <div class="size-208">
-                <span class="stext-110 cl2">Subtotal:</span>
+              <span class="stext-110 cl2">Subtotal:</span>
             </div>
             <div class="size-209">
-                <span class="mtext-110 cl2" id="subtotal">₹ <%= cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) %></span>
+              <span class="mtext-110 cl2" id="subtotal">₹ <%= subtotal.toFixed(2) %></span>
             </div>
-        </div>
-        <div class="flex-w flex-t p-b-13">
-            <div class="size-208">
-                <span class="stext-110 cl2">GST:</span>
-            </div>
-            <div class="size-209">
-                <span class="mtext-110 cl2" id="gst">₹ <%= (cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02).toFixed(2) %></span>
-            </div>
-        </div>
-        <div class="flex-w flex-t  p-b-13">
-          <div class="size-208">
-              <span class="stext-110 cl2">Discount:</span>
           </div>
-          <div class="size-209">
-              <span class="mtext-110 cl2" id="discount">₹ <%= Math.ceil((cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) / 1.2) %></span>
-          </div>
-      </div>
-        <div class="flex-w flex-t bor12 p-b-13">
-            <div class="size-208">
-                <span class="stext-110 cl2">Shipping Charge:</span>
-            </div>
-            <div class="size-209">
-                <span class="mtext-110 cl2" id="shipping">
-                    <% if (cart.items.reduce((total, item) => total + item.totalPrice, 0) > 499) { %>
-                        <span style="color: green;">Free</span>
-                    <% } else { %>
-                        ₹ <%= (40).toFixed(2) %>
-                    <% } %>
-                </span>
-            </div>
-        </div>
-        <div class="flex-w flex-t p-b-13">
-          <div class="size-208">
-              <span class="stext-110 cl2">Coupon Discount:</span>
-          </div>
-          <div class="size-209">
-              <span class="mtext-110 cl2" id="discount">₹ <%= couponDiscount.toFixed(2) %></span>
-          </div>
-      </div>
-      
         
+          <!-- Shipping Charge -->
+          <div class="flex-w flex-t bor12 p-b-13">
+            <div class="size-208">
+              <span class="stext-110 cl2">Shipping Charge:</span>
+            </div>
+            <div class="size-209">
+              <span class="mtext-110 cl2" id="shipping">
+                <% if (subtotal > 499) { %>
+                  Free
+                <% } else { %>
+                  ₹ 40.00
+                <% } %>
+              </span>
+            </div>
+          </div>
+        
+          <!-- Coupon Discount -->
+          <div class="flex-w flex-t p-b-13">
+            <div class="size-208">
+              <span class="stext-110 cl2">Coupon Discount:</span>
+            </div>
+            <div class="size-209">
+              <span class="mtext-110 cl2" id="discount">₹ <%= couponDiscount %> hii</span>
+            </div>
+          </div>
+          
+          <!-- Total -->
+          <div class="flex-w flex-t p-t-27 p-b-33">
+            <div class="size-208">
+              <span class="mtext-101 cl2">Total:</span>
+            </div>
+            <div class="size-209 p-t-1">
+              <span class="mtext-110 cl2" id="total">₹ <% if (subtotal > 499 || subtotal==0) { %>
+                <%= totalPrice.toFixed(2) %>
+              <% } else { %>
+                <%= 40+Number(totalPrice.toFixed(2)) %>
+              <% } %> </span>
+            </div>
+          </div>
+          
+          <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
+            <a href="/checkout">Proceed to Checkout</a>
+          </button>
+        </div>
 
         
-        <!-- Total -->
-        <div class="flex-w flex-t p-t-27 p-b-33">
-          <div class="size-208">
-              <span class="mtext-101 cl2">Total:</span>
-          </div>
-          <div class="size-209 p-t-1">
-              <span class="mtext-110 cl2" id="total">
-                  ₹ <%= (
-                      cart.items.reduce((total, item) => total + item.totalPrice, 0) +
-                      (cart.items.reduce((total, item) => total + item.totalPrice, 0) * 0.02) -
-                      couponDiscount +
-                      (cart.items.reduce((total, item) => total + item.totalPrice, 0) > 499 ? 0 : 40)
-                  ).toFixed(2) %>
-              </span>
-          </div>
-      </div>
-      
-      
-        
-        
-        
-          <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
-    <a href="/checkout">
-    Proceed to Checkout
-  </a>
-  </button>
         </div>
       </div>
     </div>
@@ -179,32 +157,58 @@
 
 
 <script src="/js/main.js"></script>
-<script>
-document.getElementById('applyCouponBtn').addEventListener('click', function(event) {
-    const couponCode = document.getElementById('couponCode').value.trim();
-    if (couponCode) {
-        fetch('/applyCoupon', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ couponCode })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
-                alert(data.success);
-                document.getElementById('couponDiscount').textContent = `₹ ${data.discount.toFixed(2)}`;
-                updateCartTotals();
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    } else {
-        alert('Please enter a valid coupon code.');
-    }
-});
-</script>
+<!-- <script>
+  async function updateCartTotals() {
+    let subtotal = 0;
+    
+    // Calculate subtotal
+    document.querySelectorAll('.total-price').forEach(item => {
+      subtotal += parseFloat(item.textContent);
+    });
+  
+    // Determine shipping
+    const shipping = subtotal > 499 ? 0 : 40;
+  
+    // Get coupon discount
+    const couponDiscount = parseFloat(document.getElementById('discount').innerText.replace('₹', '').trim()) || 0;
+  
+    // Calculate total
+    const total = subtotal + shipping - couponDiscount;
+  
+    // Update DOM elements
+    document.getElementById('subtotal').textContent = `₹ ${subtotal.toFixed(2)}`;
+    document.getElementById('shipping').textContent = shipping === 0 ? 'Free' : `₹ ${shipping.toFixed(2)}`;
+    document.getElementById('total').textContent = `₹ ${total.toFixed(2)}`;
+  }
+  
+ 
+  // Update quantity and totals
+  document.querySelectorAll('.quantity-input').forEach(input => {
+    input.addEventListener('input', async function() {
+      const quantity = parseInt(this.value);
+      const price = parseFloat(this.dataset.price);
+      const itemId = this.dataset.itemId;
+      const totalPrice = quantity * price;
+  
+      document.querySelector(`.total-price[data-item-id="${itemId}"]`).textContent = totalPrice.toFixed(2);
+  
+      await fetch('/quantityChange', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quantity, id: itemId })
+      });
+  
+      updateCartTotals();
+    });
+  });
+  
+  // Initial call to ensure everything updates
+  updateCartTotals();
 
+
+  </script> -->
+  
+  
 
 <script>
 
@@ -215,7 +219,43 @@ async function quantityChange(quantity,id){
                 body:JSON.stringify({quantity,id})
             });
 }
-  const data=document.getElementById('')
+const data=document.getElementById('')
+  
+async function applyCoupon() {
+    const couponCode = document.getElementById('couponCode').value.trim();
+
+    if (!couponCode) {
+      alert('Please enter a valid coupon code.');
+      return;
+    }
+  
+    try {
+      const response = await fetch('/applyCoupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ couponCode })
+      });
+  
+      const data = await response.json();
+  
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+  
+      alert(data.success);
+  
+      const couponDiscountElement = document.getElementById('discount');
+      
+      couponDiscountElement.textContent = `₹ ${data.discount.toFixed(2)}`;
+  
+      updateCartTotals(data.discount);
+    } catch (error) {
+      console.error('Failed to apply coupon:', error);
+      alert('Something went wrong. Please try again.');
+    }
+  }
+  
   // Dynamically update price when quantity is changed
   document.querySelectorAll('.quantity-input').forEach(input => {
     input.addEventListener('input', function() {
@@ -229,23 +269,29 @@ async function quantityChange(quantity,id){
 
       // Optionally update hidden input values for form submission
       document.querySelector(`[name="quantity[${itemId}]"]`).value = quantity;
-
+      const discount = document.getElementById('discount').value;
       // Update the Cart Total and Subtotal
-      updateCartTotals();
+      updateCartTotals(discount);
     });
   });
 
   // Function to update the total cart price
-  function updateCartTotals() {
+  function updateCartTotals(discount) {
     let subtotal = 0;
     document.querySelectorAll('.total-price').forEach(item => {
       subtotal += parseFloat(item.textContent);
     });
 
     const total = subtotal; // You can add additional fees like tax if needed
-
+    discount??=0;
+    console.log(discount,"discout amount")
     // Update subtotal and total in the UI
     document.getElementById('subtotal').textContent = `₹ ${subtotal.toFixed(2)}`;
-    document.getElementById('total').textContent = `₹ ${total.toFixed(2)}`;
+    if(total>499 || total == 0){
+      document.getElementById('total').textContent = `₹ ${(total-discount).toFixed(2)}`;
+    }else{
+      document.getElementById('total').textContent = `₹ ${(total-discount+40).toFixed(2)}`;
+    }
   }
+
 </script>

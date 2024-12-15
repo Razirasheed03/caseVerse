@@ -6,10 +6,12 @@ const session=require("express-session")
 const passport=require("./config/passport")
 const db =require("./config/db");
 const userRouter=require("./routes/userRouter");
+const cors=require('cors')
 const adminRouter=require("./routes/adminRouter")
 db();
 
 app.use(express.json());
+app.use(cors());
 app.use(express.urlencoded({extended:true}))
 app.use(session({
 secret:process.env.SESSION_SECRET,

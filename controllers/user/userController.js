@@ -980,58 +980,61 @@ const cart = async (req, res) => {
     try {
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
+
         if (!user) return res.redirect('/login');
 
+        // Fetch user's cart
         const cart = await Cart.findOne({ userId: user._id }).populate('items.productId').exec();
+
         if (!cart || cart.items.length === 0) {
-            console.log(0)
             return res.render('cart', {
                 user,
                 cart: { items: [] },
                 couponDiscount: 0,
                 appliedCoupon: null,
-                couponError: null,
-                couponSuccess: null
+                subtotal: 0,
+                totalPrice: 0
             });
         }
-        console.log("in cart")
 
+        // Calculate subtotal
+        const subtotal = cart.items.reduce((total, item) => total + item.totalPrice, 0);
+
+        // Calculate shipping
+        const shipping = subtotal > 499 ? 0 : 40;
+
+        // Initialize coupon variables
         let couponDiscount = 0;
         let appliedCoupon = null;
-        let couponError = null;
-        let couponSuccess = null;
 
+        // Check for applied coupon
         if (req.query.coupon) {
             const couponName = req.query.coupon.trim();
             const coupon = await Coupon.findOne({ name: couponName, isList: true });
-            console.log(coupon,"controller")
 
             if (coupon) {
                 const currentDate = new Date();
-                const cartTotal = cart.items.reduce((total, item) => total + item.totalPrice, 0);
-
-                if (currentDate <= coupon.expireOn && cartTotal >= coupon.minimumPrice) {
-                    console.log("datechecking")
+                if (currentDate <= coupon.expireOn && subtotal >= coupon.minimumPrice) {
                     couponDiscount = coupon.offerPrice;
                     appliedCoupon = couponName;
-                    couponSuccess = 'Coupon applied successfully!';
-                } else {
-                    couponError = 'Coupon is expired or minimum cart total not met.';
                 }
-            } else {
-                console.log("coupon invalid")
-                couponError = 'Invalid coupon code.';
             }
         }
 
+        // Calculate total price
+        const totalPrice = subtotal- couponDiscount;
+        console.log(subtotal,"+",couponDiscount,"+",totalPrice)
+
+        // Render the cart page
         res.render('cart', {
             user,
             cart,
             couponDiscount,
             appliedCoupon,
-            couponError,
-            couponSuccess
+            subtotal,
+            totalPrice
         });
+        
     } catch (error) {
         console.error('Error fetching cart:', error);
         res.status(500).render('pageerror', { error: 'An error occurred while fetching the cart.' });
@@ -1043,40 +1046,49 @@ const applyCoupon = async (req, res) => {
         const { couponCode } = req.body;
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
+
         if (!user) return res.status(401).json({ error: 'User not authenticated.' });
 
         const cart = await Cart.findOne({ userId: user._id }).populate('items.productId').exec();
-        if (!cart || cart.items.length === 0) {
-            return res.status(400).json({ error: 'Cart is empty.' });
-        }
+
+        if (!cart) return res.status(400).json({ error: 'Cart is empty.' });
+
+        // Calculate subtotal
+        const subtotal = cart.items.reduce((total, item) => total + item.totalPrice, 0);
 
         const coupon = await Coupon.findOne({ name: couponCode.trim(), isList: true });
-
-        if (!coupon) {
-            return res.status(404).json({ error: 'Invalid coupon code.' });
-        }
+        if (!coupon) return res.status(404).json({ error: 'Invalid coupon code.' });
 
         const currentDate = new Date();
-        const cartTotal = cart.items.reduce((total, item) => total + item.totalPrice, 0);
 
         if (currentDate > coupon.expireOn) {
             return res.status(400).json({ error: 'Coupon is expired.' });
         }
 
-        if (cartTotal < coupon.minimumPrice) {
-            return res.status(400).json({ error: `Minimum cart total of ₹${coupon.minimumPrice} is required to apply this coupon.` });
+        if (subtotal < coupon.minimumPrice) {
+            return res.status(400).json({ error: `Minimum cart total of ₹${coupon.minimumPrice} is required.` });
         }
 
+        // Apply discount and save to cart
+        const couponDiscount = coupon.offerPrice;
+        const totalPrice = subtotal - couponDiscount;
+        console.log(totalPrice,subtotal,couponDiscount)
+
+        const result = await Cart.updateOne(
+            { userId: user._id },
+            { $set: { couponDiscount,totalPrice } } // Save discount and total to the cart
+        );
+        console.log(result)
         res.status(200).json({
             success: 'Coupon applied successfully!',
-            discount: coupon.offerPrice,
-            appliedCoupon: coupon.name
+            discount: couponDiscount
         });
     } catch (error) {
-        console.error('Error applying coupon:', error);
-        res.status(500).json({ error: 'Internal server error. Please try again later.' });
+        console.error('Coupon Error:', error);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 };
+
 
 
 const checkout = async (req, res) => {
@@ -1153,12 +1165,17 @@ const placeOrder = async (req, res) => {
         if (!cartItems || !cartItems.items.length) {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
-
-        const totalAmount = cartItems.items.reduce((total, item) => total + item.totalPrice, 0);
-        const gst = totalAmount * 0.02;
-        const discount = Math.ceil(gst / 1.2);
-        const shippingCharge = totalAmount > 499 ? 0 : 40;
-        const finalAmount = totalAmount + gst - discount + shippingCharge;
+        const subtotal=cartItems.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2)
+        const totalAmount = cartItems.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2)
+        const shippingCharge = subtotal > 499 ? 0 : 40;
+        const finalAmount = totalAmount + shippingCharge;
+        const bulkOps = cartItems.items.map(item => ({
+            updateOne: {
+                filter: { _id: item.productId },
+                update: { $inc: { quantity: -item.quantity } }
+            }
+        }));
+        await Product.bulkWrite(bulkOps);
 
         if (paymentMethod === 'razorpay') {
             try {
@@ -1217,7 +1234,7 @@ const placeOrder = async (req, res) => {
             });
 
             await newOrder.save();
-            await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] } });
+            await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] ,totalPrice:0,couponDiscount:0} });
 
             return res.status(200).json({
                 success: true,
@@ -1258,7 +1275,7 @@ const placeOrder = async (req, res) => {
             });
 
             await newOrder.save();
-            await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] } });
+            await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] ,totalPrice:0,couponDiscount:0} });
 
             return res.status(200).json({
                 success: true,
