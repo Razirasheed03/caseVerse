@@ -142,7 +142,7 @@
                                         <br>
                                         <div class="d-flex justify-content-between flex-wrap">
                                             <div style="flex: 1; min-width: 300px;">
-                                        <p><strong>Order id:</strong> #<%= order._id %>
+                                        <p><strong>Order id:</strong> #<%= order.orderId %>
                                         </p>
                                         <p><strong>Order Status:</strong>
                                             <%= order.status %>
@@ -153,7 +153,7 @@
                                         <p><strong>Date:</strong>
                                             <%= new Date(order.createdAt).toLocaleDateString() %>
                                         </p>
-                                        <p><strong>Total:</strong> ₹ <%= order.finalAmount %>
+                                        <p><strong>Total:</strong> ₹ <%= order.totalAmount %>
                                         </p>
                                             </div>
                                             <div style="flex: 1; min-width: 300px; text-align: left;">

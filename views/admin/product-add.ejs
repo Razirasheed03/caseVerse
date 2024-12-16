@@ -309,39 +309,55 @@
         document.getElementById('input1').addEventListener('change', handleFileSelect);
 
         function handleFileSelect(event) {
-    
-            const addedImagesContainer = document.getElementById('addedImagesContainer');
-            addedImagesContainer.innerHTML = '';
-            const files = event.target.files;
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    const addedImagesContainer = document.getElementById('addedImagesContainer');
+    addedImagesContainer.innerHTML = ''; // Clear the thumbnails container
+    const files = event.target.files;
 
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                selectedImages.push(file);
-                const thumbnail = document.createElement('div')
-                thumbnail.classList.add('thumbnail');
+    selectedImages.length = 0; // Reset selected images to avoid stale data
 
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.alt = 'thumbnail';
-                img.style.width = '50px';
-                img.style.height = 'auto';
-                const removeIcon = document.createElement('span');
-                removeIcon.classList.add('remove-icon');
-                removeIcon.innerHTML = '&times';
-                removeIcon.addEventListener('click', function () {
-                    const index = selectedImages.indexOf(file);
-                    if (index != -1) {
-                        selectedImages.splice(index, 1);
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
-                    }
-                    thumbnail.remove();
-                })
-                thumbnail.appendChild(img);
-                thumbnail.appendChild(removeIcon);
-                addedImagesContainer.appendChild(thumbnail);
-                console.log('after append child');////////////////////////////////
-            }
+        // Validate file type
+        if (!allowedTypes.includes(file.type)) {
+            alert(`Invalid file type: ${file.name}. Only PNG, JPEG, and JPG are allowed.`);
+            event.target.value = ''; // Clear the file input
+            return; // Stop further processing
         }
+
+        // If valid, add the file to the list
+        selectedImages.push(file);
+
+        // Create a thumbnail for the valid file
+        const thumbnail = document.createElement('div');
+        thumbnail.classList.add('thumbnail');
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.alt = 'thumbnail';
+        img.style.width = '50px';
+        img.style.height = 'auto';
+
+        // Add a remove button for each thumbnail
+        const removeIcon = document.createElement('span');
+        removeIcon.classList.add('remove-icon');
+        removeIcon.innerHTML = '&times;';
+        removeIcon.addEventListener('click', function () {
+            const index = selectedImages.indexOf(file);
+            if (index !== -1) {
+                selectedImages.splice(index, 1); // Remove the file from the selected list
+            }
+            thumbnail.remove(); // Remove the thumbnail
+        });
+
+        // Append thumbnail and remove button
+        thumbnail.appendChild(img);
+        thumbnail.appendChild(removeIcon);
+        addedImagesContainer.appendChild(thumbnail);
+    }
+}
+
 
         function validateForm() {
             clearErrorMessages();
@@ -356,20 +372,21 @@
             const quantity = document.getElementsByName('quantity');
             let isValid = true
             if (name.trim() === "") {
-                displayErrorMessage('productName-error', 'Please enter a product name.');
-                isValid = false;
-            } else if (!/^[a-zA-Z\s]+$/.test(name.trim())) {
-                displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters.');
-                isValid = false;
-            }
+    displayErrorMessage('productName-error', 'Please enter a product name.');
+    isValid = false;
+} else if (!/^[a-zA-Z0-9\s'’-]+$/.test(name.trim())) {
+    displayErrorMessage('productName-error', 'Product name can only contain letters, numbers, spaces, hyphens, and apostrophes.');
+    isValid = false;
+}
 
-            if (description.trim() === "") {
-                displayErrorMessage('description-error', 'Please enter a product description.');
-                isValid = false;
-            } else if (!/[,-.a-zA-Z\s]+$/.test(description.trim())) {
-                displayErrorMessage('description-error', 'Product description should not contain numeric characters.');
-                isValid = false;
-            }
+if (description.trim() === "") {
+    displayErrorMessage('description-error', 'Please enter a product description.');
+    isValid = false;
+} else if (!/^[a-zA-Z0-9\s,.\-]+$/.test(description.trim())) {
+    displayErrorMessage('description-error', 'Product description can only contain letters, numbers, spaces, commas, periods, and hyphens.');
+    isValid = false;
+}
+
 
             if (parseInt(quantity) < 0) {
                 displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
@@ -418,6 +435,7 @@
             const errorMessage = document.getElementById('errorMessage');
 
         }
+        
 
     </script>
     <%- include("../../views/partials/admin/footer") %>

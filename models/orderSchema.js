@@ -73,7 +73,8 @@ const orderSchema = new Schema({
         orderId:{type:String},
         paymentId:{type:String},
         signature:{type:String}
-    }
+    },
+    totalCouponDiscount: { type: Number, default: 0 }
 });
 
 // Pre-save hook for calculating final amounts and timestamps

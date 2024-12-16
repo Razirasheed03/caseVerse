@@ -24,7 +24,7 @@
                                     <% if (orders && orders.length> 0) { %>
                                         <% orders.forEach(order=> { %>
                                     <tr>
-                                        <td><%=order._id%></td>
+                                        <td><%=order.orderId%></td>
                                         <td><%=order.paymentMethod%></td>
                                         <td> ₹ <%=order.totalAmount%></td>
                                         <td><span class=""><%=order.status%></span></td>

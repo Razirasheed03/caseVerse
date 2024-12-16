@@ -134,11 +134,9 @@
                 <span class="mtext-101 cl2">Total:</span>
               </div>
               <div class="size-209 p-t-1">
-                <span class="mtext-110 cl2" id="total">₹ <% if (cart.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2) > 499) { %>
-                  <%= cart.totalPrice.toFixed(2) %>
-                <% } else { %>
-                  <%= 40+Number(cart.totalPrice.toFixed(2)) %>
-                <% } %> </span>
+                <span class="mtext-110 cl2" id="total">₹
+                  <%= cart.items.reduce((total, item) => total + item.totalPrice, 0)-cart.couponDiscount %>
+</span>
               </div>
           </div>
         <a href="orderComplete">

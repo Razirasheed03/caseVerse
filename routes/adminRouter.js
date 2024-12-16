@@ -65,6 +65,8 @@ router.get('/coupon',couponController.coupons)
 router.post('/coupons/add',couponController. addCoupon);
 router.post('/coupons/delete/:id',couponController. deleteCoupon);
 
+///sales Management
+router.get('/salesReport',orderController.salesReport)
 
 
 

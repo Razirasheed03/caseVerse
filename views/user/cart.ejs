@@ -41,7 +41,7 @@
                     <td class="column-2"><%= item.productId.productName %></td>
                     <td class="column-3">₹<%= item.price %></td>
                     <td class="column-4">
-                      <input type="number" oninput="quantityChange(this.value,'<%=item._id%>')" name="quantity[<%= item._id %>]" value="<%= item.quantity %>" class="quantity-input" min="1" data-price="<%= item.price %>" data-item-id="<%= item._id %>">
+                      <input type="number" oninput="quantityChange(this.value,'<%=item._id%>')" name="quantity[<%= item._id %>]" value="<%= item.quantity %>" class="quantity-input" min="1"  max="10" data-price="<%= item.price %>" data-item-id="<%= item._id %>">
                     </td>
                     <td class="column-5">₹<span class="total-price" data-item-id="<%= item._id %>"><%= item.totalPrice %></span></td>
                     <td class="column-6">
@@ -115,7 +115,7 @@
               <span class="stext-110 cl2">Coupon Discount:</span>
             </div>
             <div class="size-209">
-              <span class="mtext-110 cl2" id="discount">₹ <%= couponDiscount %> hii</span>
+              <span class="mtext-110 cl2" id="discount">₹ <%= couponDiscount %></span>
             </div>
           </div>
           
@@ -284,7 +284,6 @@ async function applyCoupon() {
 
     const total = subtotal; // You can add additional fees like tax if needed
     discount??=0;
-    console.log(discount,"discout amount")
     // Update subtotal and total in the UI
     document.getElementById('subtotal').textContent = `₹ ${subtotal.toFixed(2)}`;
     if(total>499 || total == 0){

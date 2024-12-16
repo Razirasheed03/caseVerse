@@ -1,14 +1,19 @@
 const { fileLoader } = require('ejs');
-const multer=require('multer')
-const path=require('path');
+const multer = require('multer');
+const path = require('path');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, path.join(__dirname,"../public/uploads/re-Images")); // Path where the files stored
+        // Path where the files are stored
+        const uploadPath = path.join(__dirname, "../public/uploads/re-Images");
+        cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-      cb(null, Date.now() +'.png'); // Naming files with a timestamp to avoid overwriting
+        // Naming files with a timestamp and original file extension
+        const timestamp = Date.now();
+        const ext = path.extname(file.originalname) || '.png'; // Preserve original extension, default to .png
+        cb(null, `${timestamp}${ext}`);
     }
-  });
-  
-  module.exports = storage;
+});
+
+module.exports = storage;
