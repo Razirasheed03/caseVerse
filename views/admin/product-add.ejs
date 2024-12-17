@@ -382,10 +382,12 @@
 if (description.trim() === "") {
     displayErrorMessage('description-error', 'Please enter a product description.');
     isValid = false;
-} else if (!/^[a-zA-Z0-9\s,.\-]+$/.test(description.trim())) {
-    displayErrorMessage('description-error', 'Product description can only contain letters, numbers, spaces, commas, periods, and hyphens.');
+} else if (!/^[a-zA-Z0-9\s,.\-’'"]+$/u.test(description.trim())) {
+    displayErrorMessage('description-error', 'Product description can only contain letters, numbers, spaces, commas, periods, hyphens, and basic punctuation.');
     isValid = false;
 }
+
+
 
 
             if (parseInt(quantity) < 0) {
@@ -435,7 +437,60 @@ if (description.trim() === "") {
             const errorMessage = document.getElementById('errorMessage');
 
         }
+
+        async function submitForm(event) {
+    console.log("submitform");
+    event.preventDefault();
+
+    if (validateForm()) {
+        console.log('validated');
+
+        const formData = new FormData(document.getElementById('productForm'));
+
+        try {
+            const response = await fetch('/admin/addProducts', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (response.status === 200) {
+                // Trigger SweetAlert on success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Product Added',
+                    text: 'Product has been added successfully!',
+                    showConfirmButton: false,
+                    timer: 2000 // Closes automatically after 2 seconds
+                });
+
+                // Redirect after success
+                setTimeout(() => {
+                    location.href = result.redirectTo; // Redirect URL from the server response
+                }, 2100); // Delay to allow the Swal popup to show
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: result.message || 'Something went wrong!',
+                });
+            }
+        } catch (error) {
+            console.error("Request failed", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Something went wrong while adding the product.',
+            });
+        }
+    } else {
+        console.log("Form validation failed");
+    }
+}
+
         
 
     </script>
+    
     <%- include("../../views/partials/admin/footer") %>

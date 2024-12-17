@@ -231,7 +231,7 @@ const loadshopping = async (req, res) => {
 
         const search = req.query.search || ""; 
         const page = parseInt(req.query.page) || 1;
-        const limit = 12; 
+        const limit = 8; 
 
      
         const totalProducts = await Product.countDocuments({
@@ -1063,17 +1063,23 @@ const applyCoupon = async (req, res) => {
         if (subtotal < coupon.minimumPrice) {
             return res.status(400).json({ error: `Minimum cart total of ₹${coupon.minimumPrice} is required.` });
         }
-
+        if (coupon.userId.includes(user._id)) {
+            return res.status(400).json({ error: 'Coupon already used by this user.' });
+        }
         // Apply discount and save to cart
         const couponDiscount = coupon.offerPrice;
         const totalPrice = subtotal - couponDiscount;
         console.log(totalPrice,subtotal,couponDiscount)
         req.session.couponDiscount = couponDiscount
 
-        const result = await Cart.updateOne(
+        await Cart.updateOne(
             { userId: user._id },
             { $set: { couponDiscount,totalPrice } } // Save discount and total to the cart
         );
+
+        coupon.userId.push(user._id);
+        await coupon.save();
+
         res.status(200).json({
             success: 'Coupon applied successfully!',
             discount: couponDiscount
@@ -1187,10 +1193,13 @@ const placeOrder = async (req, res) => {
         if (!cartItems || !cartItems.items.length) {
             return res.status(400).json({ success: false, message: 'Cart is empty' });
         }
-        const subtotal=cartItems.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2)
-        const totalAmount = cartItems.items.reduce((total, item) => total + item.totalPrice, 0).toFixed(2)
+        const subtotal = cartItems.items.reduce((total, item) => total + item.totalPrice, 0);
         const shippingCharge = subtotal > 499 ? 0 : 40;
-        const finalAmount = totalAmount + shippingCharge;
+        const totalAmount = subtotal;
+        console.log(typeof totalAmount)
+        const finalAmount = totalAmount + shippingCharge - (req.session.couponDiscount || 0);
+        
+        // Correct the bulk update operation
         const bulkOps = cartItems.items.map(item => ({
             updateOne: {
                 filter: { _id: item.productId },
@@ -1256,6 +1265,7 @@ const placeOrder = async (req, res) => {
                 paymentMethod,
                 status: 'In Transit',
             });
+            console.log("in cod")
 
             await newOrder.save();
             await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] ,totalPrice:0,couponDiscount:0} });
@@ -1275,13 +1285,15 @@ const placeOrder = async (req, res) => {
             }
 
             user.walletBalance -= finalAmount;
-            
+            //////////////////////changeHere
             user.walletTransactions.push({
                 detail: 'Payment for Order',
-                amount: totalAmount-req.session.couponDiscount,
+                amount: totalAmount,
                 type: 'debit',
             });
+            console.log("in wallet")
             await user.save();
+
 
             const newOrder = new Order({
                 userId: user._id,
@@ -1298,6 +1310,7 @@ const placeOrder = async (req, res) => {
                 status: 'In Transit',
                 paymentStatus:'Paid'
             });
+            console.log('here')
 
             await newOrder.save();
             await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [] ,totalPrice:0,couponDiscount:0} });

@@ -1,47 +1,65 @@
-
 <%-include("../../views/partials/user/header")%>
 	<style>
-		.sizing{
+		.sizing {
 			border-radius: 10px;
-			height:5vh;
+			height: 5vh;
 			width: 40vh;
 			border-color: rgb(188, 186, 186);
 		}
-	</style>
-<br>
-<br>
-<br>
 
-<!-- Product -->
+		.clear-search {
+			background: transparent;
+			border: none;
+			font-size: 18px;
+			cursor: pointer;
+		}
+
+		.clear-search.hidden {
+			display: none;
+		}
+
+		.clear-search.visible {
+			display: block;
+		}
+	</style>
+	<br>
+	<br>
+	<br>
+
+	<!-- Product -->
 	<div class="bg0 m-t-23 p-b-140">
 		<div class="container">
 			<div class="flex-w flex-sb-m p-b-52">
 				<div class="flex-w flex-l-m filter-tope-group m-tb-10">
 					<form action="/shop" method="GET" class="panel-search w-full p-t-5 p-b-5">
 						<div class="sizing bor8 dis-flex p-l-10">
-							<button class=" flex-c-m fs-16 cl2 hov-cl1 trans-04 p-b-0">
+							<button class="flex-c-m fs-16 cl2 hov-cl1 trans-04 p-b-0">
 								<i class="zmdi zmdi-search"></i>
 							</button>
-							<input 
-								class="mtext-107 cl2  plh2 p-l-5" 
-								type="text" 
-								name="search" 
-								value="<%= search %>" 
-								placeholder="Search">
+							<input class="mtext-107 cl2 plh2 p-l-5" type="text" name="search" value="<%= search %>"
+								placeholder="Search" id="searchInput">
+							<button type="button"
+								class="flex-c-m fs-16 cl2 hov-cl1 trans-04 p-b-0 ml-3  clear-search <%= search ? 'visible' : 'hidden' %>"
+								id="clearSearch" title="Clear search">
+								✖
+							</button>
+
 						</div>
+
 					</form>
 
 				</div>
 
 				<div class="flex-w flex-c-m m-tb-10">
-					<div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
+					<div
+						class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
 						<i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
 						<i class="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-						 Filter
+						Filter
 					</div>
 
 
-				
+
 				</div>
 
 				<div class="dis-none panel-search w-full p-t-10 p-b-15">
@@ -50,12 +68,13 @@
 							<i class="zmdi zmdi-search"></i>
 						</button>
 
-						<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product" placeholder="Search">
-					</div>	
+						<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product"
+							placeholder="Search">
+					</div>
 				</div>
 
-		
-				
+
+
 				<!-- Filter -->
 				<div class="dis-none panel-filter w-full p-t-10">
 					<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
@@ -69,34 +88,44 @@
 									<!-- <a  href="#" onclick="sortItem('New Arrival',`<%=JSON.stringify(product)%>`)" class="filter-link stext-106 trans-04 sorting">
 										New Arrival
 									</a> -->
-									<a href="#" class="filter-link stext-106 trans-04 sorting" data-product='<%= JSON.stringify(product) %>' onclick="sortItem('New Arrival', this.dataset.product)">
+									<a href="#" class="filter-link stext-106 trans-04 sorting"
+										data-product='<%= JSON.stringify(product) %>'
+										onclick="sortItem('New Arrival', this.dataset.product)">
 										New Arrival
 									</a>
-									
+
 								</li>
 
-					
+
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04 sorting" data-product='<%= JSON.stringify(product) %>' onclick="sortItem('Price: High to Low', this.dataset.product)">
+									<a href="#" class="filter-link stext-106 trans-04 sorting"
+										data-product='<%= JSON.stringify(product) %>'
+										onclick="sortItem('Price: High to Low', this.dataset.product)">
 										Price: High to Low
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04 filter-link sorting" data-product='<%= JSON.stringify(product) %>' onclick="sortItem('Price: Low to High', this.dataset.product)">
+									<a href="#" class="filter-link stext-106 trans-04 filter-link sorting"
+										data-product='<%= JSON.stringify(product) %>'
+										onclick="sortItem('Price: Low to High', this.dataset.product)">
 										Price: Low to High
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04 sorting"data-product='<%= JSON.stringify(product) %>' onclick="sortItem('Aa-Zz', this.dataset.product)">
+									<a href="#" class="filter-link stext-106 trans-04 sorting"
+										data-product='<%= JSON.stringify(product) %>'
+										onclick="sortItem('Aa-Zz', this.dataset.product)">
 										Aa-Zz
 									</a>
 								</li>
 
 								<li class="p-b-6">
-									<a href="#" class="filter-link stext-106 trans-04 sorting" data-product='<%= JSON.stringify(product) %>' onclick="sortItem('Zz-Aa', this.dataset.product)">
+									<a href="#" class="filter-link stext-106 trans-04 sorting"
+										data-product='<%= JSON.stringify(product) %>'
+										onclick="sortItem('Zz-Aa', this.dataset.product)">
 										Zz-Aa
 									</a>
 								</li>
@@ -112,23 +141,28 @@
 							</div>
 
 							<div class="flex-w p-t-4 m-r--5">
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#"
+									class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
 									Fashion
 								</a>
 
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#"
+									class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
 									Lifestyle
 								</a>
 
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#"
+									class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
 									Denim
 								</a>
 
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#"
+									class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
 									Streetstyle
 								</a>
 
-								<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+								<a href="#"
+									class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
 									Crafts
 								</a>
 							</div>
@@ -140,136 +174,158 @@
 			<div class="row isotope-grid" id="shopList">
 				<!-- ======================================= -->
 				<%for(let i=0;i<product.length;i++){%>
-				<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
-					<!-- Block2 -->
-					<div class="block2">
-						<div class="block2-pic hov-img0">
-							<a href="/productDetail/<%=product[i]._id%>">
+					<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
+						<!-- Block2 -->
+						<div class="block2">
+							<div class="block2-pic hov-img0">
+								<a href="/productDetail/<%=product[i]._id%>">
 
-								<img src='/uploads/product-images/<%=product[i].productImage[0]%>' alt="IMG-PRODUCT">
-							</a>
-						</div>
-
-						<div class="block2-txt flex-w flex-t p-t-14">
-							<div class="block2-txt-child1 flex-col-l ">
-								<a href="/productDetail/<%=product[i]._id%>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-									<%=product[i].productName%>
+									<img src='/uploads/product-images/<%=product[i].productImage[0]%>'
+										alt="IMG-PRODUCT">
 								</a>
-
-								<span class="stext-105 cl3">
-									<strike>₹<%=product[i].regularPrice%></strike>&nbsp;
-									<strong>₹<%=product[i].salePrice%></strong>
-								</span>
 							</div>
 
-							<div class="block2-txt-child2 flex-r p-t-3">
-								<a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
-									<img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-									<img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-								</a>
+							<div class="block2-txt flex-w flex-t p-t-14">
+								<div class="block2-txt-child1 flex-col-l ">
+									<a href="/productDetail/<%=product[i]._id%>"
+										class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+										<%=product[i].productName%>
+									</a>
+
+									<span class="stext-105 cl3">
+										<strike>₹<%=product[i].regularPrice%></strike>&nbsp;
+										<strong>₹<%=product[i].salePrice%></strong>
+									</span>
+								</div>
+
+								<div class="block2-txt-child2 flex-r p-t-3">
+									<a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+										<img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png"
+											alt="ICON">
+										<img class="icon-heart2 dis-block trans-04 ab-t-l"
+											src="images/icons/icon-heart-02.png" alt="ICON">
+									</a>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-				<%}%>
-				<!-- =========================================== -->
+					<%}%>
+						<!-- =========================================== -->
 			</div>
 
 			<!-- Load more -->
-		<div class="container mt-3">
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center mb-20" style="margin-right: 200px;">
- 
- 
-			<div class="pagination">
-				<% if (currentPage > 1) { %>
-					<a href="?search=<%= search %>&page=<%= currentPage - 1 %>">Previous</a>
-				<% } %>
-			
-				<% for (let i = 1; i <= totalPages; i++) { %>
-					<a href="?search=<%= search %>&page=<%= i %>" 
-					   class="<%= currentPage == i ? 'active' : '' %>"><%= i %></a>
-				<% } %>
-			
-				<% if (currentPage < totalPages) { %>
-					<a href="?search=<%= search %>&page=<%= currentPage + 1 %>">Next</a>
-				<% } %>
+			<div class="container mt-3">
+				<nav aria-label="Page navigation">
+					<ul class="pagination justify-content-center mb-20" style="margin-right: 200px;">
+
+
+						<div class="pagination">
+							<% if (currentPage> 1) { %>
+								<a href="?search=<%= search %>&page=<%= currentPage - 1 %>">Previous</a>
+								<% } %>
+
+									<% for (let i=1; i <=totalPages; i++) { %>
+										<a href="?search=<%= search %>&page=<%= i %>"
+											class="<%= currentPage == i ? 'active' : '' %>">
+											<%= i %>
+										</a>
+										<% } %>
+
+											<% if (currentPage < totalPages) { %>
+												<a href="?search=<%= search %>&page=<%= currentPage + 1 %>">Next</a>
+												<% } %>
+						</div>
+
+
+					</ul>
+				</nav>
 			</div>
-			
- 
-        </ul>
-    </nav>
- </div>
 		</div>
 	</div>
 	<script>
-		function sortItem(item,data){
+		document.addEventListener("DOMContentLoaded", () => {
+			const searchInput = document.getElementById("searchInput");
+			const clearSearch = document.getElementById("clearSearch");
+
+			// Show or hide the cancel button dynamically
+			searchInput.addEventListener("input", () => {
+				clearSearch.style.display = searchInput.value.trim() ? "block" : "none";
+			});
+
+			// Clear the search input and reload the page
+			clearSearch.addEventListener("click", () => {
+				searchInput.value = ""; // Clear the input
+				window.location.href = "/shop"; // Redirect to shop route (normal state)
+			});
+		});
+
+		function sortItem(item, data) {
 			const product = JSON.parse(data);
 			const shopList = document.getElementById('shopList')
 			console.log(item);
 			console.log("products:", product)
 			switch (item) {
-                case 'New Arrival':
-                product.sort((a, b) => {
-                        const dateA = a.createdAt;
-                        const dateB = b.createdAt;
+				case 'New Arrival':
+					product.sort((a, b) => {
+						const dateA = a.createdAt;
+						const dateB = b.createdAt;
 
-                        if (dateA < dateB) return 1;
-                        if (dateA > dateB) return -1;
-                        return 0;
-                    })
-                    console.log('sort by new')
-                    break;
-                case 'Price: Low to High':
-                product.sort((a, b) => {
-                        const priceA = a.salePrice;
-                        const priceB = b.salePrice;
+						if (dateA < dateB) return 1;
+						if (dateA > dateB) return -1;
+						return 0;
+					})
+					console.log('sort by new')
+					break;
+				case 'Price: Low to High':
+					product.sort((a, b) => {
+						const priceA = a.salePrice;
+						const priceB = b.salePrice;
 
-                        if (priceA < priceB) return -1;
-                        if (priceA > priceB) return 1;
-                        return 0;
-                    })
-                    console.log('sort by price asc')
-                    break;
-                case 'Price: High to Low':
-                product.sort((a, b) => {
-                        const priceA = a.salePrice;
-                        const priceB = b.salePrice;
+						if (priceA < priceB) return -1;
+						if (priceA > priceB) return 1;
+						return 0;
+					})
+					console.log('sort by price asc')
+					break;
+				case 'Price: High to Low':
+					product.sort((a, b) => {
+						const priceA = a.salePrice;
+						const priceB = b.salePrice;
 
-                        if (priceA < priceB) return 1;
-                        if (priceA > priceB) return -1;
-                        return 0;
-                    })
-                    console.log('sort by price desc')
-                    break;
-                case 'Aa-Zz':
-                    product.sort((a, b) => {
-                        const nameA = a.productName.toLowerCase();
-                        const nameB = b.productName.toLowerCase();
+						if (priceA < priceB) return 1;
+						if (priceA > priceB) return -1;
+						return 0;
+					})
+					console.log('sort by price desc')
+					break;
+				case 'Aa-Zz':
+					product.sort((a, b) => {
+						const nameA = a.productName.toLowerCase();
+						const nameB = b.productName.toLowerCase();
 
-                        if (nameA < nameB) return -1;
-                        if (nameA > nameB) return 1;
-                        return 0;
-                    })
-                    console.log('sort by name asc')
-                    break;
-                case 'Zz-Aa':
-                product.sort((a, b) => {
-                        const nameA = a.productName.toLowerCase();
-                        const nameB = b.productName.toLowerCase();
+						if (nameA < nameB) return -1;
+						if (nameA > nameB) return 1;
+						return 0;
+					})
+					console.log('sort by name asc')
+					break;
+				case 'Zz-Aa':
+					product.sort((a, b) => {
+						const nameA = a.productName.toLowerCase();
+						const nameB = b.productName.toLowerCase();
 
-                        if (nameA < nameB) return 1;
-                        if (nameA > nameB) return -1;
-                        return 0;
-                    })
-                    console.log('sort by name desc')
-                    break;
-                default:
-                    console.log("default case")
-                    break;
-            }
+						if (nameA < nameB) return 1;
+						if (nameA > nameB) return -1;
+						return 0;
+					})
+					console.log('sort by name desc')
+					break;
+				default:
+					console.log("default case")
+					break;
+			}
 			shopList.innerHTML = ''
-			product.map(product=>{
+			product.map(product => {
 				let element = `
 			<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
 					<!-- Block2 -->
@@ -303,14 +359,19 @@
 					</div>
 				</div>
 			`
-			shopList.innerHTML+=element
+				shopList.innerHTML += element
 			})
 
-			
+
 
 		}
 
-		</script>	
-	
+
+		function categoryFilter() {
+
+		}
+
+	</script>
+
 	<!-- Footer -->
-<%-include("../../views/partials/user/footer")%>
+	<%-include("../../views/partials/user/footer")%>
