@@ -25,7 +25,7 @@ router.get('/auth/google/callback',passport.authenticate('google',{failureRedire
 })
 
 router.get("/login",userController.loadLogin)
-router.post("/login",userController.login);
+router.post("/login",userController.login )
 router.get("/logout",userController.logout)
 
 ///user products

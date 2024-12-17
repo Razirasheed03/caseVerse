@@ -225,40 +225,73 @@ const loadSignup = async (req, res) => {
 const loadshopping = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user|| req.session.googleUser;
-        const user =userSession ? await User.findById(userSession._id):null;
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
         
-
         const search = req.query.search || ""; 
         const page = parseInt(req.query.page) || 1;
         const limit = 8; 
+        const sortQuery = req.query.sort || ""; 
+        const categoryQuery = req.query.category || ""; // Add category query parameter
 
-     
-        const totalProducts = await Product.countDocuments({
-            $or: [
-                { productName: { $regex: new RegExp('.*' + search + '.*', 'i') } },
-        
-            ],
-            isBlocked:false,
-        });
-  
+        // Build the base query
+        const baseQuery = {
+            productName: { $regex: new RegExp('.*' + search + '.*', 'i') },
+            isBlocked: false
+        };
 
-        const productData = await Product.find(
-    
-                { productName: { $regex: new RegExp('.*' + search + '.*', 'i') },isBlocked:false }
-        )
+        // Add category filter if a category is selected
+        if (categoryQuery) {
+            const category = await Category.findOne({ name: categoryQuery });
+            if (category) {
+                baseQuery.category = category._id;
+            }
+        }
+
+        // Determine sort criteria
+        let sortCriteria = { createdAt: -1 }; // Default sort by newest
+        switch(sortQuery) {
+            case 'priceAsc':
+                sortCriteria = { salePrice: 1 };
+                break;
+            case 'priceDesc':
+                sortCriteria = { salePrice: -1 };
+                break;
+            case 'nameAsc':
+                sortCriteria = { productName: 1 };
+                break;
+            case 'nameDesc':
+                sortCriteria = { productName: -1 };
+                break;
+            default:
+                sortCriteria = { createdAt: -1 };
+        }
+
+        // Count total products
+        const totalProducts = await Product.countDocuments(baseQuery);
+
+        // Find products with sorting, pagination, and category filtering
+        const productData = await Product.find(baseQuery)
+            .sort(sortCriteria)
             .limit(limit)
             .skip((page - 1) * limit)
             .populate('category')
             .exec();
+
+        // Fetch all categories for the category filter links
+        const categories = await Category.find({ isListed: true, isDeleted: false });
+
         const totalPages = Math.ceil(totalProducts / limit);
 
-        res.render('shop',{
+        res.render('shop', {
             product: productData, 
             currentPage: page, 
             totalPages, 
             search, 
-            user
+            user,
+            currentSort: sortQuery,
+            categories: categories, // Pass categories to the template
+            currentCategory: categoryQuery // Pass current category to the template
         });
     } catch (error) {
         console.error("Error loading shopping page:", error);
