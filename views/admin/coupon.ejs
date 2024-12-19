@@ -80,6 +80,50 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const createdOnInput = document.getElementById("createdOn");
+    const expireOnInput = document.getElementById("expireOn");
+
+    // Clear the validity on input change
+    createdOnInput.addEventListener('input', function () {
+        createdOnInput.setCustomValidity("");  // Clear custom validity
+    });
+    expireOnInput.addEventListener('input', function () {
+        expireOnInput.setCustomValidity("");  // Clear custom validity
+    });
+
+    form.addEventListener("submit", function (event) {
+        const createdOnDate = new Date(createdOnInput.value);
+        const expireOnDate = new Date(expireOnInput.value);
+        const today = new Date();
+        
+        // Normalize today to ignore time part
+        today.setHours(0, 0, 0, 0);
+
+        // Reset custom validity messages
+        createdOnInput.setCustomValidity("");
+        expireOnInput.setCustomValidity("");
+
+        // Check if `createdOn` is in the past but allow today's date
+        if (createdOnDate < today) {
+            createdOnInput.setCustomValidity("Created On date cannot be earlier than today.");
+            createdOnInput.reportValidity();
+            event.preventDefault();
+            return;
+        }
+
+        // Check if `expireOn` is earlier than or equal to `createdOn`
+        if (expireOnDate <= createdOnDate) {
+            expireOnInput.setCustomValidity("Expire On date must be later than Created On date.");
+            expireOnInput.reportValidity();
+            event.preventDefault();
+        }
+    });
+});
+
+
+
     // Delete button click event
     $(document).on('click', '.delete-btn', function () {
         const couponId = $(this).data('id');
@@ -117,6 +161,7 @@
             }
         });
     });
+    
 </script>
 
 <%- include("../../views/partials/admin/footer") %>

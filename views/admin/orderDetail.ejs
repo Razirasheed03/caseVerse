@@ -1,81 +1,107 @@
 <%- include("../../views/partials/admin/header") %>
 
 <style>
-    
-    .card-body .table img {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-.table {
-        border-collapse: collapse; 
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 0;
     }
-    .table td, .table th {
-        border: none;
+    .card {
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        max-width: 1200px;
+        padding: 20px;
+    }
+    .topBox {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        font-size: 1.1rem;
+        border-bottom: 1px solid #ddd;
+    }
+    .table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+        background-color: #fff;
+    }
+    .table thead th {
+        background-color: #f1f1f1;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    .table tbody td {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
     }
     .table img {
-        margin-bottom: 0; 
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
     }
-    tbody tr {
-        border: none; 
+    .badge {
+        padding: 5px 10px;
+        font-size: 0.9rem;
+        border-radius: 4px;
     }
-.badge {
-    padding: 0.5em 0.8em;
-    font-size: 0.85rem;
-    border-radius: 0.25rem;
-}
-.topBox{
-    height: 15vh;
-    padding: 2vh;
-    font-size: larger;
-   
-
-}
+    .modal-header {
+        background-color: #007bff;
+        color: #fff;
+    }
+    .modal-content {
+        border-radius: 10px;
+    }
+    .modal-footer button {
+        border-radius: 5px;
+    }
+    .shipping-info {
+        margin-top: 20px;
+        background-color: #f9f9f9;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    .shipping-info strong {
+        display: block;
+        margin-bottom: 5px;
+    }
 </style>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-<tr>
-    
-        <div class="topBox row" >
-            <div class="col">
-                Order Id : <%= orders._id %>   
-            </div>
-        
-                <div >
-                        <button  class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newStatusModal">
-                            Status
-                        </button>
-                    </div>
-    
-</tr>
 
-<div class="card-body">
-    <div class="table-responsive">
-        <table class="table table-hover">
+<div class="card">
+    <div class="topBox">
+        <div>Order ID: <strong><%= orders.orderId %></strong></div>
+        <div>Order Date: <%= orders.createdAt.toLocaleDateString() %></div>
+    </div>
+
+    <div class="card-body">
+        <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">Product</th>
-                 <th scope="col">Quantity</th>
-                    <th scope="col">Payment Method</th>
-                    <th scope="col">Total</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Date</th>
-              
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Payment Method</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
             </thead>
-            <% if (orders && orders.items && orders.items.length > 0) { %>
-                <% orders.items.forEach(item => { %>
             <tbody>
+                <% if (orders && orders.items && orders.items.length > 0) { %>
+                    <% orders.items.forEach(item => { %>
                         <tr>
-
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div style="width: 30%; height: 60%; overflow: hidden; border-radius: 8px;">
-                                        <img src="/uploads/product-images/<%= item.productId.productImage[0] %>" 
-                                            alt="<%= item.productId.productName %>" 
-                                            style="width: 100%; height: 100%; object-fit: cover;">
-                                    </div>
+                                    <img src="/uploads/product-images/<%= item.productId.productImage[0] %>" 
+                                         alt="<%= item.productId.productName %>" />
                                     <div class="ms-3">
-                                        <p class="mb-0 font-sm"><%= item.productId.productName %></p>
+                                        <p class="mb-0"><%= item.productId.productName %></p>
                                     </div>
                                 </div>
                             </td>
@@ -85,21 +111,33 @@
                             <td><span class="badge <%= orders.status === 'Cancelled' ? 'bg-danger' : orders.status === 'Delivered' ? 'bg-success' : 'bg-warning' %>">
                                 <%= orders.status %>
                             </span></td>
-                            <td><%= orders.createdAt.toLocaleDateString() %></td>
-                           
+                            <td>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newStatusModal">
+                                    Update Status
+                                </button>
+                            </td>
                         </tr>
                     <% }) %>
                 <% } else { %>
                     <tr>
-                        <td colspan="7" class="text-center">No orders found.</td>
+                        <td colspan="6" class="text-center">No orders found.</td>
                     </tr>
                 <% } %>
             </tbody>
-            
         </table>
+
+        <div class="shipping-info">
+            <strong>Shipping Address:</strong>
+            <% if (selectedAddress) { %>
+                <p><%= selectedAddress.name %>, <%= selectedAddress.phone %><br>
+                   <%= selectedAddress.address %><br>
+                   <%= selectedAddress.city %>, <%= selectedAddress.state %> - <%= selectedAddress.pincode %></p>
+            <% } else { %>
+                <p>No address selected.</p>
+            <% } %>
+        </div>
     </div>
 </div>
-
 
 <div class="modal fade" id="newStatusModal" tabindex="-1" aria-labelledby="newStatusModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -111,8 +149,8 @@
             <div class="modal-body">
                 <form id="updateOrderStatusForm">
                     <div class="mb-3">
-                        <label  class="form-label">Select Status</label>
-                        <select class="form-select" id="newOrderstatus" name="status" >
+                        <label class="form-label">Select Status</label>
+                        <select class="form-select" id="newOrderstatus" name="status">
                             <option value="In Transit">In Transit</option>
                             <option value="Shipped">Shipped</option>
                             <option value="Delivered">Delivered</option>
@@ -120,54 +158,41 @@
                             <option value="Return Request">Return Request Sent</option>
                             <option value="Return Request Denied">Return Request Denied</option>
                             <option value="Returned">Returned</option>
-
                         </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary"  id="saveStatusButton" onclick="statusChange('<%=orders.id%>')">Save Changes</button>
+                <button type="button" class="btn btn-primary" id="saveStatusButton" onclick="statusChange('<%=orders.id%>')">Save Changes</button>
             </div>
         </div>
     </div>
 </div>
 
-
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-<script>
-    const data=document.getElementById('newOrderstatus');
-    console.log(data)
-
-    const saveBtn=document.getElementById('saveStatusButton');
-    function statusChange(id){
-        console.log(id)
-        console.log(data.value)
-        fetch('/admin/changeStatus', {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify({ data:data.value, id })
-        })
-        .then(res=>res.json())
-        .then(data=>{
-            if(data){
-                Swal.fire({
-                icon: 'success',
-                title: "Success",
-                text: "Status Updated SuccessFully",
-                confirmButtonText:"Ok"
-              }).then(()=>{
-                window.location.reload();
-              })
-
-            }
-        })
-    }
-    
-</script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const saveBtn = document.getElementById('saveStatusButton');
+    function statusChange(id) {
+        const status = document.getElementById('newOrderstatus').value;
+        fetch('/admin/changeStatus', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ data: status, id })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data) {
+                Swal.fire({
+                    icon: 'success',
+                    title: "Success",
+                    text: "Status Updated Successfully",
+                    confirmButtonText: "Ok"
+                }).then(() => {
+                    window.location.reload();
+                });
+            }
+        });
+    }
+</script>

@@ -1,6 +1,53 @@
 <%- include("../../views/partials/user/header") %>
 <br><br><br><br>
 <style>
+ .quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-input {
+  width: 20px;
+  text-align: center;
+  padding: 0px;
+  font-size: 16px;
+  /* border: 1px solid #ccc; */
+  /* background-color: #f9f9f9; */
+  font-weight: bold;
+}
+
+.increment-btn,
+.decrement-btn {
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 18px;
+}
+
+/* .increment-btn:hover,
+.decrement-btn:hover {
+  background-color: #bfbfbf;
+} */
+
+.increment-btn:active,
+.decrement-btn:active {
+  transform: scale(0.95);
+}
+
+.quantity-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+
   .couponInput{
     color:rgb(0, 0, 0);
     border: 1px solid;
@@ -27,7 +74,7 @@
                 <th class="column-3">Price</th>
                 <th class="column-4">Quantity</th>
                 <th class="column-5">Total</th>
-                <th class="column-6">Remove</th>
+                <th class="column-6">Action</th>
               </tr>
 
               <% if (cart.items.length > 0) { %>
@@ -40,9 +87,19 @@
                     </td>
                     <td class="column-2"><%= item.productId.productName %></td>
                     <td class="column-3">₹<%= item.price %></td>
+
+
+
                     <td class="column-4">
-                      <input type="number" oninput="quantityChange(this.value,'<%=item._id%>')" name="quantity[<%= item._id %>]" value="<%= item.quantity %>" class="quantity-input" min="1"  max="10" data-price="<%= item.price %>" data-item-id="<%= item._id %>">
+                      <div class="quantity-controls">
+                        <button type="button" onclick="quantityChange(-1, '<%=item._id%>')" class="decrement-btn">-</button>
+                        <input type="number" name="quantity[<%= item._id %>]" value="<%= item.quantity %>" class="quantity-input" min="1" max="10" data-price="<%= item.price %>" data-item-id="<%= item._id %>" readonly>
+                        <button type="button" onclick="quantityChange(1, '<%=item._id%>')" class="increment-btn">+</button>
+                      </div>
                     </td>
+                    
+                    
+                    
                     <td class="column-5">₹<span class="total-price" data-item-id="<%= item._id %>"><%= item.totalPrice %></span></td>
                     <td class="column-6">
                       <button type="submit" name="removeItem" value="<%= item._id %>" class="btn btn-danger">Remove</button>
@@ -60,22 +117,7 @@
 
           <!-- Cart Totals and Actions -->
           <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
-            <input 
-              type="text" 
-              class="couponInput" 
-              name="couponCode" 
-              id="couponCode" 
-              placeholder="Enter coupon code" 
-              value="<%= appliedCoupon || '' %>"
-            >
-            <button 
-              type="button"
-              class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5" onclick="applyCoupon('<%= totalPrice.toFixed(2) %>')"
-              id="applyCouponBtn">
-              Apply Coupon
-            </button>
           </div>
-        
         </div>
       </div>
 
@@ -109,16 +151,6 @@
             </div>
           </div>
         
-          <!-- Coupon Discount -->
-          <div class="flex-w flex-t p-b-13">
-            <div class="size-208">
-              <span class="stext-110 cl2">Coupon Discount:</span>
-            </div>
-            <div class="size-209">
-              <span class="mtext-110 cl2" id="discount">₹ <%= couponDiscount %></span>
-            </div>
-          </div>
-          
           <!-- Total -->
           <div class="flex-w flex-t p-t-27 p-b-33">
             <div class="size-208">
@@ -137,7 +169,7 @@
             <a href="/checkout">Proceed to Checkout</a>
           </button>
         </div>
-
+        
         
         </div>
       </div>
@@ -154,143 +186,70 @@
 
 <%- include("../../views/partials/user/footer") %>
 
-
-
 <script src="/js/main.js"></script>
-<!-- <script>
-  async function updateCartTotals() {
-    let subtotal = 0;
-    
-    // Calculate subtotal
-    document.querySelectorAll('.total-price').forEach(item => {
-      subtotal += parseFloat(item.textContent);
-    });
-  
-    // Determine shipping
-    const shipping = subtotal > 499 ? 0 : 40;
-  
-    // Get coupon discount
-    const couponDiscount = parseFloat(document.getElementById('discount').innerText.replace('₹', '').trim()) || 0;
-  
-    // Calculate total
-    const total = subtotal + shipping - couponDiscount;
-  
-    // Update DOM elements
-    document.getElementById('subtotal').textContent = `₹ ${subtotal.toFixed(2)}`;
-    document.getElementById('shipping').textContent = shipping === 0 ? 'Free' : `₹ ${shipping.toFixed(2)}`;
-    document.getElementById('total').textContent = `₹ ${total.toFixed(2)}`;
-  }
-  
- 
-  // Update quantity and totals
-  document.querySelectorAll('.quantity-input').forEach(input => {
-    input.addEventListener('input', async function() {
-      const quantity = parseInt(this.value);
-      const price = parseFloat(this.dataset.price);
-      const itemId = this.dataset.itemId;
-      const totalPrice = quantity * price;
-  
-      document.querySelector(`.total-price[data-item-id="${itemId}"]`).textContent = totalPrice.toFixed(2);
-  
-      await fetch('/quantityChange', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity, id: itemId })
-      });
-  
-      updateCartTotals();
-    });
-  });
-  
-  // Initial call to ensure everything updates
-  updateCartTotals();
-
-
-  </script> -->
-  
-  
-
 <script>
 
-async function quantityChange(quantity,id){
-             await fetch(`/quantityChange`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body:JSON.stringify({quantity,id})
-            });
-}
-const data=document.getElementById('')
-  
-async function applyCoupon() {
-    const couponCode = document.getElementById('couponCode').value.trim();
+async function quantityChange(change, id) {
+    const input = document.querySelector(`input[name="quantity[${id}]"]`);
+    const currentQuantity = parseInt(input.value, 10);
+    const price = parseFloat(input.dataset.price);
+    const newQuantity = currentQuantity + change;
 
-    if (!couponCode) {
-      alert('Please enter a valid coupon code.');
-      return;
-    }
-  
-    try {
-      const response = await fetch('/applyCoupon', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ couponCode })
-      });
-  
-      const data = await response.json();
-  
-      if (data.error) {
-        alert(data.error);
+    if (newQuantity < 1) {
+        alert("Quantity must be at least 1.");
         return;
-      }
-  
-      alert(data.success);
-  
-      const couponDiscountElement = document.getElementById('discount');
-      
-      couponDiscountElement.textContent = `₹ ${data.discount.toFixed(2)}`;
-  
-      updateCartTotals(data.discount);
-    } catch (error) {
-      console.error('Failed to apply coupon:', error);
-      alert('Something went wrong. Please try again.');
     }
-  }
-  
-  // Dynamically update price when quantity is changed
-  document.querySelectorAll('.quantity-input').forEach(input => {
-    input.addEventListener('input', function() {
-      const quantity = parseInt(this.value);
-      const price = parseFloat(this.dataset.price);
-      const itemId = this.dataset.itemId;
-      const totalPrice = quantity * price;
 
-      // Update total price in the row
-      document.querySelector(`.total-price[data-item-id="${itemId}"]`).textContent = totalPrice.toFixed(2);
+    try {
+        // Send updated quantity to server and check response
+        const response = await fetch(`/quantityChange`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: newQuantity, id }),
+        });
 
-      // Optionally update hidden input values for form submission
-      document.querySelector(`[name="quantity[${itemId}]"]`).value = quantity;
-      const discount = document.getElementById('discount').value;
-      // Update the Cart Total and Subtotal
-      updateCartTotals(discount);
-    });
-  });
+        const result = await response.json();
 
-  // Function to update the total cart price
-  function updateCartTotals(discount) {
+        if (response.ok) {
+            // Update the quantity and total price dynamically on success
+            input.value = newQuantity;
+
+            const totalPrice = newQuantity * price;
+            document.querySelector(`.total-price[data-item-id="${id}"]`).textContent = totalPrice.toFixed(2);
+
+            // Update cart totals
+            updateCartTotals();
+        } else {
+            // Handle stock exceed or max limit errors
+            if (result.error === "Stock exceed") {
+                alert("Product stock exceeded.");
+            } else if (result.error.includes("Maximum limit")) {
+                alert(result.error); // Message includes the dynamic max limit
+            } else {
+                alert(result.error || "Unable to update quantity.");
+            }
+        }
+    } catch (error) {
+        console.error("Error updating quantity:", error);
+        alert("An error occurred. Please try again.");
+    }
+}
+
+
+  function updateCartTotals() {
     let subtotal = 0;
     document.querySelectorAll('.total-price').forEach(item => {
       subtotal += parseFloat(item.textContent);
     });
-
-    const total = subtotal; // You can add additional fees like tax if needed
-    discount??=0;
-    // Update subtotal and total in the UI
+  
+    const total = subtotal;
     document.getElementById('subtotal').textContent = `₹ ${subtotal.toFixed(2)}`;
-    if(total>499 || total == 0){
-      document.getElementById('total').textContent = `₹ ${(total-discount).toFixed(2)}`;
-    }else{
-      document.getElementById('total').textContent = `₹ ${(total-discount+40).toFixed(2)}`;
-    }
+    document.getElementById('total').textContent =
+      total > 499 || total === 0
+        ? `₹ ${total.toFixed(2)}`
+        : `₹ ${(total + 40).toFixed(2)}`;
   }
+  
+  </script>
+  
 
-</script>

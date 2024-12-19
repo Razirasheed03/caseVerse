@@ -21,7 +21,7 @@ const adminOrders=async(req,res)=>{
 
 const orderDetail = async (req, res) => {
     try {
-        const id = req.query.id; // Ensure this matches your frontend URL
+        const id = req.query.id; // Ensure this matches the frontend URL
         console.log("Order ID from query:", id);
 
         // Fetch order with populated product details
@@ -29,21 +29,23 @@ const orderDetail = async (req, res) => {
             path: 'items.productId',
             model: 'Product', // Ensure Product is correctly imported
         });
-        // const quantity=await Cart.findOne({ "items._id": id },"items.$.quantity")
-        // console.log(quantity)
 
         console.log("Fetched Order:", orders);
 
         if (!orders) {
-            return res.render('orderDetail', { orders: null }); // Pass null to indicate no orders found
+            return res.render('orderDetail', { orders: null, selectedAddress: null }); // Pass null to indicate no orders found
         }
 
-        res.render('orderDetail', { orders });
+        // Extract the selected address from the order
+        const selectedAddress = orders.address; // Assuming `address` is part of the order schema
+
+        res.render('orderDetail', { orders, selectedAddress });
     } catch (error) {
         console.error("Error fetching order:", error);
         res.render('pageerror', { error: "Error fetching order details." });
     }
 };
+
 
 const changeStatus = async (req, res) => {
     try {
@@ -67,6 +69,10 @@ const changeStatus = async (req, res) => {
 
             // Optionally, update the payment status in the order
             order.paymentStatus = 'Refunded';
+            await order.save();
+        }
+        if(data==='Delivered'){
+            order.paymentStatus='Paid';
             await order.save();
         }
 

@@ -197,16 +197,23 @@
     </body>
 
 </html>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-
     async function cancelOrder(orderId) {
         try {
-            const confirmation = await Swal.fire({
+            // Displaying the confirmation with a text input for the reason
+            const { value: reason } = await Swal.fire({
                 title: "Are you sure?",
-                text: "Do you really want to cancel this order?",
+                text: "Do you really want to cancel this order? Please provide a reason.",
                 icon: "warning",
+                input: 'textarea',
+                inputLabel: 'Cancellation Reason',
+                inputPlaceholder: 'Enter reason for cancellation...',
+                inputAttributes: {
+                    'aria-label': 'Type your reason here'
+                },
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
                 cancelButtonColor: "#3085d6",
@@ -214,10 +221,12 @@
                 cancelButtonText: "No"
             });
 
-            if (confirmation.isConfirmed) {
+            // Proceed if the user provides a reason
+            if (reason) {
                 const response = await fetch(`/cancelOrder/${orderId}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reason }) // Send reason with the request
                 });
 
                 const result = await response.json();
@@ -225,16 +234,13 @@
                 if (result.success) {
                     await Swal.fire({
                         title: "Order Cancelled",
-                        text: "Your order Cancelled '.",
+                        text: "Your order has been cancelled.",
                         icon: "success"
                     });
                     document.getElementById(`cancel-btn-${orderId}`).disabled = true;
                     document.getElementById(`return-btn-${orderId}`).disabled = true;
 
-
-
                     window.location.reload();
-
                 } else {
                     throw new Error(result.message);
                 }
@@ -247,10 +253,17 @@
 
     async function returnOrder(orderId) {
         try {
-            const confirmation = await Swal.fire({
+            // Displaying the confirmation with a text input for the reason
+            const { value: reason } = await Swal.fire({
                 title: "Are you sure?",
-                text: "Do you want to Return This Order?",
+                text: "Do you want to return this order? Please provide a reason.",
                 icon: "question",
+                input: 'textarea',
+                inputLabel: 'Return Reason',
+                inputPlaceholder: 'Enter reason for return...',
+                inputAttributes: {
+                    'aria-label': 'Type your reason here'
+                },
                 showCancelButton: true,
                 confirmButtonColor: "#28a745",
                 cancelButtonColor: "#3085d6",
@@ -258,10 +271,12 @@
                 cancelButtonText: "No"
             });
 
-            if (confirmation.isConfirmed) {
+            // Proceed if the user provides a reason
+            if (reason) {
                 const response = await fetch(`/returnOrder/${orderId}`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reason }) // Send reason with the request
                 });
 
                 const result = await response.json();
@@ -269,16 +284,13 @@
                 if (result.success) {
                     await Swal.fire({
                         title: "Return Request Sent",
-                        text: "Return Request Sent Wait for Confirmation",
+                        text: "Your return request has been sent. Wait for confirmation.",
                         icon: "success"
                     });
                     document.getElementById(`cancel-btn-${orderId}`).disabled = true;
                     document.getElementById(`return-btn-${orderId}`).disabled = true;
 
-
-
                     window.location.reload();
-
                 } else {
                     throw new Error(result.message);
                 }
@@ -289,6 +301,7 @@
         }
     }
 </script>
+
 
 
 <script src="vendor/jquery/jquery-3.2.1.min.js"></script>

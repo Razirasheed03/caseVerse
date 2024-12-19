@@ -74,7 +74,9 @@ const orderSchema = new Schema({
         paymentId:{type:String},
         signature:{type:String}
     },
-    totalCouponDiscount: { type: Number, default: 0 }
+    totalCouponDiscount: { type: Number, default: 0 },
+    cancellationReason: { type: String, default: '' }, // Added cancellationReason field
+    returnReason: { type: String, default: '' }, // Added returnReason field
 });
 
 // Pre-save hook for calculating final amounts and timestamps

@@ -149,8 +149,58 @@
         
         </a>
       </div>
+      <div class="flex-w flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
+        <input 
+          type="text" 
+          class="couponInput" 
+          name="couponCode" 
+          id="couponCode" 
+          placeholder="Enter coupon code" 
+       
+        >
+        <button 
+          type="button"
+          class="flex-c-m stext-101 cl2 size-118 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5" onclick="applyCoupon('<%= totalPrice.toFixed(2) %>')"
+          id="applyCouponBtn">
+          Apply Coupon
+        </button>
+      </div>
     </div>
   </div>
+
+<script>
+document.getElementById('applyCouponBtn').addEventListener('click', async () => {
+    const couponCode = document.getElementById('couponCode').value.trim();
+    
+    if (!couponCode) {
+        alert('Please enter a coupon code');
+        return;
+    }
+
+    try {
+        const response = await fetch('/applyCoupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ couponCode })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.success);
+            // Reload the page to reflect coupon changes
+            location.reload();
+        } else {
+            alert(result.error);
+        }
+    } catch (error) {
+        console.error('Coupon application error:', error);
+        alert('Failed to apply coupon. Please try again.');
+    }
+});
+</script>
 </div>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="preload" href="https://checkout-static-next.razorpay.com/build/assets/fonts/Inter-Medium.279dd673.woff2" 
