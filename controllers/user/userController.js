@@ -780,7 +780,6 @@ const addToCart = async (req, res) => {
 
 
 
-
 const wishlist = async (req, res) => {
     try {
         const userSession = req.session.user || req.session.googleUser;
@@ -947,6 +946,7 @@ const removeFromWishlist = async (req, res) => {
     }
 };
 
+
 const quantityChange = async (req, res) => {
     try {
         const { quantity, id } = req.body;
@@ -954,7 +954,7 @@ const quantityChange = async (req, res) => {
         // Find the cart item and extract the productId
         const cartItem = await Cart.findOne({ "items._id": id }, { "items.$": 1 });
         if (!cartItem || cartItem.items.length === 0) {
-            return res.status(404).json({ error: "Item not found in cart" });
+            return res.status(404).json({ error: "Item not found in cart." });
         }
 
         const productId = cartItem.items[0].productId;
@@ -962,18 +962,31 @@ const quantityChange = async (req, res) => {
         // Fetch product details to check stock availability
         const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).json({ error: "Product not found" });
+            return res.status(404).json({ error: "Product not found." });
         }
 
-        // Determine the maximum allowed quantity based on product stock
+        // Determine the maximum allowed quantity
         const maxAllowedQuantity = Math.min(10, product.quantity);
 
-        // Check if requested quantity exceeds the limits
-        if (quantity > product.quantity) {
-            return res.status(400).json({ error: "Stock exceed" });
+        // Validate the requested quantity
+        if (quantity <= 0) {
+            return res.status(400).json({ error: "Quantity must be at least 1." });
         }
+
+        if (quantity > product.quantity) {
+            if (product.quantity === 0) {
+                return res.status(400).json({ error: "This product is out of stock." });
+            } else {
+                return res.status(400).json({
+                    error: `Only ${product.quantity} units available. You requested ${quantity}.`,
+                });
+            }
+        }
+
         if (quantity > maxAllowedQuantity) {
-            return res.status(400).json({ error: `Maximum limit is ${maxAllowedQuantity} pieces` });
+            return res.status(400).json({
+                error: `Maximum limit is ${maxAllowedQuantity} pieces.`,
+            });
         }
 
         const itemPrice = cartItem.items[0].price;
@@ -989,12 +1002,17 @@ const quantityChange = async (req, res) => {
             }
         );
 
-        res.status(200).json({ success: true, message: "Quantity updated successfully" });
+        res.status(200).json({
+            success: true,
+            message: "Quantity updated successfully.",
+            updatedQuantity: quantity,
+        });
     } catch (error) {
         console.error("Error updating quantity:", error);
-        res.status(500).json({ success: false, error: "Internal server error" });
+        res.status(500).json({ success: false, error: "Internal server error." });
     }
 };
+
 
 
 
@@ -1154,6 +1172,18 @@ const applyCoupon = async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 };
+
+const couponModal = async (req, res) => {
+    try {
+        // Fetch all coupons that are active and available to users
+        const coupons = await Coupon.find({ isList: true });
+        res.status(200).json(coupons); // Return the coupons as JSON
+    } catch (error) {
+        console.error('Error fetching coupons:', error);
+        res.status(500).json({ message: 'Failed to fetch coupons' });
+    }
+};
+
 
 
 const checkout = async (req, res) => {
@@ -1332,7 +1362,7 @@ const placeOrder = async (req, res) => {
                 orderId: newOrder._id,
             });
         } else if (paymentMethod === 'wallet') {
-            if (user.walletBalance < totalAmount) {
+            if (user.walletBalance < finalAmount) {
                 return res.status(400).json({
                     success: false,
                     message: 'Insufficient wallet balance',
@@ -1342,7 +1372,7 @@ const placeOrder = async (req, res) => {
             user.walletBalance -= finalAmount;
             user.walletTransactions.push({
                 detail: 'Payment for Order',
-                amount: totalAmount,
+                amount: finalAmount,
                 type: 'debit',
             });
 
@@ -1608,4 +1638,5 @@ module.exports = {
     removeFromWishlist,
     verifyPayment,
     refundToWallet,
+    couponModal,
 }

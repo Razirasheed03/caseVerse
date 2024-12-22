@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Coupon Icon</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+    
+        /* Floating icon styles */
+        .floating-coupon {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 9999;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+    
+        .floating-coupon img {
+            width: 40px;
+            height: 40px;
+        }
+    
+        /* Modal styles */
+        .coupon-modal {
+            position: fixed;
+            top: 50%;
+            right: 6%;
+            transform: translateY(-50%);
+            z-index: 10000;
+            width: 350px;
+            height: 80%; /* Makes the modal content fill up to the center of the screen */
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px 0 0 10px; /* Rounded corners on the left side */
+            box-shadow: -8px 0 16px rgba(0, 0, 0, 0.3);
+            display: none;
+            overflow-y: auto;
+        }
+    
+        .coupon-modal.active {
+            display: block;
+        }
+    
+        .coupon-modal .header {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    
+        .coupon-modal .coupons {
+            margin-top: 10px;
+        }
+    
+        /* Coupon design as image/vector */
+        .coupon {
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            background-color: #e1cba3;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 1.1rem;
+        }
+    
+    
+        .coupon .details {
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    
+        .coupon .discount {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+    
+        .coupon .apply-button {
+            background-color: #ffffff;
+            color: #f39c12;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    
+        /* Overlay styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            display: none;
+        }
+    
+        .modal-overlay.active {
+            display: block;
+        }
+    
+        /* Loading indicator */
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #f39c12;
+        }
+    </style>
+    </head>
+    <body>
+        <!-- Floating Coupon Icon -->
+        <div class="floating-coupon" id="couponIcon">
+            <img src="/promo-code.png" alt="Coupon Icon">
+        </div>
+        
+        <!-- Modal Overlay -->
+        <div class="modal-overlay" id="modalOverlay"></div>
+    
+        <!-- Coupon Modal -->
+        <div class="coupon-modal" id="couponModal">
+            <div class="header">Available Coupons</div>
+            <p style="text-align: center;">Apply Coupon For Availing Exciting Offers</p>
+    
+            <div class="coupons" id="couponsContainer">
+                <!-- Coupons will be dynamically inserted here -->
+                <div class="loading">Loading coupons...</div>
+            </div>
+        </div>
+    
+
+    <script>
+        const couponIcon = document.getElementById('couponIcon');
+        const couponModal = document.getElementById('couponModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const couponsContainer = document.getElementById('couponsContainer');
+
+        // Open modal when clicking the icon
+        couponIcon.addEventListener('click', () => {
+            couponModal.classList.add('active');
+            modalOverlay.classList.add('active');
+            fetchCoupons(); // Fetch coupons dynamically
+        });
+
+        // Close modal when clicking the overlay
+        modalOverlay.addEventListener('click', () => {
+            couponModal.classList.remove('active');
+            modalOverlay.classList.remove('active');
+        });
+
+        // Function to fetch coupons from the backend
+   async function fetchCoupons() {
+    try {
+        couponsContainer.innerHTML = '<div class="loading">Loading coupons...</div>'; // Show loading indicator
+
+        const response = await fetch('/couponModal'); // Adjust the route as per your backend
+        if (!response.ok) throw new Error('Failed to fetch coupons');
+
+        let coupons = await response.json();
+
+        // Clear existing coupons
+        couponsContainer.innerHTML = '';
+
+        if (coupons.length === 0) {
+            couponsContainer.innerHTML = '<div class="coupon">No coupons available</div>';
+        } else {
+            const currentDate = new Date(); // Current date for comparison
+
+            // Sort coupons: latest first, expired last
+            coupons.sort((a, b) => {
+                const dateA = new Date(a.expireOn);
+                const dateB = new Date(b.expireOn);
+
+                // Move expired coupons to the end
+                if (dateA < currentDate && dateB >= currentDate) return 1;
+                if (dateA >= currentDate && dateB < currentDate) return -1;
+
+                // Sort by expiry date (latest first)
+                return dateB - dateA;
+            });
+
+            // Populate the modal with sorted coupons
+            coupons.forEach(coupon => {
+                const couponElement = document.createElement('div');
+                couponElement.className = 'coupon';
+
+                // Check if the coupon is expired
+                const expireDate = new Date(coupon.expireOn);
+                const isExpired = expireDate < currentDate;
+
+                // Check if the coupon is already used
+                const isUsed = coupon.used; // Assuming the backend sends a `used` property
+
+                couponElement.innerHTML = `
+                    <strong>${coupon.name}</strong><br>
+                    Coupon Discout: ₹${coupon.offerPrice}<br>
+                    Minimum Order Value: ₹${coupon.minimumPrice}<br>
+                    Expiry: ${expireDate.toLocaleDateString()}<br>
+                    ${isExpired ? '<span style="color: red; font-weight: bold;">Expired</span>' : ''}
+                    ${isUsed ? '<span style="color: gray; font-weight: bold;">Already Used</span>' : ''}
+                `;
+
+                // Apply different styles for expired or used coupons
+                if (isExpired || isUsed) {
+                    couponElement.style.opacity = '0.6'; // Make it look faded
+                    couponElement.style.pointerEvents = 'none'; // Disable interaction
+                }
+
+                couponsContainer.appendChild(couponElement);
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching coupons:', error);
+        couponsContainer.innerHTML = '<div class="coupon">Error loading coupons. Please try again later.</div>';
+    }
+}
+
+   </script>
+</body>
+</html>

@@ -75,7 +75,7 @@ const changeStatus = async (req, res) => {
             order.paymentStatus='Paid';
             await order.save();
         }
-
+        
         // Update the order status
         await Order.updateOne({ _id: id }, { $set: { status: data } });
 

@@ -70,7 +70,7 @@ router.get('/checkout', userAuth,userController.checkout);
 // router.post('/place-order', userController.placeOrder);
 router.post('/quantityChange',userController.quantityChange)
 router.post('/applyCoupon', userController.applyCoupon);
-
+router.get('/couponModal',userController.couponModal)
 
 //order management
 router.get('/orderComplete',userAuth,userController.orderComplete)

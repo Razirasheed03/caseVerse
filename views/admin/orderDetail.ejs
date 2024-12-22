@@ -77,6 +77,9 @@
 <div class="card">
     <div class="topBox">
         <div>Order ID: <strong><%= orders.orderId %></strong></div>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newStatusModal">
+            Update Status
+        </button>
         <div>Order Date: <%= orders.createdAt.toLocaleDateString() %></div>
     </div>
 
@@ -89,7 +92,7 @@
                     <th>Payment Method</th>
                     <th>Total</th>
                     <th>Status</th>
-                    <th>Action</th>
+         
                 </tr>
             </thead>
             <tbody>
@@ -112,9 +115,7 @@
                                 <%= orders.status %>
                             </span></td>
                             <td>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newStatusModal">
-                                    Update Status
-                                </button>
+                              
                             </td>
                         </tr>
                     <% }) %>
@@ -125,6 +126,7 @@
                 <% } %>
             </tbody>
         </table>
+        <td>Order Total : ₹ <%= orders.totalAmount %></td>
 
         <div class="shipping-info">
             <strong>Shipping Address:</strong>
