@@ -191,6 +191,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
+
 <script src="/js/main.js"></script>
 <script>
 async function confirmRemove(itemId) {
@@ -228,7 +229,15 @@ async function quantityChange(change, id) {
     const newQuantity = currentQuantity + change;
 
     if (newQuantity < 1) {
-        alert("Quantity must be at least 1.");
+        Swal.fire({
+            icon: 'warning',
+            title: 'Invalid Quantity',
+            text: 'Quantity must be at least 1.',
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 2000, // Dismiss automatically after 2 seconds
+        });
         return;
     }
 
@@ -254,16 +263,48 @@ async function quantityChange(change, id) {
         } else {
             // Handle stock exceed or max limit errors
             if (result.error === "Stock exceed") {
-                alert("Product stock exceeded.");
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stock Limit Exceeded',
+                    text: 'Product stock exceeded.',
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false,
+                    timer: 2000, // Dismiss automatically after 2 seconds
+                });
             } else if (result.error.includes("Maximum limit")) {
-                alert(result.error); // Message includes the dynamic max limit
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Maximum Limit Reached',
+                    text: result.error, // Dynamic max limit error message
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false,
+                    timer: 2000, // Dismiss automatically after 2 seconds
+                });
             } else {
-                alert(result.error || "Unable to update quantity.");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.error || "Unable to update quantity.",
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false,
+                    timer: 2000, // Dismiss automatically after 2 seconds
+                });
             }
         }
     } catch (error) {
         console.error("Error updating quantity:", error);
-        alert("An error occurred. Please try again.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred. Please try again.',
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 2000, // Dismiss automatically after 2 seconds
+        });
     }
 }
 

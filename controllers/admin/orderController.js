@@ -201,19 +201,28 @@ const salesReport = async (req, res) => {
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet('Sales Report');
 
+            // Add additional columns for product-level details
             sheet.columns = [
                 { header: 'Order ID', key: 'orderId', width: 20 },
                 { header: 'Date', key: 'date', width: 15 },
-                { header: 'Total Amount', key: 'totalAmount', width: 15 },
+                { header: 'Quantity', key: 'quantity', width: 10 },
+                { header: 'Total Price', key: 'totalPrice', width: 15 },
                 { header: 'Coupon Discount', key: 'couponDiscount', width: 15 },
             ];
 
+            // Iterate through each order and its products
             orders.forEach((order) => {
-                sheet.addRow({
-                    orderId: order.orderId,
-                    date: new Date(order.createdAt).toLocaleDateString(),
-                    totalAmount: order.totalAmount || 0,
-                    couponDiscount: order.couponDiscount || 0,
+                order.items.forEach((item) => {
+                    const product = item.productId; // Populated product data
+
+                    // Add each product's details in a new row
+                    sheet.addRow({
+                        orderId: order.orderId,
+                        date: new Date(order.createdAt).toLocaleDateString(),
+                        quantity: item.quantity,
+                        totalPrice: item.totalPrice,
+                        couponDiscount: order.totalCouponDiscount || 0, // Coupon discount at order level
+                    });
                 });
             });
 
@@ -223,6 +232,7 @@ const salesReport = async (req, res) => {
             await workbook.xlsx.write(res);
             return;
         }
+
 
         res.render('salesReport', {
             orders,

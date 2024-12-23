@@ -180,9 +180,13 @@
                     </div>
                 </div>
                 available:<%=product.quantity%>
-                <% if (product.quantity < 50) { %>
+                <% if (product.quantity > 1 && product.quantity < 50) { %>
                     <p class="fewLeft mt-2">Few Pieces Left !!</p>
                 <% } %>
+                <% if (product.quantity < 1) { %>
+                    <p class="fewLeft mt-2">Out of Stock !!</p>
+                <% } %>
+                
 
                   
                 
