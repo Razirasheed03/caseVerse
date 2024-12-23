@@ -104,7 +104,8 @@
                     
                     <td class="column-5">₹<span class="total-price" data-item-id="<%= item._id %>"><%= item.totalPrice %></span></td>
                     <td class="column-6">
-                      <button type="submit" name="removeItem" value="<%= item._id %>" class="btn btn-danger">Remove</button>
+                      <button type="button" class="btn btn-danger" onclick="confirmRemove('<%= item._id %>')">Remove</button>
+
                     </td>
                   </tr>
                 <% }); %>
@@ -187,9 +188,38 @@
 </div>
 
 <%- include("../../views/partials/user/footer") %>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <script src="/js/main.js"></script>
 <script>
+async function confirmRemove(itemId) {
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to remove this item from the cart?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, remove it!',
+        cancelButtonText: 'No, keep it',
+    });
+
+    if (result.isConfirmed) {
+        // If confirmed, submit the form to remove the item
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/update-cart';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'removeItem';
+        input.value = itemId;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
 
 async function quantityChange(change, id) {
     const input = document.querySelector(`input[name="quantity[${id}]"]`);

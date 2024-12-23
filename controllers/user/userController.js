@@ -229,6 +229,7 @@ const loadshopping = async (req, res) => {
         const user = userSession ? await User.findById(userSession._id) : null;
         
         const search = req.query.search || ""; 
+        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const page = parseInt(req.query.page) || 1;
         const limit = 8; 
         const sortQuery = req.query.sort || ""; 
@@ -236,7 +237,7 @@ const loadshopping = async (req, res) => {
 
         // Build the base query
         const baseQuery = {
-            productName: { $regex: new RegExp('.*' + search + '.*', 'i') },
+            productName: { $regex: new RegExp('.*' + escapedSearch + '.*', 'i') },
             isBlocked: false
         };
 
@@ -379,7 +380,7 @@ const address=async(req,res)=>{
 
 const postAddAddress=async(req,res)=>{
     try {
-        const userId=req.session.user;
+        const userId=req.session.user||req.session.googleUser;
 
         const {addressType,name,address,city,landMark,state,pincode,phone,altPhone}=req.body;
 
@@ -1063,7 +1064,6 @@ const updateCart = async (req, res) => {
     }
 };
   
-
 const cart = async (req, res) => {
     try {
         const userSession = req.session.user || req.session.googleUser;
@@ -1079,27 +1079,75 @@ const cart = async (req, res) => {
                 user,
                 cart: { items: [] },
                 subtotal: 0,
-                totalPrice: 0
+                totalPrice: 0,
+                message: null // No messages if cart is empty
             });
         }
 
-        // Calculate subtotal
-        const subtotal = cart.items.reduce((total, item) => total + item.totalPrice, 0);
+        let subtotal = 0;
+        const messages = [];
 
-        // Calculate shipping
+        // Validate stock for all cart items
+        for (const item of cart.items) {
+            const product = item.productId;
+
+            if (!product) {
+                // Skip invalid products and add a message
+                messages.push(`A product in your cart is no longer available and has been removed.`);
+                await Cart.updateOne(
+                    { userId: user._id },
+                    { $pull: { items: { _id: item._id } } }
+                );
+                continue;
+            }
+
+            if (item.quantity > product.quantity) {
+                const adjustedQuantity = Math.min(item.quantity, product.quantity);
+
+                if (adjustedQuantity === 0) {
+                    // Remove out-of-stock items
+                    await Cart.updateOne(
+                        { userId: user._id },
+                        { $pull: { items: { _id: item._id } } }
+                    );
+                    messages.push(`The product "${product.productName}" is out of stock and has been removed.`);
+                } else {
+                    // Adjust quantity and total price
+                    await Cart.updateOne(
+                        { "items._id": item._id },
+                        {
+                            $set: {
+                                "items.$.quantity": adjustedQuantity,
+                                "items.$.totalPrice": adjustedQuantity * item.price
+                            }
+                        }
+                    );
+                    messages.push(`The quantity for "${product.productName}" was adjusted to ${adjustedQuantity} due to stock limitations.`);
+                }
+            } else {
+                subtotal += item.totalPrice;
+            }
+        }
+
+        // Fetch updated cart after adjustments
+        const updatedCart = await Cart.findOne({ userId: user._id }).populate('items.productId').exec();
+
+        // Recalculate subtotal after adjustments
+        subtotal = updatedCart.items.reduce((total, item) => total + item.totalPrice, 0);
+
+        // Calculate shipping and total price
         const shipping = subtotal > 499 ? 0 : 40;
-
-        // Calculate total price
         const totalPrice = subtotal + shipping;
 
-        console.log(subtotal, "+", shipping, "=", totalPrice);
+        console.log("Subtotal:", subtotal, "Shipping:", shipping, "Total Price:", totalPrice);
 
-        // Render the cart page
+        // Render the cart page with messages
         res.render('cart', {
             user,
-            cart,
+            cart: updatedCart,
             subtotal,
-            totalPrice
+            totalPrice,
+            message: messages.length > 0 ? messages.join("<br>") : null
         });
 
     } catch (error) {
@@ -1107,6 +1155,11 @@ const cart = async (req, res) => {
         res.status(500).render('pageerror', { error: 'An error occurred while fetching the cart.' });
     }
 };
+
+
+
+
+
 
 const applyCoupon = async (req, res) => {
     try {
