@@ -4,6 +4,7 @@ const Order = require("../../models/orderSchema")
 const Product=require("../../models/productSchema")
 const Cart=require("../../models/cartSchema")
 const User=require("../../models/userSchema")
+const puppeteer=require('puppeteer')
 
 const adminOrders=async(req,res)=>{
     try {
@@ -195,6 +196,9 @@ const salesReport = async (req, res) => {
             doc.end();
             return;
         }
+
+
+        
 
 
         if (format === 'excel') {
