@@ -48,7 +48,7 @@ const login= async (req,res)=>{
             
         }
 
-        const passwordMatch= bcrypt.compare(password,findUser.password);
+        const passwordMatch= await bcrypt.compare(password,findUser.password);
         
         if(!passwordMatch){
       
@@ -1257,6 +1257,12 @@ const checkout = async (req, res) => {
         // Calculate shipping
         const shipping = subtotal > 499 ? 0 : 40;
 
+        if (!req.session.couponCode) {
+            cart.couponDiscount = 0;
+            cart.totalPrice = subtotal;
+            await cart.save();
+        }
+
         // Use cart's total price which includes coupon discount
         const totalPrice = cart.totalPrice || subtotal;
 
@@ -1271,6 +1277,33 @@ const checkout = async (req, res) => {
         res.status(500).render('pageerror');
     }
 };
+
+const removeCoupon = async (req, res) => {
+    try {
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+
+        if (!user) return res.status(401).json({ error: 'User not authenticated.' });
+
+        const cart = await Cart.findOne({ userId: user._id });
+        if (!cart) return res.status(400).json({ error: 'Cart not found.' });
+
+        // Reset coupon details
+        cart.couponDiscount = 0;
+        cart.totalPrice = cart.items.reduce((total, item) => total + item.totalPrice, 0);
+        await cart.save();
+
+        // Clear session coupon details
+        req.session.couponCode = null;
+        req.session.couponDiscount = null;
+
+        res.status(200).json({ success: 'Coupon removed successfully!' });
+    } catch (error) {
+        console.error('Error removing coupon:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+};
+
 
 
 
@@ -1565,9 +1598,10 @@ const orderComplete=async(req,res)=>{
             const { reason } = req.body; // Reason sent from the front-end
             const orderId = req.params.id;
     
+            // Fetch the order and populate product details
             const order = await Order.findById(orderId).populate({
                 path: 'items.productId',
-                select: 'productName quantity',
+                select: 'productName quantity status',
             });
     
             if (!order) {
@@ -1578,44 +1612,52 @@ const orderComplete=async(req,res)=>{
             for (const item of order.items) {
                 const product = item.productId;
                 const purchasedQuantity = item.quantity;
+    
                 product.quantity += purchasedQuantity;
     
                 if (product.status === 'out of stock') {
                     product.status = 'Available';
                 }
+    
                 await product.save();
             }
     
             // Update wallet balance if payment status is "Paid"
             if (order.paymentStatus === 'Paid') {
                 const user = await User.findById(order.userId);
+    
+                if (!user) {
+                    return res.status(404).json({ success: false, message: 'User not found' });
+                }
+    
                 user.walletBalance += order.totalAmount;
                 order.paymentStatus = 'Refunded';
+    
                 user.walletTransactions.push({
-                    detail: `Refund for Order ID`,
+                    detail: `Refund for Order ID ${orderId}`,
                     amount: order.totalAmount,
                     type: 'credit',
                 });
+    
                 await user.save();
                 await order.save();
             }
     
-            // Add the cancellation reason
+            // Add the cancellation reason and update order status
             order.cancellationReason = reason;
     
             const updatedOrder = await Order.findByIdAndUpdate(
                 orderId,
-                { status: 'Cancelled', cancellationReason: reason }, // Adding cancellationReason field
+                { status: 'Cancelled', cancellationReason: reason },
                 { new: true }
             );
     
             res.status(200).json({ success: true, message: 'Order cancelled and stock updated' });
         } catch (error) {
-            console.error("Server Error while canceling order:", error.message);
-            console.error(error.stack);
             res.status(500).json({ success: false, message: 'Internal server error', error });
         }
     };
+    
     
     const returnOrder = async (req, res) => {
         try {
@@ -1692,4 +1734,5 @@ module.exports = {
     verifyPayment,
     refundToWallet,
     couponModal,
+    removeCoupon,
 }

@@ -123,10 +123,10 @@
 
                                         <div class="mt-4 d-flex flex-wrap">
                                             <% order.items.forEach(item=> { %>
-                                                <div class="text-center me-3 mb-3" style="width: 200px;">
+                                                <div class="text-center me-3 mb-2" style="width: 200px;">
                                                     <!-- Image Container -->
                                                     <div
-                                                        style="width: 180px; height: 180px; overflow: hidden; border-radius: 8px; margin: 0 auto;">
+                                                        style="width: 150px; height: 150px; overflow: hidden; border-radius: 8px; margin: 0 auto;">
                                                         <img src="/uploads/product-images/<%= item.productId.productImage[0] %>"
                                                             alt="<%= item.productId.productName %>"
                                                             style="width: 100%; height: 100%; object-fit: cover;">
@@ -144,16 +144,21 @@
                                             <div style="flex: 1; min-width: 300px;">
                                         <p><strong>Order id:</strong> #<%= order.orderId %>
                                         </p>
+                                        <p><strong>Date:</strong>
+                                            <%= new Date(order.createdAt).toLocaleDateString() %>
+                                        </p>
                                         <p><strong>Order Status:</strong>
                                             <%= order.status %>
                                         </p>
                                         <p><strong>Payment Status:</strong>
                                             <%= order.paymentStatus %>
                                         </p>
-                                        <p><strong>Date:</strong>
-                                            <%= new Date(order.createdAt).toLocaleDateString() %>
+                                        <p><strong>Payment Method:</strong>
+                                            <%= order.paymentMethod %>
                                         </p>
-                                        <p><strong>Total:</strong> ₹ <%= order.finalAmount %>
+                                        
+                                        <p><strong>Coupon Discount:</strong> ₹ <%= order.totalCouponDiscount %>
+                                   
                                         </p>
                                             </div>
                                             <div style="flex: 1; min-width: 300px; text-align: left;">
@@ -166,6 +171,7 @@
                                                                     order.address.pincode %><br>
                                                                     Phone: <%= order.address.phone %>
                                             </p>
+                                            <p><strong>Total:</strong> ₹ <%= order.finalAmount %>
                                         </div>
                                             </div>
                                     </div>
@@ -201,55 +207,77 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    async function cancelOrder(orderId) {
-        try {
-            // Displaying the confirmation with a text input for the reason
-            const { value: reason } = await Swal.fire({
-                title: "Are you sure?",
-                text: "Do you really want to cancel this order? Please provide a reason.",
-                icon: "warning",
-                input: 'textarea',
-                inputLabel: 'Cancellation Reason',
-                inputPlaceholder: 'Enter reason for cancellation...',
-                inputAttributes: {
-                    'aria-label': 'Type your reason here'
-                },
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, Cancel",
-                cancelButtonText: "No"
+
+async function cancelOrder(orderId) {
+    try {
+        console.log("Cancel order process initiated for orderId:", orderId);
+
+        // Displaying the confirmation with a text input for the reason
+        const { value: reason } = await Swal.fire({
+            title: "Are you sure?",
+            text: "Do you really want to cancel this order? Please provide a reason.",
+            icon: "warning",
+            input: 'textarea',
+            inputLabel: 'Cancellation Reason',
+            inputPlaceholder: 'Enter reason for cancellation...',
+            inputAttributes: {
+                'aria-label': 'Type your reason here'
+            },
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, Cancel",
+            cancelButtonText: "No"
+        });
+
+        console.log("User confirmation received. Reason:", reason);
+
+        // Proceed if the user provides a reason
+        if (reason) {
+            console.log("Sending cancellation request to server...");
+
+            const response = await fetch(`/cancelOrder/${orderId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reason }) // Send reason with the request
             });
 
-            // Proceed if the user provides a reason
-            if (reason) {
-                const response = await fetch(`/cancelOrder/${orderId}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ reason }) // Send reason with the request
+            console.log("Response received from server. Status:", response.status);
+
+            const result = await response.json();
+
+            console.log("Parsed response JSON:", result);
+
+            if (result.success) {
+                console.log("Order cancellation successful:", result);
+
+                await Swal.fire({
+                    title: "Order Cancelled",
+                    text: "Your order has been cancelled.",
+                    icon: "success"
                 });
 
-                const result = await response.json();
+                const cancelButton = document.getElementById(`cancel-btn-${orderId}`);
+                const returnButton = document.getElementById(`return-btn-${orderId}`);
+                if (cancelButton) cancelButton.disabled = true;
+                if (returnButton) returnButton.disabled = true;
+                console.log("Cancel and return buttons disabled for orderId:", orderId);
 
-                if (result.success) {
-                    await Swal.fire({
-                        title: "Order Cancelled",
-                        text: "Your order has been cancelled.",
-                        icon: "success"
-                    });
-                    document.getElementById(`cancel-btn-${orderId}`).disabled = true;
-                    document.getElementById(`return-btn-${orderId}`).disabled = true;
-
-                    window.location.reload();
-                } else {
-                    throw new Error(result.message);
-                }
+                console.log("Reloading page...");
+                window.location.reload();
+            } else {
+                console.error("Server error during cancellation:", result.message);
+                throw new Error(result.message);
             }
-        } catch (err) {
-            console.error('Error canceling order:', err.message);
-            await Swal.fire("Oops!", "Internal server error occurred.", "error");
+        } else {
+            console.log("User did not provide a cancellation reason. Process aborted.");
         }
+    } catch (err) {
+        console.error("Error in cancelOrder function:", err.message);
+        await Swal.fire("Oops!", "Internal server error occurred.", "error");
     }
+}
+
 
     async function returnOrder(orderId) {
         try {
@@ -287,8 +315,10 @@
                         text: "Your return request has been sent. Wait for confirmation.",
                         icon: "success"
                     });
-                    document.getElementById(`cancel-btn-${orderId}`).disabled = true;
-                    document.getElementById(`return-btn-${orderId}`).disabled = true;
+                    const cancelButton = document.getElementById(`cancel-btn-${orderId}`);
+                const returnButton = document.getElementById(`return-btn-${orderId}`);
+                if (cancelButton) cancelButton.disabled = true;
+                if (returnButton) returnButton.disabled = true;
 
                     window.location.reload();
                 } else {

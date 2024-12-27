@@ -124,79 +124,108 @@ const salesReport = async (req, res) => {
         const totalOrders = orders.length;
 
         if (format === 'pdf') {
+            const PDFDocument = require('pdfkit');
             const doc = new PDFDocument({ margin: 30 });
-
+        
             // Set response headers for PDF
             const filename = `sales_report_${Date.now()}.pdf`;
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-
+        
             // Stream the document to the response
             doc.pipe(res);
-
+        
             // Report Title
-            doc.fontSize(20).text('Sales Report', { align: 'center' });
-            doc.moveDown();
-
+            doc.fontSize(20).text('Sales Report', { align: 'center', underline: true });
+            doc.moveDown(2);
+        
             // Report Summary
-            doc.fontSize(12).text(`Filter: ${filter || 'Custom Range'}`);
-            doc.text(`Total Sales: ₹${totalSales}`);
-            doc.text(`Total Discount: ₹${totalCouponDiscount}`);
-            doc.text(`Total Orders: ${totalOrders}`);
-            doc.moveDown();
-
+            doc.fontSize(12)
+               .text(`Filter: ${filter || 'Custom Range'}`)
+               .text(`Total Sales: ${totalSales}`)
+               .text(`Total Discount: ${totalCouponDiscount}`)
+               .text(`Total Orders: ${totalOrders}`);
+            doc.moveDown(2);
+        
+            // Table Configuration
+            const tableTop = doc.y; // Start position of the table
+            const colWidths = [150, 100, 150, 150]; // Column widths
+            const tableMarginLeft = 30;
+            const colPositions = colWidths.reduce((positions, width, index) => {
+                positions.push(index === 0 ? tableMarginLeft : positions[index - 1] + colWidths[index - 1]);
+                return positions;
+            }, []);
+        
             // Table Headers
-            const tableTop = doc.y;
-            const columnMargins = [170, 150, 150, 150]; // Column widths
-            const headers = ['Order ID', 'Date', 'Total Amount (₹)', 'Coupon Discount (₹)'];
-
-            // Draw header row
+            const headers = ['Order ID', 'Date', 'Total Amount (Rs)', 'Coupon Discount (Rs)'];
             headers.forEach((header, i) => {
                 doc.font('Helvetica-Bold')
-                   .text(header, columnMargins.slice(0, i).reduce((a, b) => a + b, 0), tableTop, {
-                       continued: i < headers.length - 1,
-                       width: columnMargins[i],
-                   });
+                   .fontSize(12)
+                   .text(header, colPositions[i], tableTop, { width: colWidths[i], align: 'center' });
             });
-
-            doc.moveDown();
-
-            // Draw order rows
+        
+            // Draw a line under headers
+            doc.moveTo(tableMarginLeft, tableTop + 15)
+               .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), tableTop + 15)
+               .stroke();
+        
+            // Table Rows
+            const rowHeight = 20;
+            const maxRowsPerPage = Math.floor((doc.page.height - tableTop - 50) / rowHeight); // 50px for footer/margin
             let rowY = tableTop + 20;
-            orders.forEach((order) => {
+        
+            orders.forEach((order, index) => {
+                // If the row exceeds the page, add a new page
+                if ((index + 1) % maxRowsPerPage === 0 && index !== 0) {
+                    doc.addPage();
+                    rowY = 30; // Reset Y position for new page
+        
+                    // Redraw headers on new page
+                    headers.forEach((header, i) => {
+                        doc.font('Helvetica-Bold')
+                           .fontSize(12)
+                           .text(header, colPositions[i], rowY, { width: colWidths[i], align: 'center' });
+                    });
+        
+                    doc.moveTo(tableMarginLeft, rowY + 15)
+                       .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), rowY + 15)
+                       .stroke();
+        
+                    rowY += 20; // Move below the headers
+                }
+        
                 const date = new Date(order.createdAt).toLocaleDateString();
                 const row = [
                     order.orderId,
                     date,
-                    `₹${order.totalAmount || 0}`,
-                    `₹${order.totalCouponDiscount  || 0}`,
+                    `${order.totalAmount || 0}/-`,
+                    `${order.totalCouponDiscount || 0}/-`,
                 ];
-
+        
                 row.forEach((cell, i) => {
                     doc.font('Helvetica')
-                       .text(cell, columnMargins.slice(0, i).reduce((a, b) => a + b, 0), rowY, {
-                           continued: i < row.length - 1,
-                           width: columnMargins[i],
-                       });
+                       .fontSize(10)
+                       .text(cell, colPositions[i], rowY, { width: colWidths[i], align: 'center' });
                 });
-
-                rowY += 20;
-
-                // Draw row border lines
-                doc.moveTo(30, rowY - 10)
-                   .lineTo(500, rowY - 10)
+        
+                rowY += rowHeight; // Increment row Y position
+        
+                // Draw a line under each row
+                doc.moveTo(tableMarginLeft, rowY - 10)
+                   .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), rowY - 10)
                    .stroke();
             });
-
+        
             // Footer
             doc.moveDown(2);
-            doc.fontSize(10).text('Generated by Sales System', { align: 'center' });
-
+            doc.fontSize(10).text('Caseverse ', { align: 'center', italics: true });
+        
             // Finalize the document
             doc.end();
             return;
         }
-
+        
+        
 
         
 
