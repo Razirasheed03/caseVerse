@@ -101,7 +101,7 @@
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <img src="/uploads/product-images/<%= item.productId.productImage[0] %>" 
+                                    <img src="/uploads/re-images/<%= item.productId.productImage[0] %>" 
                                          alt="<%= item.productId.productName %>" />
                                     <div class="ms-3">
                                         <p class="mb-0"><%= item.productId.productName %></p>
@@ -127,6 +127,17 @@
             </tbody>
         </table>
         <td>Order Total : ₹ <%= orders.totalAmount %></td>
+        <div>
+            <% if (orders.status === 'Cancelled') { %>
+                <span>Cancellation Reason: <%= orders.cancellationReason || 'N/A' %></span>
+            <% } else if (orders.status === 'Return Request Sent' || orders.status === 'Returned') { %>
+                <span>Return Reason: <%= orders.returnReason || 'N/A' %></span>
+            <% } else { %>
+                <span>No reason available</span>
+            <% } %>
+            </div>
+
+
 
         <div class="shipping-info">
             <strong>Shipping Address:</strong>

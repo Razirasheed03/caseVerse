@@ -14,6 +14,7 @@ const session =require("express-session");
 const { default: mongoose } = require("mongoose");
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const PDFDocument = require('pdfkit');
 
 
 
@@ -48,7 +49,7 @@ const login= async (req,res)=>{
             
         }
 
-        const passwordMatch= await bcrypt.compare(password,findUser.password);
+        const passwordMatch= bcrypt.compare(password,findUser.password);
         
         if(!passwordMatch){
       
@@ -331,21 +332,36 @@ const loadHomepage = async (req, res) => {
     }
 }
 
-const productDetail=async(req,res)=>{
+const productDetail = async (req, res) => {
     try {
-       
         const id = req.params.id;
-        const userSession=req.session.user|| req.session.googleUser;
-        const user =userSession ? await User.findById(userSession._id):null;
-        const product = await Product.findOne({_id:id})
-        const category=await Category.findOne({_id:product.category})
-        res.render('productDetail',{product,category,user})
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+        const product = await Product.findOne({ _id: id });
+        
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+
+        const category = await Category.findOne({ _id: product.category });
+
+        // Fetch the user's wishlist if the user is logged in
+        let wishlistProducts = [];
+        if (user) {
+            const wishlist = await Wishlist.findOne({ userId: user._id });
+            if (wishlist) {
+                wishlistProducts = wishlist.products.map(item => item.productId.toString());
+            }
+        }
+
+        res.render('productDetail', { product, category, user, wishlistProducts });
         
     } catch (error) {
-        res.render("pageerror")
-        
+        console.error('Error fetching product details:', error.message);
+        res.render("pageerror");
     }
-}
+};
+
 
 const profile=async(req,res)=>{
     try {
@@ -444,25 +460,39 @@ const orders = async (req, res) => {
         const user = await User.findById(userSession._id);
         if (!user) return res.redirect('/login');
 
-        // Populate product details in order items
+        const page = parseInt(req.query.page) || 1; // Page number
+        const limit = 2; // Number of orders per page
+        const skip = (page - 1) * limit; // Skip orders based on page
+
+        // Fetch orders with pagination and populate product details
         const orders = await Order.find({ userId: userSession._id })
             .sort({ createdAt: -1 })
             .populate({
                 path: 'items.productId',
                 select: 'productName productImage',
             })
+            .skip(skip)
+            .limit(limit)
             .lean();
+
+        // Count the total number of orders for pagination
+        const totalOrders = await Order.countDocuments({ userId: userSession._id });
+
+        const totalPages = Math.ceil(totalOrders / limit); // Calculate total pages
 
         res.render('orders', {
             user: userSession,
             orders,
             user,
+            currentPage: page,
+            totalPages: totalPages,
         });
     } catch (error) {
         console.error('Error fetching orders:', error);
         res.status(500).render('pageerror');
     }
 };
+
 
 
 
@@ -798,6 +828,8 @@ const wishlist = async (req, res) => {
         if (!wishlist || wishlist.products.length === 0) {
             return res.render('wishlist', { user, wishlist: [] });
         }
+        const wishlistProducts = wishlist.products.map((item) => item.productId._id.toString());
+
 
         const wishlistItems = wishlist.products.map((item) => ({
             itemId: item._id, // Unique ID of the wishlist item
@@ -807,7 +839,7 @@ const wishlist = async (req, res) => {
             imageUrl: item.productId.productImage[0], // First product image
         }));
 
-        res.render('wishlist', { user, wishlist: wishlistItems });
+        res.render('wishlist', { user, wishlist: wishlistItems ,wishlistProducts});
     } catch (error) {
         console.error('Error fetching wishlist:', error.message);
         res.render('pageerror');
@@ -1684,7 +1716,216 @@ const orderComplete=async(req,res)=>{
             res.status(500).json({ success: false, message: 'Internal server error' });
         }
     };
+
+    const downloadInvoice = async (req, res) => {
+        try {
+            const { orderId } = req.params;
+            console.log("In downloadinvoice, orderId:", orderId);
     
+            const order = await Order.findById(orderId).populate({
+                path: 'items.productId',
+                select: 'productName price',
+            });
+    
+            if (!order) {
+                console.log('Order not found:', orderId);
+                return res.status(404).json({ error: 'Order not found' });
+            }
+    
+            // Create a new PDF document
+            const doc = new PDFDocument({ size: "A4", margin: 50 });
+    
+            // Set response headers
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=invoice-${order.orderId}.pdf`);
+    
+            // Pipe the PDF to the response
+            doc.pipe(res);
+    
+            // Helper functions
+            const generateHr = (y) => {
+                doc
+                    .strokeColor("#aaaaaa")
+                    .lineWidth(1)
+                    .moveTo(50, y)
+                    .lineTo(550, y)
+                    .stroke();
+            };
+    
+            const formatDate = (date) => {
+                return new Date(date).toLocaleDateString('en-IN');
+            };
+    
+            // Generate Header
+            doc
+                .fillColor("#000000")  // CaseVerse brand color
+                .fontSize(30)
+                .font('Times-Roman')
+                .text("CaseVerse", 50, 45)
+                .fontSize(10)
+                .font('Helvetica')
+                .text("www.caseverse.in", 50, 80)
+                .text("caseverseofficial@gmail.com", 50, 95)
+                .moveDown();
+    
+            // Generate Customer Information
+            doc
+                .fillColor("#444444")
+                .fontSize(20)
+                .text("INVOICE", 50, 160);
+    
+            generateHr(185);
+    
+            const customerInformationTop = 200;
+    
+            doc
+    .fontSize(10)
+    // Left side - Invoice details
+    .text("Invoice Number:", 50, customerInformationTop)
+    .font("Helvetica-Bold")
+    .text(order.orderId, 150, customerInformationTop)
+    .font("Helvetica")
+    .text("Date:", 50, customerInformationTop + 15)
+    .text(formatDate(order.createdAt), 150, customerInformationTop + 15)
+    .text("Payment Method:", 50, customerInformationTop + 30)
+    .text(order.paymentMethod, 150, customerInformationTop + 30)
+
+    // Middle section - Shipping Address
+    .font("Helvetica-Bold")
+    .text("Shipping Address", 300, customerInformationTop)
+    .font("Helvetica")
+    .text(order.address.name, 300, customerInformationTop + 15)
+    .text(order.address.address, 300, customerInformationTop + 30)
+    .text(
+        `${order.address.city}, ${order.address.state} - ${order.address.pincode}`,
+        300,
+        customerInformationTop + 45
+    )
+    .text(`Phone: ${order.address.phone}`, 300, customerInformationTop + 60)
+
+
+    .font("Helvetica-Bold")
+    .text("Sold By:", 450, customerInformationTop)
+    .font("Helvetica")
+    .text("Caseverse India", 450, customerInformationTop + 15)
+    .text("Kannur, Kerala", 450, customerInformationTop + 30)
+    .text("PIN: 670593", 450, customerInformationTop + 45)
+    .text("Phone: 6235009441", 450, customerInformationTop + 60)
+    .moveDown();
+    
+            generateHr(customerInformationTop + 85);
+    
+            // Generate Table
+            let i;
+            const invoiceTableTop = 330;
+            const tableTop = invoiceTableTop;
+    
+            doc.font("Helvetica-Bold");
+            // Table header
+            doc
+                .fontSize(10)
+                .text("Item", 50, tableTop)
+                .text("Quantity", 300, tableTop, { width: 90, align: "center" })
+                .text("Price", 350, tableTop, { width: 90, align: "right" })
+                .text("Total", 450, tableTop, { width: 90, align: "right" });
+    
+            generateHr(tableTop + 20);
+            doc.font("Helvetica");
+    
+            // Initialize variables for calculations
+            let position = 0;
+            let itemsTotal = 0; // Moved the declaration here, before the loop
+    
+            // Table items
+            order.items.forEach((item, index) => {
+                const singleItemPrice = item.totalPrice / item.quantity; // Get price of single item
+                const itemAmount = item.totalPrice; // Total for this item with quantity
+                itemsTotal += itemAmount;
+                
+                position = tableTop + (index + 1) * 30;
+                doc
+                    .fontSize(10)
+                    .text(item.productId.productName, 50, position)
+                    .text(item.quantity.toString(), 300, position, { width: 90, align: "center" })
+                    .text((singleItemPrice), 350, position, { width: 90, align: "right" })
+                    .text((itemAmount), 450, position, { width: 90, align: "right" });
+                
+                generateHr(position + 20);
+            });
+    
+            // Calculate positions for summary
+            const subtotalPosition = position + 35;
+            doc.font("Helvetica-Bold");
+    
+            // Calculate GST amount based on itemsTotal
+            const gstAmount = itemsTotal * 0.18;
+            const gstPosition = subtotalPosition + 20;
+    
+            // Add summary with proper structure
+            doc
+                .fontSize(10)
+                .text("Subtotal", 350, subtotalPosition, { width: 90, align: "right" })
+                .text((itemsTotal), 450, subtotalPosition, { width: 90, align: "right" });
+    
+            // Add coupon discount if exists
+            if (order.totalCouponDiscount > 0) {
+                doc
+                    .fontSize(10)
+                    .text("Discount", 350, gstPosition, { width: 90, align: "right" })
+                    .text(`-${(order.totalCouponDiscount)}`, 450, gstPosition, { width: 90, align: "right" });
+            }
+    
+            // Calculate positions for GST
+            const gstStartPosition = order.totalCouponDiscount > 0 ? gstPosition + 20 : gstPosition;
+    
+            // Add GST details
+            doc
+                .fontSize(10)
+                .text("CGST (9%)", 350, gstStartPosition, { width: 90, align: "right" })
+                .text((gstAmount/2).toFixed(2), 450, gstStartPosition, { width: 90, align: "right" });
+    
+            doc
+                .fontSize(10)
+                .text("SGST (9%)", 350, gstStartPosition + 20, { width: 90, align: "right" })
+                .text((gstAmount/2).toFixed(2), 450, gstStartPosition + 20, { width: 90, align: "right" });
+    
+            // Add total GST
+            doc
+                .fontSize(10)
+                .text("Total GST (18%)", 350, gstStartPosition + 40, { width: 90, align: "right" })
+                .text(gstAmount.toFixed(2), 450, gstStartPosition + 40, { width: 90, align: "right" });
+    
+            // Calculate final total position
+            const totalPosition = gstStartPosition + 60;
+    
+            // Calculate final amount (subtotal + GST - discount)
+            const finalAmount = itemsTotal  - (order.totalCouponDiscount || 0);
+    
+            // Add final amount
+            doc
+                .fontSize(12)
+                .text("Total Amount", 350, totalPosition, { width: 90, align: "right" })
+                .text((finalAmount.toFixed(2)), 450, totalPosition, { width: 90, align: "right" });
+    
+            // Footer
+            doc
+                .fontSize(10)
+                .font('Helvetica')
+                .text(
+                    "Thank you for shopping with CaseVerse!",
+                    50,
+                    780,
+                    { align: "center", width: 500 }
+                );
+    
+            // Finalize PDF
+            doc.end();
+    
+        } catch (error) {
+            console.error('Error in downloadInvoice:', error);
+            res.status(500).json({ error: 'Error generating invoice' });
+        }
+    };
     
 
 
@@ -1735,4 +1976,5 @@ module.exports = {
     refundToWallet,
     couponModal,
     removeCoupon,
+    downloadInvoice,
 }

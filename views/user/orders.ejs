@@ -15,6 +15,29 @@
     <!-- Template CSS -->
     <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
     <style>
+        .pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination a {
+    padding: 10px 15px;
+    margin: 0 5px;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.pagination a:hover {
+    background-color: #0056b3;
+}
+
+.pagination span {
+    padding: 10px 15px;
+    margin: 0 5px;
+}
+
         .content-main {
             background: none;
             box-shadow: none;
@@ -93,99 +116,99 @@
             <div class="content-header"></div>
             <div class="row gx-5">
                 <%- include("../../views/partials/user/profileAside") %>
-                    <div class="col-lg-9">
-                        <section class="content-body">
-                            <h2 class="section-title">Your Orders</h2>
-
-                            <% if (orders && orders.length> 0) { %>
-                                <% orders.forEach(order=> { %>
-                                    <div class="order-card">
-                                        <div class="d-flex justify-content-between align-items-center">
+                <div class="col-lg-9">
+                    <section class="content-body">
+                        <h2 class="section-title">Your Orders</h2>
+                
+                        <% if (orders && orders.length > 0) { %>
+                            <% orders.forEach(order => { %>
+                                <div class="order-card">
+                                    <div class="d-flex justify-content-between align-items-center">
                                         <h5>Order Details</h5>
                                         <div class="ms-auto">
-<!-- Cancel Button -->
-<% if (order.status !== 'Cancelled' && order.status !== 'Returned' && order.status !== 'Delivered' && order.status !== 'Return Request Sent' && order.status !== 'Return Request Denied') { %>
-    <button id="cancel-btn-<%= order._id %>" class="btn btn-danger" onclick="cancelOrder('<%= order._id %>')">
-        Cancel
-    </button>
-<% } %>
 
-<!-- Return Button -->
-<% if (order.status === 'Delivered') { %>
-    <button id="return-btn-<%= order._id %>" class="btn btn-success" onclick="returnOrder('<%= order._id %>')">
-        Return
-    </button>
-<% } %>
-
-
-                                        </div>
-                                        </div>
-
-                                        <div class="mt-4 d-flex flex-wrap">
-                                            <% order.items.forEach(item=> { %>
-                                                <div class="text-center me-3 mb-2" style="width: 200px;">
-                                                    <!-- Image Container -->
-                                                    <div
-                                                        style="width: 150px; height: 150px; overflow: hidden; border-radius: 8px; margin: 0 auto;">
-                                                        <img src="/uploads/product-images/<%= item.productId.productImage[0] %>"
-                                                            alt="<%= item.productId.productName %>"
-                                                            style="width: 100%; height: 100%; object-fit: cover;">
-                                                    </div>
-                                                    <!-- Product Name -->
-                                                    <p class="mt-4 font-sm">
-                                                        <%= item.productId.productName %>
-                                                    </p>
-                                                    Quantity: <%= item.quantity %>
-                                                </div>
-                                                <% }) %>
-                                        </div>
-                                        <br>
-                                        <div class="d-flex justify-content-between flex-wrap">
-                                            <div style="flex: 1; min-width: 300px;">
-                                        <p><strong>Order id:</strong> #<%= order.orderId %>
-                                        </p>
-                                        <p><strong>Date:</strong>
-                                            <%= new Date(order.createdAt).toLocaleDateString() %>
-                                        </p>
-                                        <p><strong>Order Status:</strong>
-                                            <%= order.status %>
-                                        </p>
-                                        <p><strong>Payment Status:</strong>
-                                            <%= order.paymentStatus %>
-                                        </p>
-                                        <p><strong>Payment Method:</strong>
-                                            <%= order.paymentMethod %>
-                                        </p>
-                                        
-                                        <p><strong>Coupon Discount:</strong> ₹ <%= order.totalCouponDiscount %>
-                                   
-                                        </p>
-                                            </div>
-                                            <div style="flex: 1; min-width: 300px; text-align: left;">
-                                        <div class="order-address">
-                                            <p><strong>Shipping Address:</strong></p>
-                                            <p>
-                                                Name: <%= order.address.name %><br>
-                                                    Address: <%= order.address.address %><br>
-                                                        <%= order.address.city %>, <%= order.address.state %> - <%=
-                                                                    order.address.pincode %><br>
-                                                                    Phone: <%= order.address.phone %>
-                                            </p>
-                                            <p><strong>Total:</strong> ₹ <%= order.finalAmount %>
-                                        </div>
-                                            </div>
-                                    </div>
-
-                                        <!-- Cancel Button -->
-                               
-                                    </div>
-                                    <% }) %>
-                                        <% } else { %>
-                                            <p>No orders found.</p>
+                                            <!-- Cancel Button -->
+                                            <% if (order.status !== 'Cancelled' && order.status !== 'Returned' && order.status !== 'Delivered' && order.status !== 'Return Request Sent' && order.status !== 'Return Request Denied') { %>
+                                                <button id="cancel-btn-<%= order._id %>" class="btn btn-danger" onclick="cancelOrder('<%= order._id %>')">
+                                                    Cancel
+                                                </button>
                                             <% } %>
-                        </section>
-
-                    </div>
+                
+                                            <!-- Return Button -->
+                                            <% if (order.status === 'Delivered') { %>
+                                                <button id="return-btn-<%= order._id %>" class="btn btn-success" onclick="returnOrder('<%= order._id %>')">
+                                                    Return
+                                                </button>
+                                            <% } %>
+                                        </div>
+                                        <%if(order.paymentStatus==='Paid'){%>
+                                        <button class="btn btn-success ms-2" onclick="viewOrder('<%= order._id %>')">
+                                            Download Invoice
+                                        </button>
+                                        <% } %>
+                                    </div>
+                
+                                    <div class="mt-4 d-flex flex-wrap">
+                                        <% order.items.forEach(item => { %>
+                                            <div class="text-center me-3 mb-2" style="width: 200px;">
+                                                <!-- Image Container -->
+                                                <div style="width: 150px; height: 150px; overflow: hidden; border-radius: 8px; margin: 0 auto;">
+                                                    <img src="/uploads/re-images/<%= item.productId.productImage[0] %>"
+                                                         alt="<%= item.productId.productName %>"
+                                                         style="width: 100%; height: 100%; object-fit: cover;">
+                                                </div>
+                                                <!-- Product Name -->
+                                                <p class="mt-4 font-sm">
+                                                    <%= item.productId.productName %>
+                                                </p>
+                                                Quantity: <%= item.quantity %>
+                                            </div>
+                                        <% }) %>
+                                    </div>
+                                    <br>
+                                    <div class="d-flex justify-content-between flex-wrap">
+                                        <div style="flex: 1; min-width: 300px;">
+                                            <p><strong>Order id:</strong> #<%= order.orderId %></p>
+                                            <p><strong>Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                                            <p><strong>Order Status:</strong> <%= order.status %></p>
+                                            <p><strong>Payment Status:</strong> <%= order.paymentStatus %></p>
+                                            <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+                                            <p><strong>Coupon Discount:</strong> ₹ <%= order.totalCouponDiscount %></p>
+                                        </div>
+                                        <div style="flex: 1; min-width: 300px; text-align: left;">
+                                            <div class="order-address">
+                                                <p><strong>Shipping Address:</strong></p>
+                                                <p>
+                                                    Name: <%= order.address.name %><br>
+                                                    Address: <%= order.address.address %><br>
+                                                    <%= order.address.city %>, <%= order.address.state %> - <%= order.address.pincode %><br>
+                                                    Phone: <%= order.address.phone %>
+                                                </p>
+                                                <p><strong>Total:</strong> ₹ <%= order.finalAmount %></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                
+                            <div class="pagination">
+                                <% if (currentPage > 1) { %>
+                                    <a href="?page=<%= currentPage - 1 %>">Previous</a>
+                                <% } %>
+                                
+                                <span>Page <%= currentPage %> of <%= totalPages %></span>
+                                
+                                <% if (currentPage < totalPages) { %>
+                                    <a href="?page=<%= currentPage + 1 %>">Next</a>
+                                <% } %>
+                            </div>
+                
+                        <% } else { %>
+                            <p>No orders found.</p>
+                        <% } %>
+                    </section>
+                </div>
+                
             </div>
         </section>
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
@@ -207,6 +230,52 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+async function viewOrder(orderId) {
+    try {
+        console.log("in function vieworder");
+        const response = await fetch(`/download-invoice/${orderId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/pdf',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Get the blob from the response
+        const blob = await response.blob();
+        
+        // Create a URL for the blob
+        const url = window.URL.createObjectURL(blob);
+        
+        // Create a temporary link element
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `invoice-${orderId}.pdf`;
+        
+        // Add to document, click it, and remove it
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        console.log("Download initiated successfully");
+        
+    } catch (error) {
+        console.error("Error downloading invoice:", error);
+        Swal.fire({
+            title: 'Error',
+            text: 'Failed to download invoice. Please try again.',
+            icon: 'error'
+        });
+    }
+}
+
 
 async function cancelOrder(orderId) {
     try {

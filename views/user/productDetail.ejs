@@ -200,8 +200,13 @@
                     <!-- Add to Wishlist Button -->
                     <form action="/add-to-wishlist" method="POST">
                         <input type="hidden" name="productId" value="<%= product._id %>">
-                        <button type="submit" class="btn btn-outline-danger">Add to Wishlist</button>
+                        <% if (wishlistProducts && wishlistProducts.includes(product._id.toString())) { %>
+                            <button type="button" class="btn btn-success" disabled>Added to Wishlist</button>
+                        <% } else { %>
+                            <button type="submit" class="btn btn-outline-danger">Add to Wishlist</button>
+                        <% } %>
                     </form>
+            
                 </div>
                 
             </form>

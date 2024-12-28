@@ -194,16 +194,19 @@ const editProduct = async (req, res) => {
         const existingProduct = await Product.findOne({
             productName: data.productName,
             _id: { $ne: id }
-        })
+        });
+
         if (existingProduct) {
             return res.status(400).json({ error: 'Product with this name already exists. Please try with another name' });
         }
+
         const images = [];
         if (req.files && req.files.length > 0) {
             for (let i = 0; i < req.files.length; i++) {
-                images.push(req.files[i].filename);
+                images.push(req.files[i].filename); // Storing the file name
             }
         }
+
         const updateFields = {
             productName: data.productName,
             description: data.description,
@@ -213,18 +216,21 @@ const editProduct = async (req, res) => {
             quantity: data.quantity,
             size: data.size,
             color: data.color
-        }
+        };
+
         if (req.files.length > 0) {
-            updateFields.$push = { productImage: { $each: images } }
+            updateFields.$push = { productImage: { $each: images } }; // Add images to the database
         }
+
         await Product.findByIdAndUpdate(id, updateFields, { new: true });
         return res.status(200).json({ redirectTo: '/admin/products?success=true' });
-    } catch (error) {
-        console.log(error)
-        res.redirect('/pageError')
 
+    } catch (error) {
+        console.log(error);
+        res.redirect('/pageError');
     }
-}
+};
+
 
 const deleteSingleImage = async (req, res) => {
     try {

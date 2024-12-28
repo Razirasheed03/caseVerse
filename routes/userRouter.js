@@ -33,12 +33,12 @@ router.get('/productDetail/:id',userAuth,userController.productDetail)
 
 
 ///user profile
-router.get('/profile',userAuth,userController.profile)
-router.get('/address',userAuth,userController.address)
-router.get('/cart',userAuth,userController.cart)
-router.get('/wishlist',userAuth,userController.wishlist)
-router.get('/wallet',userAuth,userController.wallet)
-router.get('/orders',userAuth,userController.orders)
+router.get('/profile',profileAuth,userAuth,userController.profile)
+router.get('/address',profileAuth,userAuth,userController.address)
+router.get('/cart',profileAuth,userAuth,userController.cart)
+router.get('/wishlist',profileAuth,userAuth,userController.wishlist)
+router.get('/wallet',profileAuth,userAuth,userController.wallet)
+router.get('/orders',profileAuth,userAuth,userController.orders)
 
 
 
@@ -78,8 +78,10 @@ router.post('/placeOrder',userController.placeOrder);
 router.post('/cancelOrder/:id', userController.cancelOrder);
 router.post('/returnOrder/:id', userController.returnOrder);
 
+router.get('/download-invoice/:orderId', userController.downloadInvoice);
+
 //wishlist management
-router.post('/add-to-wishlist',userController.addToWishlist)
+router.post('/add-to-wishlist',profileAuth,userController.addToWishlist)
 router.post('/add-to-cart-from-wishlist',userController.addToCartFromWishlist)
 router.post('/remove-from-wishlist',userController.removeFromWishlist);
 

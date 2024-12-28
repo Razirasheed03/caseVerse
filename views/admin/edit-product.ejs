@@ -188,7 +188,8 @@
                                                         style="margin-bottom: 20px;">
                                                         <img src="" alt="" id="imgView2">
                                                         <input class="form-control" type="file" name="images"
-                                                            id="input2" accept="image/png, image/jpeg, image/jpg"
+                                                            id="input2" 
+                                                            accept="image/png, image/jpeg, image/jpg"
                                                             onchange="viewImage2(event),viewImage(event, 2)">
                                                     </div>
                                                     <div class="image-cropper d-flex align-items-center"
@@ -284,48 +285,47 @@
             }
 
             function validateForm() {
-                let imageDatas = false
-                clearErrorMessages();
-                const name = document.getElementsByName('productName')[0].value;
-                const description = document.getElementsByName('description')[0].value;
-                // const brand = document.getElementsByName('brand')[0].value;
-                const price = document.getElementsByName('regularPrice')[0].value;
-                const saleprice = document.getElementsByName('salePrice')[0].value;
-                const color = document.getElementsByName('color')[0].value;
-                const category = document.getElementsByName('category')[0].value;
-                const images = document.getElementById('input1')
-                const quantity = document.getElementsByName('quantity');
-                imageDatas = document.getElementById("imageDatas")?.value;
-                let isValid = true;
+    let imageDatas = false;
+    clearErrorMessages();
 
-                if (name.trim() === "") {
-                    displayErrorMessage('productName-error', 'Please enter a product name.');
-                    isValid = false;
-                }
-                if (description === '') {
-                    displayErrorMessage('description-error', 'Please enter a product description.');
-                    isValid = false;
-                }
-                if (parseInt(quantity) < 0) {
-                    displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
-                    isValid = false;
-                }
-                if (!/^\d+(\.\d{1, 2})?$/.test(price) || parseFloat(price) < 0) {
-                    displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
-                    isValid = false;
-                }
-                if (!/^\d+(\.\d{1, 2})?$/.test(saleprice) || parseFloat(saleprice) < 0) {
-                    displayErrorMessage('salePrice-error', 'Please enter a valid non-negative price.');
-                    isValid = false;
-                }
+    const images = document.getElementById('input1'); // Update this for multiple inputs
+    let isValid = true;
 
-                if (color.trim() === "") {
-                    displayErrorMessage('color-error', 'Please enter a color.');
-                    isValid = false;
-                }
+    if (images.files.length === 0) {
+        displayErrorMessage('images-error', 'Please select at least one image.');
+        isValid = false;
+    } else {
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        const maxSize = 5 * 1024 * 1024; // 5MB file size limit
 
-                return isValid;
+        for (let i = 0; i < images.files.length; i++) {
+            const file = images.files[i];
+
+            // Check file type
+            if (!allowedTypes.includes(file.type)) {
+                displayErrorMessage('images-error', 'Invalid file type. Only PNG, JPEG, and JPG are allowed.');
+                invalidateFileInput(images);
+                isValid = false;
+                break;
             }
+
+            // Check file size
+            if (file.size > maxSize) {
+                displayErrorMessage('images-error', 'File size exceeds the 5MB limit.');
+                invalidateFileInput(images);
+                isValid = false;
+                break;
+            }
+        }
+    }
+
+    return isValid;
+}
+
+function invalidateFileInput(inputElement) {
+    inputElement.value = ""; // Reset the input value
+}
+
 
             function displayErrorMessage(elementId, message) {
                 var errorElement = document.getElementById(elementId);
