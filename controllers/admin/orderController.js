@@ -62,15 +62,19 @@ const changeStatus = async (req, res) => {
             if (!user) {
                 return res.status(404).json({ success: false, message: 'User not found' });
             }
-
-            // Add the refunded amount to the user's wallet
             user.walletBalance += order.finalAmount;
+            user.walletTransactions.push({
+                detail: `Refund for Returned Order ID ${order._id}`,
+                amount: order.finalAmount,
+                type: 'credit',
+            });
+        
             await user.save();
-
-            // Optionally, update the payment status in the order
+            
             order.paymentStatus = 'Refunded';
             await order.save();
         }
+        
         if(data==='Delivered'){
             order.paymentStatus='Paid';
             await order.save();
@@ -141,14 +145,16 @@ const salesReport = async (req, res) => {
             // Report Summary
             doc.fontSize(12)
                .text(`Filter: ${filter || 'Custom Range'}`)
-               .text(`Total Sales: ${totalSales}`)
-               .text(`Total Discount: ${totalCouponDiscount}`)
+               .text(`Start Date: ${startDate || 'N/A'}`)
+               .text(`End Date: ${endDate || 'N/A'}`)
+               .text(`Total Sales: ₹${totalSales}`)
+               .text(`Total Discount: ₹${totalCouponDiscount}`)
                .text(`Total Orders: ${totalOrders}`);
             doc.moveDown(2);
         
             // Table Configuration
-            const tableTop = doc.y; // Start position of the table
-            const colWidths = [150, 100, 150, 150]; // Column widths
+            const tableTop = doc.y;
+            const colWidths = [150, 100, 150, 150];
             const tableMarginLeft = 30;
             const colPositions = colWidths.reduce((positions, width, index) => {
                 positions.push(index === 0 ? tableMarginLeft : positions[index - 1] + colWidths[index - 1]);
@@ -170,14 +176,13 @@ const salesReport = async (req, res) => {
         
             // Table Rows
             const rowHeight = 20;
-            const maxRowsPerPage = Math.floor((doc.page.height - tableTop - 50) / rowHeight); // 50px for footer/margin
+            const maxRowsPerPage = Math.floor((doc.page.height - tableTop - 50) / rowHeight);
             let rowY = tableTop + 20;
         
             orders.forEach((order, index) => {
-                // If the row exceeds the page, add a new page
                 if ((index + 1) % maxRowsPerPage === 0 && index !== 0) {
                     doc.addPage();
-                    rowY = 30; // Reset Y position for new page
+                    rowY = 30;
         
                     // Redraw headers on new page
                     headers.forEach((header, i) => {
@@ -190,7 +195,7 @@ const salesReport = async (req, res) => {
                        .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), rowY + 15)
                        .stroke();
         
-                    rowY += 20; // Move below the headers
+                    rowY += 20;
                 }
         
                 const date = new Date(order.createdAt).toLocaleDateString();
@@ -207,7 +212,7 @@ const salesReport = async (req, res) => {
                        .text(cell, colPositions[i], rowY, { width: colWidths[i], align: 'center' });
                 });
         
-                rowY += rowHeight; // Increment row Y position
+                rowY += rowHeight;
         
                 // Draw a line under each row
                 doc.moveTo(tableMarginLeft, rowY - 10)
@@ -217,7 +222,7 @@ const salesReport = async (req, res) => {
         
             // Footer
             doc.moveDown(2);
-            doc.fontSize(10).text('Caseverse ', { align: 'center', italics: true });
+            doc.fontSize(10).text('Caseverse', { align: 'center', italics: true });
         
             // Finalize the document
             doc.end();

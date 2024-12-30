@@ -92,6 +92,7 @@
                     <th>Payment Method</th>
                     <th>Total</th>
                     <th>Status</th>
+                    <th>Payment Status</th>
          
                 </tr>
             </thead>
@@ -114,6 +115,15 @@
                             <td><span class="badge <%= orders.status === 'Cancelled' ? 'bg-danger' : orders.status === 'Delivered' ? 'bg-success' : 'bg-warning' %>">
                                 <%= orders.status %>
                             </span></td>
+                            <td>
+                                <span class="badge 
+                                    <%= orders.paymentStatus === 'Paid' ? 'bg-success' : 
+                                        orders.paymentStatus === 'Pending' ? 'bg-danger' : 
+                                        'bg-warning' %>">
+                                    <%= orders.paymentStatus %>
+                                </span>
+                              </td>
+                              
                             <td>
                               
                             </td>

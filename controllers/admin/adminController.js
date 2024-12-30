@@ -54,25 +54,32 @@ const login=async(req,res)=>{
     }
 }
 
+
 const loadDashboard = async (req, res) => {
     if (!req.session.admin) {
         return res.redirect('/admin/login');
     }
 
     try {
-        const adminOrders = await Order.find()
-            .populate('items.productId')
-            .sort({ createdAt: -1 });
+        const { filter } = req.query; // Filter based on date range
+        const dateRange = getDateRange(filter);
 
-        // Calculate revenue metrics
+        // Debugging filter and date range
+        console.log('Filter:', filter);
+        console.log('Date Range:', dateRange);
+
+        const adminOrders = await Order.find({
+            createdAt: { $gte: dateRange.start, $lte: dateRange.end }
+        }).populate('items.productId').sort({ createdAt: -1 });
+
         const revenueMetrics = {
             totalSales: Number(adminOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0).toFixed(2)),
             totalCouponDiscount: Number(adminOrders.reduce((sum, order) => sum + (order.totalCouponDiscount || 0), 0).toFixed(2)),
-            totalOrders: adminOrders.length
+            totalOrders: adminOrders.length,
         };
 
-
         const categoryRevenue = await Order.aggregate([
+            { $match: { createdAt: { $gte: dateRange.start, $lte: dateRange.end } } },
             { $unwind: '$items' },
             {
                 $lookup: {
@@ -98,18 +105,11 @@ const loadDashboard = async (req, res) => {
                     totalRevenue: { $sum: '$items.totalPrice' }
                 }
             },
-            { $sort: { totalRevenue: -1 } },
-            { $limit: 10 }
+            { $sort: { totalRevenue: -1 } }
         ]);
 
-
-        // Improved aggregation for best selling products
         const bestSellingProducts = await Order.aggregate([
-            { 
-                $match: { 
-                    status: { $nin: ['Cancelled', 'Returned', 'Return Request Sent'] }
-                } 
-            },
+            { $match: { createdAt: { $gte: dateRange.start, $lte: dateRange.end } } },
             { $unwind: '$items' },
             {
                 $group: {
@@ -136,18 +136,48 @@ const loadDashboard = async (req, res) => {
             }
         ]);
 
-        res.render("dashboard", {
-            adminOrders,
+        res.render('dashboard', {
+            encodedCategoryRevenue: JSON.stringify(categoryRevenue),
+            encodedBestSellingProducts: JSON.stringify(bestSellingProducts),
             revenueMetrics,
-            categoryRevenue,
-            bestSellingProducts
+            selectedFilter: filter,
         });
-
     } catch (error) {
-        console.error('Dashboard Error:', error);
-        res.redirect("/pageerror");
+        console.error('Error loading dashboard:', error);
+        res.redirect('/pageerror');
     }
 };
+
+
+
+// Utility function for date range
+function getDateRange(filter) {
+    const now = new Date();
+    let start, end;
+
+    switch (filter) {
+        case 'weekly':
+            start = new Date(now.setDate(now.getDate() - now.getDay())); // Start of the week
+            end = new Date(start);
+            end.setDate(start.getDate() + 6); // End of the week
+            end.setHours(23, 59, 59);
+            break;
+        case 'monthly':
+            start = new Date(now.getFullYear(), now.getMonth(), 1); // Start of the month
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59); // End of the month
+            break;
+        case 'yearly':
+            start = new Date(now.getFullYear(), 0, 1); // Start of the year
+            end = new Date(now.getFullYear(), 11, 31, 23, 59, 59); // End of the year
+            break;
+        default:
+            start = new Date(0); // All-time: start from epoch
+            end = now; // Current time
+    }
+    return { start, end };
+}
+
+
 
 
 

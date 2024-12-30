@@ -11,8 +11,9 @@
       </a>
     </div>
   </div>
-  
+
   <div class="row">
+    <!-- Revenue Metrics -->
     <div class="col-lg-3">
       <div class="card card-body mb-4">
         <article class="icontext">
@@ -53,26 +54,39 @@
       </div>
     </div>
   </div>
-  
+
   <div class="row">
-    <!-- Sales Statistics Chart -->
+    <div class="col-xl-12">
+      <div class="mb-3">
+        <label for="filterSelect" class="form-label">Select Time Filter:</label>
+        <select id="filterSelect" class="form-select">
+          <option value="" <%= !selectedFilter ? "selected" : "" %>>All Time</option>
+          <option value="weekly" <%= selectedFilter === "weekly" ? "selected" : "" %>>Weekly</option>
+          <option value="monthly" <%= selectedFilter === "monthly" ? "selected" : "" %>>Monthly</option>
+          <option value="yearly" <%= selectedFilter === "yearly" ? "selected" : "" %>>Yearly</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Best Selling Products Chart -->
     <div class="col-xl-8 col-lg-8">
       <div class="card mb-4">
         <article class="card-body">
-          <h5 class="card-title">best Selling Chart</h5>
+          <h5 class="card-title">Best Selling Products</h5>
           <div style="height: 300px;">
-            <canvas id="myChart4"></canvas>
+            <canvas id="productChart"></canvas>
           </div>
         </article>
       </div>
     </div>
-    
-    <!-- Category Revenue Chart -->
+
+    <!-- Best Selling Categories Chart -->
     <div class="col-xl-4 col-lg-4">
       <div class="card mb-4">
         <article class="card-body">
           <h5>Best Selling Categories</h5>
-
           <div style="height: 300px;">
             <canvas id="categoryChart"></canvas>
           </div>
@@ -80,7 +94,6 @@
       </div>
     </div>
   </div>
-  
 </section>
 
 <%- include("../../views/partials/admin/footer") %>
@@ -88,138 +101,48 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-   // Category Revenue Chart (Donut)
-   const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-  const categoryData = <%- JSON.stringify(categoryRevenue) %>;
-  
-  if (categoryData && categoryData.length > 0) {
-    new Chart(categoryCtx, {
+  // Dropdown filter change event
+  const filterSelect = document.getElementById('filterSelect');
+
+  filterSelect.addEventListener('change', () => {
+    const filterValue = filterSelect.value;
+    window.location.href = `/admin/dashboard?filter=${filterValue}`;
+  });
+
+  // Parse and render charts
+  const categoryRevenueData = JSON.parse('<%- encodedCategoryRevenue %>');
+  const bestSellingProductsData = JSON.parse('<%- encodedBestSellingProducts %>');
+
+  const categoryLabels = categoryRevenueData.map(item => item._id);
+  const categoryValues = categoryRevenueData.map(item => item.totalRevenue);
+
+  const productLabels = bestSellingProductsData.map(item => item.productName);
+  const productValues = bestSellingProductsData.map(item => item.totalQuantity);
+
+  const ctx1 = document.getElementById('categoryChart').getContext('2d');
+  new Chart(ctx1, {
       type: 'doughnut',
       data: {
-        labels: categoryData.map(item => item._id),
-        datasets: [{
-          data: categoryData.map(item => item.totalRevenue),
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.8)',
-            'rgba(54, 162, 235, 0.8)',
-            'rgba(255, 206, 86, 0.8)',
-            'rgba(75, 192, 192, 0.8)',
-            'rgba(153, 102, 255, 0.8)'
-          ]
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'right'
-          }
-        }
+          labels: categoryLabels,
+          datasets: [{
+              data: categoryValues,
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+          }]
       }
-    });
-  }
+  });
 
-
-
-
-  const productData = <%- JSON.stringify(bestSellingProducts) %>;
-  
-  if (productData && productData.length > 0) {
-      const ctx = document.getElementById('myChart4').getContext('2d');
-      
-      new Chart(ctx, {
-          type: 'bar',
-          data: {
-              labels: productData.map(data => data.productName),
-              datasets: [{
-                  label: 'Top Selling Products',
-                  data: productData.map(data => data.totalQuantity),
-                  backgroundColor: '#8BE8E5',  // Light turquoise color
-                  borderColor: '#8BE8E5',
-                  borderWidth: 0
-              }]
-          },
-          options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                  legend: {
-                      display: true,
-                      position: 'top',
-                      align: 'start',
-                      labels: {
-                          boxWidth: 12,
-                          padding: 20
-                      }
-                  },
-                  tooltip: {
-                      enabled: true,
-                      backgroundColor: 'white',
-                      titleColor: 'black',
-                      bodyColor: 'black',
-                      borderColor: '#ddd',
-                      borderWidth: 1,
-                      padding: 12,
-                      displayColors: false,
-                      callbacks: {
-                          title: function(tooltipItems) {
-                              return tooltipItems[0].label;
-                          },
-                          label: function(context) {
-                              return `Quantity: ${context.raw}`;
-                          }
-                      }
-                  }
-              },
-              scales: {
-                  x: {
-                      grid: {
-                          display: false,
-                          drawBorder: false
-                      },
-                      ticks: {
-                          padding: 10,
-                          color: '#666'
-                      }
-                  },
-                  y: {
-                      position: 'left',
-                      grid: {
-                          color: '#f0f0f0',
-                          drawBorder: false,
-                          lineWidth: 1
-                      },
-                      ticks: {
-                          stepSize: 2,
-                          padding: 10,
-                          color: '#666'
-                      },
-                      beginAtZero: true,
-                      max: function(context) {
-                          const max = Math.max(...context.chart.data.datasets[0].data);
-                          return Math.ceil(max * 1.1); // Add 10% padding to the top
-                      }
-                  }
-              },
-              layout: {
-                  padding: {
-                      left: 10,
-                      right: 30,
-                      top: 20,
-                      bottom: 10
-                  }
-              },
-              barThickness: 40, // Controls the width of the bars
-          }
-      });
-  } else {
-      const canvas = document.getElementById('myChart4');
-      const ctx = canvas.getContext('2d');
-      ctx.font = '14px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('No data available', canvas.width / 2, canvas.height / 2);
-  }
-  </script>
-
-
+  const ctx2 = document.getElementById('productChart').getContext('2d');
+  new Chart(ctx2, {
+      type: 'bar',
+      data: {
+          labels: productLabels,
+          datasets: [{
+              label: 'Units Sold',
+              data: productValues,
+              backgroundColor: '#36A2EB',
+              borderColor: '#2C73D2',
+              borderWidth: 1,
+          }]
+      }
+  });
+</script>
