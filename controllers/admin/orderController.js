@@ -1,21 +1,22 @@
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 const Order = require("../../models/orderSchema")
-const Product=require("../../models/productSchema")
-const Cart=require("../../models/cartSchema")
-const User=require("../../models/userSchema")
+const Product = require("../../models/productSchema")
+const Cart = require("../../models/cartSchema")
+const User = require("../../models/userSchema")
 
-const adminOrders=async(req,res)=>{
+const adminOrders = async (req, res) => {
     try {
         const adminOrders = await Order.find();
-        console.log(adminOrders,"1")
-        res.render('adminOrders',{
-            orders:adminOrders})
-        
+        console.log(adminOrders, "1")
+        res.render('adminOrders', {
+            orders: adminOrders
+        })
+
     } catch (error) {
-        console.error("error in orders",error)
+        console.error("error in orders", error)
         res.render('pageerror')
-        
+
     }
 }
 
@@ -68,18 +69,18 @@ const changeStatus = async (req, res) => {
                 amount: order.finalAmount,
                 type: 'credit',
             });
-        
+
             await user.save();
-            
+
             order.paymentStatus = 'Refunded';
             await order.save();
         }
-        
-        if(data==='Delivered'){
-            order.paymentStatus='Paid';
+
+        if (data === 'Delivered') {
+            order.paymentStatus = 'Paid';
             await order.save();
         }
-        
+
         // Update the order status
         await Order.updateOne({ _id: id }, { $set: { status: data } });
 
@@ -126,32 +127,49 @@ const salesReport = async (req, res) => {
         const totalCouponDiscount = orders.reduce((sum, order) => sum + (order.totalCouponDiscount || 0), 0);
         const totalOrders = orders.length;
 
+
+
         if (format === 'pdf') {
             const PDFDocument = require('pdfkit');
             const doc = new PDFDocument({ margin: 30 });
-        
+
             // Set response headers for PDF
             const filename = `sales_report_${Date.now()}.pdf`;
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-        
+
             // Stream the document to the response
             doc.pipe(res);
-        
+            // Header Section
+            doc.fillColor("#000000")
+                .fontSize(30)
+                .font('Times-Roman')
+                .text("CaseVerse", 50, 45)
+                .fontSize(10)
+                .font('Helvetica')
+                .text("www.caseverse.in", 50, 80)
+                .text("caseverseofficial@gmail.com", 50, 95)
+                .moveDown();
+
+
             // Report Title
-            doc.fontSize(20).text('Sales Report', { align: 'center', underline: true });
+            doc.fontSize(20).text('Sales Report', { align: 'center' });
+            doc.moveTo(70, doc.y + 10)  // Adjust horizontal position and vertical offset
+                .lineTo(500, doc.y + 10) // Adjust width of the line
+                .stroke("#000000");
             doc.moveDown(2);
-        
+
+
             // Report Summary
             doc.fontSize(12)
-               .text(`Filter: ${filter || 'Custom Range'}`)
-               .text(`Start Date: ${startDate || 'N/A'}`)
-               .text(`End Date: ${endDate || 'N/A'}`)
-               .text(`Total Sales: ₹${totalSales}`)
-               .text(`Total Discount: ₹${totalCouponDiscount}`)
-               .text(`Total Orders: ${totalOrders}`);
+                .text(`Filter: ${filter || 'Custom Range'}`)
+                .text(`Start Date: ${startDate || 'N/A'}`)
+                .text(`End Date: ${endDate || 'N/A'}`)
+                .text(`Total Sales: ${totalSales}`)
+                .text(`Total Discount: ${totalCouponDiscount}`)
+                .text(`Total Orders: ${totalOrders}`);
             doc.moveDown(2);
-        
+
             // Table Configuration
             const tableTop = doc.y;
             const colWidths = [150, 100, 150, 150];
@@ -160,44 +178,45 @@ const salesReport = async (req, res) => {
                 positions.push(index === 0 ? tableMarginLeft : positions[index - 1] + colWidths[index - 1]);
                 return positions;
             }, []);
-        
+
             // Table Headers
             const headers = ['Order ID', 'Date', 'Total Amount (Rs)', 'Coupon Discount (Rs)'];
             headers.forEach((header, i) => {
                 doc.font('Helvetica-Bold')
-                   .fontSize(12)
-                   .text(header, colPositions[i], tableTop, { width: colWidths[i], align: 'center' });
+                    .fontSize(12)
+                    .text(header, colPositions[i], tableTop, { width: colWidths[i], align: 'center' });
             });
-        
+
             // Draw a line under headers
             doc.moveTo(tableMarginLeft, tableTop + 15)
-               .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), tableTop + 15)
-               .stroke();
-        
+                .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), tableTop + 15)
+                .stroke();
+
             // Table Rows
             const rowHeight = 20;
             const maxRowsPerPage = Math.floor((doc.page.height - tableTop - 50) / rowHeight);
             let rowY = tableTop + 20;
-        
+
+            // Use the filtered `orders` for the table rows
             orders.forEach((order, index) => {
                 if ((index + 1) % maxRowsPerPage === 0 && index !== 0) {
                     doc.addPage();
                     rowY = 30;
-        
+
                     // Redraw headers on new page
                     headers.forEach((header, i) => {
                         doc.font('Helvetica-Bold')
-                           .fontSize(12)
-                           .text(header, colPositions[i], rowY, { width: colWidths[i], align: 'center' });
+                            .fontSize(12)
+                            .text(header, colPositions[i], rowY, { width: colWidths[i], align: 'center' });
                     });
-        
+
                     doc.moveTo(tableMarginLeft, rowY + 15)
-                       .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), rowY + 15)
-                       .stroke();
-        
+                        .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), rowY + 15)
+                        .stroke();
+
                     rowY += 20;
                 }
-        
+
                 const date = new Date(order.createdAt).toLocaleDateString();
                 const row = [
                     order.orderId,
@@ -205,33 +224,31 @@ const salesReport = async (req, res) => {
                     `${order.totalAmount || 0}/-`,
                     `${order.totalCouponDiscount || 0}/-`,
                 ];
-        
+
                 row.forEach((cell, i) => {
                     doc.font('Helvetica')
-                       .fontSize(10)
-                       .text(cell, colPositions[i], rowY, { width: colWidths[i], align: 'center' });
+                        .fontSize(10)
+                        .text(cell, colPositions[i], rowY, { width: colWidths[i], align: 'center' });
                 });
-        
+
                 rowY += rowHeight;
-        
+
                 // Draw a line under each row
                 doc.moveTo(tableMarginLeft, rowY - 10)
-                   .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), rowY - 10)
-                   .stroke();
+                    .lineTo(tableMarginLeft + colWidths.reduce((a, b) => a + b, 0), rowY - 10)
+                    .stroke();
             });
-        
+
             // Footer
             doc.moveDown(2);
-            doc.fontSize(10).text('Caseverse', { align: 'center', italics: true });
-        
+            doc.fontSize(10).text("CaseVerse signature", { align: 'center', italics: true });
+
             // Finalize the document
             doc.end();
             return;
         }
-        
-        
 
-        
+
 
 
         if (format === 'excel') {
@@ -290,12 +307,12 @@ const salesReport = async (req, res) => {
 
 
 
-module.exports={
+module.exports = {
 
-adminOrders,
-orderDetail,
-changeStatus,
-salesReport,
+    adminOrders,
+    orderDetail,
+    changeStatus,
+    salesReport,
 
 
 

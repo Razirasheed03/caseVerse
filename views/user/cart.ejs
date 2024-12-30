@@ -52,6 +52,47 @@
     color:rgb(0, 0, 0);
     border: 1px solid;
     border-radius: 10px;
+
+    .empty-cart-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.empty-cart-message i {
+    display: block;
+    margin: 0 auto;
+    color: #ff6f61;
+}
+
+.empty-cart-message h4 {
+    color: #333;
+    font-weight: 600;
+}
+
+.empty-cart-message p {
+    color: #777;
+}
+
+.empty-cart-message .btn-danger {
+    background-color: #ff6f61;
+    border-color: #ff6f61;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.empty-cart-message .btn-danger:hover {
+    background-color: #d4564e;
+    border-color: #d4564e;
+}
+
   }
 </style>
 <nav>
@@ -84,7 +125,7 @@
                   <tr class="table_row">
                     <td class="column-1">
                       <div class="how-itemcart1">
-                        <img src="/uploads/product-images/<%= item.productId.productImage[0] %>" alt="IMG">
+                        <img src="/uploads/re-images/<%= item.productId.productImage[0] %>" alt="IMG">
                       </div>
                     </td>
                     <td class="column-2"><%= item.productId.productName %></td>
@@ -109,11 +150,19 @@
                     </td>
                   </tr>
                 <% }); %>
-              <% } else { %>
-                <tr>
-                  <td colspan="6">Your cart is empty.</td>
-                </tr>
-              <% } %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="6" class="text-center">
+                      <div class="empty-cart-message">
+                        <i class="zmdi zmdi-shopping-cart" style="font-size: 50px; color: #ff6f61;"></i>
+                        <h4 class="mt-3" style="font-size: 20px; color: #333;">Your Cart is Empty</h4>
+                        <p style="font-size: 16px; color: #777;">Start adding items to your cart to proceed with your purchase!</p>
+                        <a href="/shop" class="btn btn-primary mt-3 mb-3" style="padding: 10px 20px; font-size: 16px;">Browse Products</a>
+                      </div>
+                    </td>
+                  </tr>
+                <% } %>
+                
 
             </table>
           </div>

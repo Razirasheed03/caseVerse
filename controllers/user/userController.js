@@ -322,7 +322,10 @@ const loadHomepage = async (req, res) => {
         const category=await Category.findOne({_id:product.category})
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
+        
+
         res.render('home', { user,product,category}); // Pass user as null if not logged in
+
 
      
     } catch (error) {
@@ -755,13 +758,12 @@ const saveUserData=async(req,res)=>{
 }
 
 
-
 const addToCart = async (req, res) => {
     try {
         const userSession = req.session.user || req.session.googleUser;
         const { productId, quantity } = req.body;
+        const MAX_QUANTITY = 10;
         
-        // Validate inputs
         if (!userSession) return res.redirect('/login');
         
         const user = await User.findById(userSession._id);
@@ -770,25 +772,35 @@ const addToCart = async (req, res) => {
         const product = await Product.findById(productId);
         if (!product) return res.status(404).send('Product not found');
 
-        console.log(productId[0])
-        // Find or create cart
         let cart = await Cart.findOne({ userId: user._id });
         if (!cart) {
             cart = new Cart({ userId: user._id, items: [] });
         }
 
-        // Find the index of the existing item
         const existingItemIndex = cart.items.findIndex(
             item => item.productId.toString() === productId[0]
         );
 
         if (existingItemIndex !== -1) {
-            // If product exists, update its quantity
-            cart.items[existingItemIndex].quantity += Number(quantity);
-            cart.items[existingItemIndex].totalPrice = 
-                cart.items[existingItemIndex].quantity * product.salePrice;
+            const newQuantity = cart.items[existingItemIndex].quantity + Number(quantity);
+            
+            if (newQuantity > MAX_QUANTITY) {
+                return res.status(400).json({
+                    error: 'Maximum quantity limit reached',
+                    message: 'Cannot add more items. Maximum limit of 10 items already in cart.'
+                });
+            }
+            
+            cart.items[existingItemIndex].quantity = newQuantity;
+            cart.items[existingItemIndex].totalPrice = newQuantity * product.salePrice;
         } else {
-            // If product doesn't exist, add new item
+            if (Number(quantity) > MAX_QUANTITY) {
+                return res.status(400).json({
+                    error: 'Maximum quantity limit exceeded',
+                    message: 'Cannot add more than 10 items to cart.'
+                });
+            }
+            
             cart.items.push({
                 productId: product._id,
                 quantity: Number(quantity),
@@ -797,10 +809,7 @@ const addToCart = async (req, res) => {
             });
         }
 
-        // Save the updated cart
         await cart.save();
-
-        // Redirect to cart page
         res.redirect('/cart');
 
     } catch (error) {
@@ -1168,7 +1177,7 @@ const cart = async (req, res) => {
         subtotal = updatedCart.items.reduce((total, item) => total + item.totalPrice, 0);
 
         // Calculate shipping and total price
-        const shipping = subtotal > 499 ? 0 : 40;
+        const shipping = subtotal > 999 ? 0 : 40;
         const totalPrice = subtotal + shipping;
 
         console.log("Subtotal:", subtotal, "Shipping:", shipping, "Total Price:", totalPrice);

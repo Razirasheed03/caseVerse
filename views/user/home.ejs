@@ -318,13 +318,12 @@
 									<strong>₹<%=item.salePrice%></strong>
 								</span>
 							</div>
-
-							<div class="block2-txt-child2 flex-r p-t-3">
-								<a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
-									<img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-									<img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-								</a>
-							</div>
+							<a href="#" class="btn-addwish-b2 dis-block pos-relative" onclick="addToWishlist(event, '<%= item._id %>')">
+								<img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+								<img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+							</a>
+							
+							
 						</div>
 					</div>
 				</div>
@@ -350,7 +349,51 @@
 			<i class="zmdi zmdi-chevron-up"></i>
 		</span>
 	</div>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+async function addToWishlist(event, productId) {
+    event.preventDefault();  // Prevent page refresh
+    
+    try {
+        const response = await fetch('/add-to-wishlist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId }),
+        });
 
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Added to Wishlist!',
+                text: 'This product has been successfully added to your wishlist.',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+        } else {
+            const data = await response.json();
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                text: data.message || 'Failed to add the product to your wishlist.',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+        }
+    } catch (error) {
+        console.error('Error adding to wishlist:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred. Please try again later.',
+            timer: 2000,
+            showConfirmButton: false,
+        });
+    }
+}
+
+</script>
 	<!-- Modal1 -->
 <!--===============================================================================================-->	
 	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
@@ -398,41 +441,7 @@
 	<script src="vendor/isotope/isotope.pkgd.min.js"></script>
 <!--===============================================================================================-->
 	<script src="vendor/sweetalert/sweetalert.min.js"></script>
-	<script>
-		$('.js-addwish-b2').on('click', function(e){
-			e.preventDefault();
-		});
-
-		$('.js-addwish-b2').each(function(){
-			var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
-
-				$(this).addClass('js-addedwish-b2');
-				$(this).off('click');
-			});
-		});
-
-		$('.js-addwish-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
-
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to wishlist !", "success");
-
-				$(this).addClass('js-addedwish-detail');
-				$(this).off('click');
-			});
-		});
-
-		/*---------------------------------------------*/
-
-		$('.js-addcart-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to cart !", "success");
-			});
-		});
-	</script>
+	
 <!--===============================================================================================-->
 	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 	<script>
