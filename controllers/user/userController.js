@@ -350,14 +350,19 @@ const productDetail = async (req, res) => {
 
         // Fetch the user's wishlist if the user is logged in
         let wishlistProducts = [];
+        let cartItems = [];
         if (user) {
             const wishlist = await Wishlist.findOne({ userId: user._id });
             if (wishlist) {
                 wishlistProducts = wishlist.products.map(item => item.productId.toString());
             }
+            const cart = await Cart.findOne({ userId: user._id });
+            if (cart) {
+                cartItems = cart.items;
+            }
         }
 
-        res.render('productDetail', { product, category, user, wishlistProducts });
+        res.render('productDetail', { product, category, user, wishlistProducts,cartItems });
         
     } catch (error) {
         console.error('Error fetching product details:', error.message);
@@ -762,7 +767,7 @@ const addToCart = async (req, res) => {
     try {
         const userSession = req.session.user || req.session.googleUser;
         const { productId, quantity } = req.body;
-        const MAX_QUANTITY = 10;
+        const MAX_QUANTITY = 5;
         
         if (!userSession) return res.redirect('/login');
         
@@ -787,7 +792,7 @@ const addToCart = async (req, res) => {
             if (newQuantity > MAX_QUANTITY) {
                 return res.status(400).json({
                     error: 'Maximum quantity limit reached',
-                    message: 'Cannot add more items. Maximum limit of 10 items already in cart.'
+                    message: 'Cannot add more items. Maximum limit of 5 items already in cart.'
                 });
             }
             
@@ -797,7 +802,7 @@ const addToCart = async (req, res) => {
             if (Number(quantity) > MAX_QUANTITY) {
                 return res.status(400).json({
                     error: 'Maximum quantity limit exceeded',
-                    message: 'Cannot add more than 10 items to cart.'
+                    message: 'Cannot add more than 5 items to cart.'
                 });
             }
             
@@ -1008,7 +1013,7 @@ const quantityChange = async (req, res) => {
         }
 
         // Determine the maximum allowed quantity
-        const maxAllowedQuantity = Math.min(10, product.quantity);
+        const maxAllowedQuantity = Math.min(5, product.quantity);
 
         // Validate the requested quantity
         if (quantity <= 0) {
@@ -1111,6 +1116,8 @@ const cart = async (req, res) => {
         const user = userSession ? await User.findById(userSession._id) : null;
 
         if (!user) return res.redirect('/login');
+       
+
 
         // Fetch user's cart
         const cart = await Cart.findOne({ userId: user._id }).populate('items.productId').exec();
@@ -1324,15 +1331,36 @@ const removeCoupon = async (req, res) => {
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
 
-        if (!user) return res.status(401).json({ error: 'User not authenticated.' });
+        if (!user) {
+            return res.status(401).json({ error: 'User not authenticated.' });
+        }
 
+        // Find the user's cart
         const cart = await Cart.findOne({ userId: user._id });
-        if (!cart) return res.status(400).json({ error: 'Cart not found.' });
+        if (!cart) {
+            return res.status(400).json({ error: 'Cart not found.' });
+        }
 
-        // Reset coupon details
-        cart.couponDiscount = 0;
-        cart.totalPrice = cart.items.reduce((total, item) => total + item.totalPrice, 0);
-        await cart.save();
+        // Check if a coupon is applied and remove the userId from the coupon
+        if (req.session.couponCode) {
+            const couponCode = req.session.couponCode;
+
+            // Find the coupon by its code
+            const coupon = await Coupon.findOne({ name: couponCode });
+            if (coupon) {
+                // Remove the user's ID from the coupon's userId array
+                coupon.userId = coupon.userId.filter(
+                    (id) => id.toString() !== user._id.toString()
+                );
+                await coupon.save(); // Save the updated coupon
+            }
+        }
+
+        // Reset coupon details in the cart
+        cart.couponDiscount = 0; // Reset the discount
+        cart.totalPrice = cart.items.reduce((total, item) => total + item.totalPrice, 0); // Recalculate the total price
+        cart.appliedCoupon = null; // Remove the applied coupon reference
+        await cart.save(); // Save the updated cart
 
         // Clear session coupon details
         req.session.couponCode = null;
@@ -1344,6 +1372,8 @@ const removeCoupon = async (req, res) => {
         res.status(500).json({ error: 'Internal server error.' });
     }
 };
+
+
 
 
 

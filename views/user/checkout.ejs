@@ -175,12 +175,12 @@
           Apply Coupon
         </button>
         <button 
-    type="button" 
-    class="flex-c-m stext-101 cl2 size-118 bg-danger bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5" 
-    onclick="removeCoupon()"
-    id="removeCouponBtn">
-    Remove Coupon
-</button>
+        type="button" 
+        class="flex-c-m stext-101 cl2 size-118 bg-danger bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5" 
+        onclick="removeCoupon()"
+        id="removeCouponBtn">
+        Remove Coupon
+    </button>
 
       </div>
     </div>
@@ -264,28 +264,30 @@ document.getElementById('applyCouponBtn').addEventListener('click', async () => 
 as="font" 
 type="font/woff2" 
 crossorigin="anonymous">
+
 <script>
-
-async function removeCoupon() {
-    try {
-        const response = await fetch('/remove-coupon', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            alert(result.success);
-            location.reload(); // Reload to reflect updated totals
-        } else {
-            alert(result.error);
-        }
-    } catch (error) {
-        console.error('Error removing coupon:', error);
-    }
-}
-</script>
+  async function removeCoupon() {
+      try {
+          const response = await fetch('/remove-coupon', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+          });
+  
+          const result = await response.json();
+  
+          if (response.ok) {
+              alert(result.success);
+              location.reload(); // Reload the page to update the cart UI
+          } else {
+              alert(result.error);
+          }
+      } catch (error) {
+          console.error('Error removing coupon:', error);
+          alert('An error occurred while removing the coupon.');
+      }
+  }
+  </script>
+  
 <script>
   document.getElementById('placeOrderBtn').addEventListener('click', async (e) => {
     e.preventDefault();

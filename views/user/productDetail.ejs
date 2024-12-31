@@ -193,8 +193,23 @@
                 <div class="d-flex mt-5">
                     <form action="/add-to-cart" method="POST">
                         <input type="hidden" name="productId" value="<%= product._id %>">
-                        <button type="submit" class="btn btn-primary me-2">Add to Cart</button>
+                        <% 
+                            const cartItem = cartItems.find(item => item.productId.toString() === product._id.toString());
+                            const maxQuantityReached = cartItem && cartItem.quantity >= 10;
+                        %>
+                        <button 
+                            type="submit" 
+                            class="btn btn-primary me-2" 
+                            <% if (maxQuantityReached) { %> disabled <% } %>
+                        >
+                            <% if (maxQuantityReached) { %>
+                                Maximum Quantity Reached
+                            <% } else { %>
+                                Add to Cart
+                            <% } %>
+                        </button>
                     </form>
+                
                     
                 
                     <!-- Add to Wishlist Button -->

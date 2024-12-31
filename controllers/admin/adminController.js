@@ -26,33 +26,37 @@ const pageerror=async(req,res)=>{
 }
 
 const loadLogin=(req,res)=>{
+    const message = req.query.message || null;
     if(req.session.admin){
         return res.redirect("/admin")
     }
-    res.render("admin-login",{message:null})
+    res.render("admin-login",{message})
 }
 
-const login=async(req,res)=>{
+const login = async (req, res) => {
     try {
-        const {email,password}=req.body;///finding admin(checking also )
-         const admin=await User.findOne({email,isAdmin:true})
-         if(admin){
-            const passwordMatch=await bcrypt.compare(password,admin.password);  ///await
-            if(passwordMatch){
-                req.session.admin=true;
-                return res.redirect("/admin")
-            }else{
-                return res.redirect("/admin/login")
-            }
+        const { email, password } = req.body;
 
-         }else{
-            return res.redirect("/admin/login")
-         }
+        // Find the admin user
+        const admin = await User.findOne({ email, isAdmin: true });
+        if (admin) {
+            const passwordMatch = await bcrypt.compare(password, admin.password);
+
+            if (passwordMatch) {
+                req.session.admin = true;
+                return res.redirect("/admin");
+            } else {
+                return res.redirect("/admin/login?message=Incorrect Password");
+            }
+        } else {
+            return res.redirect("/admin/login?message=Admin not found");
+        }
     } catch (error) {
-        console.log("login error",error);
-        return res.redirect("/pageerror")
+        console.log("login error", error);
+        return res.redirect("/pageerror");
     }
-}
+};
+
 
 
 const loadDashboard = async (req, res) => {
