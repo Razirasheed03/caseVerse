@@ -228,7 +228,7 @@ const loadshopping = async (req, res) => {
         const id = req.params.id;
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
-        
+
         const search = req.query.search || ""; 
         const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const page = parseInt(req.query.page) || 1;
@@ -253,7 +253,7 @@ const loadshopping = async (req, res) => {
 
         // Determine sort criteria
         let sortCriteria = { createdAt: -1 }; // Default sort by newest
-        switch(sortQuery) {
+        switch (sortQuery) {
             case 'priceAsc':
                 sortCriteria = { salePrice: 1 };
                 break;
@@ -266,8 +266,6 @@ const loadshopping = async (req, res) => {
             case 'nameDesc':
                 sortCriteria = { productName: -1 };
                 break;
-            default:
-                sortCriteria = { createdAt: -1 };
         }
 
         // Count total products
@@ -284,23 +282,34 @@ const loadshopping = async (req, res) => {
         // Fetch all categories for the category filter links
         const categories = await Category.find({ isListed: true, isDeleted: false });
 
+        // Fetch user's wishlist if logged in
+        const wishlist = user
+            ? await Wishlist.findOne({ userId: user._id }).populate('products.productId')
+            : null;
+
+        const wishlistProductIds = wishlist
+            ? wishlist.products.map((item) => item.productId._id.toString())
+            : [];
+
         const totalPages = Math.ceil(totalProducts / limit);
 
         res.render('shop', {
-            product: productData, 
-            currentPage: page, 
-            totalPages, 
-            search, 
+            product: productData,
+            currentPage: page,
+            totalPages,
+            search,
             user,
             currentSort: sortQuery,
-            categories: categories, // Pass categories to the template
-            currentCategory: categoryQuery // Pass current category to the template
+            categories,
+            currentCategory: categoryQuery,
+            wishlistProductIds // Pass wishlist product IDs to the template
         });
     } catch (error) {
         console.error("Error loading shopping page:", error);
         res.status(500).send("Server error");
     }
 };
+
 
 
 
@@ -867,15 +876,20 @@ const addToWishlist = async (req, res) => {
         const userSession = req.session.user || req.session.googleUser;
         const { productId } = req.body;
 
-        if (!userSession) return res.redirect('/login');
+        if (!userSession) {
+            return res.status(401).json({ message: "Please log in to add items to your wishlist." });
+        }
 
         const user = await User.findById(userSession._id);
-        if (!user) return res.redirect('/login');
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
 
         const product = await Product.findById(productId);
-        if (!product) return res.status(404).send('Product not found');
+        if (!product) {
+            return res.status(404).json({ message: "Product not found." });
+        }
 
-        // Find or create a wishlist for the user
         let wishlist = await Wishlist.findOne({ userId: user._id });
 
         if (!wishlist) {
@@ -885,16 +899,14 @@ const addToWishlist = async (req, res) => {
             });
         }
 
-        // Check if product is already in the wishlist
         const existingItem = wishlist.products.find((item) =>
             item.productId.toString() === productId
         );
 
         if (existingItem) {
-            return res.redirect('/wishlist');
+            return res.status(400).json({ message: "Product already in wishlist." });
         }
 
-        // Add product to the wishlist
         wishlist.products.push({
             productId: product._id,
             addedOn: new Date(),
@@ -902,12 +914,13 @@ const addToWishlist = async (req, res) => {
 
         await wishlist.save();
 
-        res.redirect('/wishlist');
-    } catch (err) {
-        console.error('Error adding product to wishlist:', err.message);
-        res.status(500).send('Error adding product to wishlist');
+        res.status(200).json({ message: "Added to wishlist!", productId });
+    } catch (error) {
+        console.error("Error adding product to wishlist:", error.message);
+        res.status(500).json({ message: "Error adding product to wishlist." });
     }
 };
+
 
 const addToCartFromWishlist = async (req, res) => {
     try {

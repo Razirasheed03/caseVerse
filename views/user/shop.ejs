@@ -209,43 +209,46 @@
 			</div>
 
 			<div class="row isotope-grid" id="shopList">
-				<!-- ======================================= -->
-				<%for(let i=0;i<product.length;i++){%>
+				<%for(let i=0; i<product.length; i++){%>
 					<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
 						<!-- Block2 -->
 						<div class="block2">
 							<div class="block2-pic hov-img0">
 								<a href="/productDetail/<%=product[i]._id%>">
-
 									<img src='/uploads/re-images/<%=product[i].productImage[0]%>'
 										alt="IMG-PRODUCT">
 								</a>
 							</div>
-
+			
 							<div class="block2-txt flex-w flex-t p-t-14">
 								<div class="block2-txt-child1 flex-col-l ">
 									<a href="/productDetail/<%=product[i]._id%>"
 										class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
 										<%=product[i].productName%>
 									</a>
-
+			
 									<span class="stext-105 cl3">
 										<strike>₹<%=product[i].regularPrice%></strike>&nbsp;
 										<strong>₹<%=product[i].salePrice%></strong>
 									</span>
 								</div>
-
+			
 								<div class="block2-txt-child2 flex-r p-t-3">
-									<a href="#" class="btn-addwish-b2 dis-block pos-relative" onclick="addToWishlist(event, '<%= product[i]._id %>')">
-										<img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-										<img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-									</a>
+									<% if (wishlistProductIds.includes(product[i]._id.toString())) { %>
+										<!-- Wishlist icon if product is already in the wishlist -->
+										<i class="fa-solid fa-heart" style="color: red;"></i>
+									<% } else { %>
+										<!-- Add to wishlist icon -->
+										<a href="#" class="btn-addwish-b2 dis-block pos-relative" onclick="addToWishlist(event, '<%=product[i]._id%>')">
+											<img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+											<img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+										</a>
+									<% } %>
 								</div>
 							</div>
 						</div>
 					</div>
-					<%}%>
-						<!-- =========================================== -->
+				<%}%>
 			</div>
 
 			<!-- Load more -->
@@ -279,49 +282,51 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script>
-	async function addToWishlist(event, productId) {
-		event.preventDefault();  // Prevent page refresh
-		
-		try {
-			const response = await fetch('/add-to-wishlist', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ productId }),
-			});
-	
-			if (response.ok) {
-				Swal.fire({
-					icon: 'success',
-					title: 'Added to Wishlist!',
-					text: 'This product has been successfully added to your wishlist.',
-					timer: 2000,
-					showConfirmButton: false,
+		async function addToWishlist(event, productId) {
+			event.preventDefault();  // Prevent page refresh
+			
+			try {
+				const response = await fetch('/add-to-wishlist', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ productId }),
 				});
-			} else {
-				const data = await response.json();
+	
+				if (response.ok) {
+					Swal.fire({
+						icon: 'success',
+						title: 'Added to Wishlist!',
+						text: 'This product has been successfully added to your wishlist.',
+						timer: 2000,
+						showConfirmButton: false,
+					}).then(() => {
+						window.location.reload(); // Reload the page to update the wishlist icon
+					});
+				} else {
+					const data = await response.json();
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops!',
+						text: data.message || 'Failed to add the product to your wishlist.',
+						timer: 2000,
+						showConfirmButton: false,
+					});
+				}
+			} catch (error) {
+				console.error('Error adding to wishlist:', error);
 				Swal.fire({
 					icon: 'error',
-					title: 'Oops!',
-					text: data.message || 'Failed to add the product to your wishlist.',
+					title: 'Error',
+					text: 'An unexpected error occurred. Please try again later.',
 					timer: 2000,
 					showConfirmButton: false,
 				});
 			}
-		} catch (error) {
-			console.error('Error adding to wishlist:', error);
-			Swal.fire({
-				icon: 'error',
-				title: 'Error',
-				text: 'An unexpected error occurred. Please try again later.',
-				timer: 2000,
-				showConfirmButton: false,
-			});
 		}
-	}
-	
 	</script>
+	
 	<script>
 		document.addEventListener("DOMContentLoaded", () => {
 			const searchInput = document.getElementById("searchInput");
