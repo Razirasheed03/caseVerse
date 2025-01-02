@@ -296,26 +296,44 @@ crossorigin="anonymous">
     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
 
     if (!selectedAddress) {
-      Swal.fire({
+    Swal.fire({
         icon: 'error',
         title: 'Oops...',
         text: 'Please select an address.',
-        showConfirmButton: true,
-        confirmButtonText: 'OK',
-      });
-      return;
-    }
+        toast: true,
+        position: 'bottom-end',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        customClass: {
+            popup: 'rounded-pill shadow-sm',
+            title: 'font-weight-bold text-black',
+        },
+        background: '#fce9b0',  // Light yellowish-orange background for error
+        iconColor: '#ffffff',   // White icon color
+    });
+    return;
+}
 
-    if (!paymentMethod) {
-      Swal.fire({
+if (!paymentMethod) {
+    Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: 'Please select a Payment Method',
-        showConfirmButton: true,
-        confirmButtonText: 'OK',
-      });
-      return;
-    }
+        text: 'Please select a Payment Method.',
+        toast: true,
+        position: 'bottom-end',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        customClass: {
+            popup: 'rounded-pill shadow-sm',
+            title: 'font-weight-bold text-black',
+        },
+        background: '#fce9b0',  // Light yellowish-orange background for error
+        iconColor: '#ffffff',   // White icon color
+    });
+    return;
+}
 
     try {
       const response = await fetch('/placeOrder', {

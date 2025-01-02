@@ -417,6 +417,10 @@ const postAddAddress=async(req,res)=>{
         const userId=req.session.user||req.session.googleUser;
 
         const {addressType,name,address,city,landMark,state,pincode,phone,altPhone}=req.body;
+        
+        if (!addressType || !name || !address || !city || !landMark || !state || !pincode || !phone) {
+            return res.status(400).json({ error: "All fields are required." });
+        }
 
         const userAddress=await Address.findOne({userId:userId});
         if(!userAddress){
@@ -456,12 +460,15 @@ const wallet = async (req, res) => {
         if (!user) {
             return res.status(404).render('pageerror', { message: 'User not found.' });
         }
+        const sortedTransactions = (user.walletTransactions || []).sort((a, b) => {
+            return new Date(b.date) - new Date(a.date); // Sort descending by date
+        });
 
         // Fetch wallet balance and transactions
         res.render('wallet', {
             user,
             walletBalance: user.walletBalance || 0, // Default to 0 if not set
-            transactions: user.walletTransactions || [], // Default to an empty array
+            transactions: sortedTransactions|| [], // Default to an empty array
         });
     } catch (error) {
         console.error('Error loading wallet page:', error);
@@ -1549,16 +1556,6 @@ const placeOrder = async (req, res) => {
                     message: 'Insufficient wallet balance',
                 });
             }
-
-            user.walletBalance -= finalAmount;
-            user.walletTransactions.push({
-                detail: 'Payment for Order',
-                amount: finalAmount,
-                type: 'debit',
-            });
-
-            await user.save();
-
             const newOrder = new Order({
                 userId: user._id,
                 items: cartItems.items.map(item => ({
@@ -1574,8 +1571,20 @@ const placeOrder = async (req, res) => {
                 status: 'In Transit',
                 paymentStatus: 'Paid'
             });
-
             await newOrder.save();
+
+            user.walletBalance -= finalAmount;
+            user.walletTransactions.push({
+                detail: `Payment for Order : ${newOrder.orderId}`,
+                amount: finalAmount,
+                type: 'debit',
+            });
+
+            await user.save();
+
+        
+
+          
             await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [], totalPrice: 0, couponDiscount: 0 } });
 
             return res.status(200).json({
@@ -1695,7 +1704,7 @@ const refundToWallet = async (req, res) => {
         user.walletBalance += refundAmount;
 
         user.walletTransactions.push({
-            detail: `Refund for Order ID: ${order._id}`,
+            detail: `Refund for Order ID : ${order.orderId}`,
             amount: refundAmount,
             type: 'credit',
             date: new Date()  // Add current date for the transaction

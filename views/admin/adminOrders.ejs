@@ -1,11 +1,8 @@
-
-            <%- include("../../views/partials/admin/header") %>
+<%- include("../../views/partials/admin/header") %>
             <section class="content-main"> 
-                    <h2 >Orders List</h2>
+                    <h2>Orders List</h2>
                     <br>
                 <div class="card mb-4">
-                   
-                    <!-- card-header end// -->
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -16,13 +13,12 @@
                                         <th scope="col">Total</th>
                                         <th scope="col">Status</th>
                                         <th scope="col">Date</th>
-                                        
                                         <th scope="col" class="text-end">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <% if (orders && orders.length> 0) { %>
-                                        <% orders.forEach(order=> { %>
+                                    <% if (orders && orders.length > 0) { %>
+                                        <% orders.forEach(order => { %>
                                     <tr>
                                         <td><%=order.orderId%></td>
                                         <td><%=order.paymentMethod%></td>
@@ -31,34 +27,69 @@
                                         <td><%=order.createdAt.toLocaleDateString()%></td>
                                         <td class="text-end">
                                             <a href="/admin/orders?id=<%= order._id %>" class="btn btn-md rounded font-sm">Detail</a>
-                                        
                                         </td>
                                     </tr>
                                         <% }) %>
-                                        <% } else { %>
-                                            <p>No orders found.</p>
-                                            <% } %>
-                                  
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center">No orders found.</td>
+                                        </tr>
+                                    <% } %>
                                 </tbody>
                             </table>
                         </div>
                     </div>            
                 </div>
-                <!-- card end// -->
-                <!-- <div class="pagination-area mt-15 mb-50">
-                    <nav aria-label="Page navigation example">
-                        <ul class="pagination justify-content-start">
-                            <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                            <li class="page-item"><a class="page-link" href="#">02</a></li>
-                            <li class="page-item"><a class="page-link" href="#">03</a></li>
-                            <li class="page-item"><a class="page-link dot" href="#">...</a></li>
-                            <li class="page-item"><a class="page-link" href="#">16</a></li>
-                            <li class="page-item">
-                                <a class="page-link" href="#"><i class="material-icons md-chevron_right"></i></a>
-                            </li>
+                <!-- Pagination -->
+                <% if (totalPages > 1) { %>
+                <div class="pagination-area mt-15 mb-50">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <!-- Previous button -->
+                            <% if (hasPrevPage) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>">
+                                        <i class="material-icons md-chevron_left"></i>
+                                    </a>
+                                </li>
+                            <% } %>
+
+                            <!-- Page numbers -->
+                            <% for(let i = 1; i <= totalPages; i++) { %>
+                                <% if (i === currentPage) { %>
+                                    <li class="page-item active">
+                                        <span class="page-link"><%= i %></span>
+                                    </li>
+                                <% } else if (
+                                    i === 1 || 
+                                    i === totalPages || 
+                                    (i >= currentPage - 1 && i <= currentPage + 1)
+                                ) { %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                                    </li>
+                                <% } else if (
+                                    i === currentPage - 2 || 
+                                    i === currentPage + 2
+                                ) { %>
+                                    <li class="page-item">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                <% } %>
+                            <% } %>
+
+                            <!-- Next button -->
+                            <% if (hasNextPage) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>">
+                                        <i class="material-icons md-chevron_right"></i>
+                                    </a>
+                                </li>
+                            <% } %>
                         </ul>
                     </nav>
-                </div> -->
+                </div>
+                <% } %>
             </section>
             <!-- content-main end// -->
         </main>
@@ -70,4 +101,4 @@
         <!-- Main Script -->
         <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
     </body>
-</html> 
+</html>

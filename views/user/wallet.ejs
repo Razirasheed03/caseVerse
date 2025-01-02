@@ -14,7 +14,32 @@
         <!-- Template CSS -->
         <link href="assets/css/main.css?v=1.1" rel="stylesheet" type="text/css" />
 
-        <style>
+             <style>
+            .pagination {
+                display: flex;
+                justify-content: center;
+                margin-top: 20px;
+            }
+        
+            .page-button {
+                padding: 5px 10px;
+                margin: 0 5px;
+                border: 1px solid #ddd;
+                background-color: #f9f9f9;
+                cursor: pointer;
+                border-radius: 5px;
+            }
+        
+            .page-button.active {
+                background-color: #4caf50;
+                color: #fff;
+                font-weight: bold;
+            }
+        
+            .page-button:hover {
+                background-color: #45a049;
+                color: #fff;
+            }
             body {
                 font-family: Arial, sans-serif;
                 margin: 0;
@@ -118,9 +143,8 @@
             .transaction-list li.debit .transaction-amount {
                 color: #f44336; /* Red for debits */
             }
-        </style>
-       <style>
-            /* Remove box styling */
+
+
             .content-main {
                 background: none;
                 box-shadow: none;
@@ -195,16 +219,25 @@
     <ul class="transaction-list">
         <% if (transactions.length > 0) { %>
             <% transactions.forEach(transaction => { %>
-                <li class="<%= transaction.type === 'credit' ? 'credit' : 'debit' %>">
-                    <div class="transaction-detail">
-                        <%= transaction.detail %>
+                <div class="transaction-item">
+                    <div class="transaction-date">
+                        <%= new Date(transaction.date).toLocaleString('en-IN', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        }) %>
                     </div>
-                    <div class="transaction-amount">
-                        <%= transaction.type === 'credit' ? '+ ₹' : '- ₹' %><%= transaction.amount.toFixed(2) %>
-                    </div>
-                </li>
-                <div class="transaction-date">
-                    <%= new Date(transaction.date).toLocaleString() %>
+                    <li class="<%= transaction.type === 'credit' ? 'credit' : 'debit' %>">
+                        <div class="transaction-detail">
+                            <%= transaction.detail %>
+                        </div>
+                        <div class="transaction-amount">
+                            <%= transaction.type === 'credit' ? '+ ₹' : '- ₹' %><%= transaction.amount.toFixed(2) %>
+                        </div>
+                    </li>
                 </div>
             <% }); %>
         <% } else { %>
@@ -214,6 +247,7 @@
         <% } %>
     </ul>
     
+    
 </div>
 
 
@@ -222,6 +256,49 @@
                 
             </div>
         </section>
+        <script>
+           const transactionsPerPage = 5; // Number of transactions per page
+const transactionItems = document.querySelectorAll('.transaction-item');
+const totalTransactions = transactionItems.length;
+const totalPages = Math.ceil(totalTransactions / transactionsPerPage);
+
+function showPage(page) {
+    transactionItems.forEach((item, index) => {
+        item.style.display =
+            index >= (page - 1) * transactionsPerPage && index < page * transactionsPerPage ? 'block' : 'none';
+    });
+}
+
+function createPagination() {
+    if (totalPages <= 1) return;
+
+    const paginationContainer = document.createElement('div');
+    paginationContainer.classList.add('pagination');
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.innerText = i;
+        pageButton.classList.add('page-button');
+        pageButton.addEventListener('click', () => {
+            showPage(i);
+            document.querySelectorAll('.page-button').forEach(btn => btn.classList.remove('active'));
+            pageButton.classList.add('active');
+        });
+        paginationContainer.appendChild(pageButton);
+    }
+
+    document.querySelector('.transactions').appendChild(paginationContainer);
+    document.querySelector('.page-button').classList.add('active'); // Activate the first button by default
+}
+
+// Initialize
+showPage(1);
+createPagination();
+
+        </script>
+        
+       
+        
         <script src="assets/js/vendors/jquery-3.6.0.min.js"></script>
         <script src="assets/js/vendors/bootstrap.bundle.min.js"></script>
         <script src="assets/js/vendors/select2.min.js"></script>

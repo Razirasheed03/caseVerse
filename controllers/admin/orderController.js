@@ -7,16 +7,31 @@ const User = require("../../models/userSchema")
 
 const adminOrders = async (req, res) => {
     try {
-        const adminOrders = await Order.find().sort({ createdAt: -1 });
-        console.log(adminOrders, "1")
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10; // Number of orders per page
+        const skip = (page - 1) * limit;
+
+        // Get total count of orders
+        const totalOrders = await Order.countDocuments();
+        const totalPages = Math.ceil(totalOrders / limit);
+
+        // Get paginated orders
+        const adminOrders = await Order.find()
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         res.render('adminOrders', {
-            orders: adminOrders
-        })
+            orders: adminOrders,
+            currentPage: page,
+            totalPages: totalPages,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1
+        });
 
     } catch (error) {
-        console.error("error in orders", error)
-        res.render('pageerror')
-
+        console.error("error in orders", error);
+        res.render('pageerror');
     }
 }
 

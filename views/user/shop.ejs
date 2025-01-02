@@ -295,36 +295,64 @@
 				});
 	
 				if (response.ok) {
-					Swal.fire({
-						icon: 'success',
-						title: 'Added to Wishlist!',
-						text: 'This product has been successfully added to your wishlist.',
-						timer: 2000,
-						showConfirmButton: false,
-					}).then(() => {
-						window.location.reload(); // Reload the page to update the wishlist icon
-					});
-				} else {
-					const data = await response.json();
-					Swal.fire({
-						icon: 'error',
-						title: 'Oops!',
-						text: data.message || 'Failed to add the product to your wishlist.',
-						timer: 2000,
-						showConfirmButton: false,
-					});
-				}
-			} catch (error) {
-				console.error('Error adding to wishlist:', error);
-				Swal.fire({
-					icon: 'error',
-					title: 'Error',
-					text: 'An unexpected error occurred. Please try again later.',
-					timer: 2000,
-					showConfirmButton: false,
-				});
+    Swal.fire({
+        icon: 'success',
+        text: 'Product has been successfully added to wishlist.',
+        toast: true,
+        position: 'bottom-end',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        customClass: {
+            popup: 'rounded-pill shadow-sm',
+            title: 'font-weight-bold text-white',
+        },
+        background: '#28a745',  // Green background for success
+        iconColor: '#ffffff',   // White icon color
+    }).then(() => {
+        window.location.reload(); // Reload the page to update the wishlist icon
+    });
+} else {
+    const data = await response.json();
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops!',
+        text: data.message || 'Failed to add the product to your wishlist.',
+        toast: true,
+        position: 'bottom-end',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        customClass: {
+            popup: 'rounded-pill shadow-sm',
+            title: 'font-weight-bold text-white',
+        },
+        background: '#fce9b0',  // Light yellowish-orange background for error
+        iconColor: '#ffffff',   // White icon color
+    });
+}
+} catch (error) {
+    console.error('Error adding to wishlist:', error);
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An unexpected error occurred. Please try again later.',
+        toast: true,
+        position: 'bottom-end',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        customClass: {
+            popup: 'rounded-pill shadow-sm',
+            title: 'font-weight-bold text-white',
+        },
+        background: '#fce9b0',  // Light yellowish-orange background for error
+        iconColor: '#ffffff',   // White icon color
+    });
+}
+
 			}
-		}
+		
 	</script>
 	
 	<script>
