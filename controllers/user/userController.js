@@ -239,7 +239,8 @@ const loadshopping = async (req, res) => {
         // Build the base query
         const baseQuery = {
             productName: { $regex: new RegExp('.*' + escapedSearch + '.*', 'i') },
-            isBlocked: false
+            isBlocked: false,
+            quantity: { $gt: 0 }
         };
 
         // Add category filter if a category is selected
@@ -318,7 +319,7 @@ const loadHomepage = async (req, res) => {
     try {
         // const googleUser=req.session.user;
         req.session.googleUser = req.user
-        const product = await Product.find({isBlocked:false})
+        const product = await Product.find({isBlocked:false,  quantity: { $gt: 0 }}).limit(8)
         const category=await Category.findOne({_id:product.category})
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;

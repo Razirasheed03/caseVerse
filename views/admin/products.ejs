@@ -31,68 +31,61 @@
             </tr>
         </thead>
         <tbody>
-            <!-- last added first thats why reverse loop -->
-            <%for(let i=data.length-1;i>=0;i--){%>
-            
-            <tr>
-                <td><%=data[i].productName%></td>
-                <td><%=data[i].brand%></td>
-                <td><%=data[i].category.name%></td>
-                <td><%=data[i].salePrice%></td>
-                <td>
-                    <%if(locals.data[i].productOffer){%>
-                        <%=data[i].productOffer%>
-                        <%}else{%>
+            <!-- last added first, that's why reverse loop -->
+            <% for (let i = data.length - 1; i >= 0; i--) { %>
+                <tr>
+                    <td><%= data[i].productName %></td>
+                    <td><%= data[i].brand %></td>
+                    <td><%= data[i].category.name %></td>
+                    <td><%= data[i].salePrice %></td>
+                    <td>
+                        <% if (data[i].productOffer) { %>
+                            <%= data[i].productOffer %>
+                        <% } else { %>
                             0%
-                            <%}%>
-
-
-                </td>
-                <td>
-                    <%if(locals.data[i].productOffer===0){%>
-                    <button class="btn btn-info" onclick="addOffer('<%=data[i]._id%>')" style="width: 100px;">
-                        <a  class="text-white">Add Offer</a>
-                    </button>
-                    <%}else{%>
-        
-                    <button class="btn btn-info" onclick="removeOffer('<%=data[i]._id%>')" style="width: 100px;">
-                        <a href="#" class="text-white">Remove</a>
-                    </button>
-                <%}%>
-                </td>
-                <td><%=data[i].quantity%></td>
-                <td>
-                <%if(data[i].isBlocked===false){%>
-                    <button class="btn btn-danger" style="width: 80px;">
-                        <a href="/admin/blockProduct?id=<%=data[i]._id%>" class="text-white" style="text-decoration: none;">Block</a>
-                    </button>
-                    <%}else{%>
-                    <button class="btn btn-success" style="width: 80px;">
-                        <a href="/admin/unblockProduct?id=<%=data[i]._id%>" class="text-white" style="text-decoration: none;">Unblock</a>
-                    </button>
-                    <%}%>
-                </td>
-                <td>
-                    <button class="btn btn-info" style="width: 80px;">
-                        <a href="/admin/editProduct?id=<%=data[i]._id%>" class="text-white" style="text-decoration: none;">Edit</a>
-                    </button>
-                </td>
-                <td>
-                    <% if (!data.isDeleted) { %>
-                        <button class="btn btn-danger"
-                            onclick="softDeleteCategory('<%= data._id %>')">
-                            Delete
+                        <% } %>
+                    </td>
+                    <td>
+                        <% if (data[i].productOffer === 0) { %>
+                            <button class="btn btn-info" onclick="addOffer('<%= data[i]._id %>')" style="width: 100px;">
+                                <a class="text-white">Add Offer</a>
+                            </button>
+                        <% } else { %>
+                            <button class="btn btn-info" onclick="removeOffer('<%= data[i]._id %>')" style="width: 100px;">
+                                <a href="#" class="text-white">Remove</a>
+                            </button>
+                        <% } %>
+                    </td>
+                    <td><%= data[i].quantity %></td>
+                    <td>
+                        <% if (data[i].isBlocked === false) { %>
+                            <button class="btn btn-danger" style="width: 80px;">
+                                <a href="/admin/blockProduct?id=<%= data[i]._id %>" class="text-white" style="text-decoration: none;">Block</a>
+                            </button>
+                        <% } else { %>
+                            <button class="btn btn-success" style="width: 80px;">
+                                <a href="/admin/unblockProduct?id=<%= data[i]._id %>" class="text-white" style="text-decoration: none;">Unblock</a>
+                            </button>
+                        <% } %>
+                    </td>
+                    <td>
+                        <button class="btn btn-info" style="width: 80px;">
+                            <a href="/admin/editProduct?id=<%= data[i]._id %>" class="text-white" style="text-decoration: none;">Edit</a>
                         </button>
+                    </td>
+                    <td>
+                        <% if (!data[i].isDeleted) { %>
+                            <button class="btn btn-danger" onclick="softDeleteProduct('<%= data[i]._id %>')">
+                                Delete
+                            </button>
                         <% } else { %>
                             <span class="text-muted">Deleted</span>
-                            <%}%>
-                </td>
-                
-            </tr>
-            <%}%>
-            
-            
+                        <% } %>
+                    </td>
+                </tr>
+            <% } %>
         </tbody>
+        
 
     </table>
 </div>
@@ -196,51 +189,57 @@ function removeOffer(productId){
 }
 
 
-async function softDeleteCategory(productId) {
-            // Confirm the action before proceeding
-            const confirmation = await Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to recover this category!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
+
+async function softDeleteProduct(productId) {
+    const confirmation = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to recover this product!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (confirmation.isConfirmed) {
+        try {
+            const response = await fetch(`/admin/deleteProduct/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
 
-            if (confirmation.isConfirmed) {
-                try {
-                    // Send fetch request to delete the category
-                    const response = await fetch(`/admin/deleteProduct/${productId}`, {
-                        method: 'POST', // Can also use DELETE, depending on your API design
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
+            const data = await response.json();
 
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        // Show success alert
-                        Swal.fire(
-                            'Deleted!',
-                            'The Prodect has been soft deleted.',
-                            'success'
-                        ).then(() => {
-                            // Reload the page or update the UI dynamically
-                            location.reload();
-                        });
-                    } else {
-                        // Show error message from the server
-                        Swal.fire('Error', data.message || 'Failed to delete the product', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error soft deleting product:', error);
-                    Swal.fire('Error', 'An unexpected error occurred while deleting the product', 'error');
+            if (response.ok) {
+                await Swal.fire({
+                    title: 'Success!',
+                    text: data.message,
+                    icon: 'success'
+                });
+                
+                // Instead of reloading the entire page, update just the button
+                const buttonElement = document.querySelector(`button[onclick="softDeleteProduct('${productId}')"]`);
+                if (buttonElement) {
+                    const tdElement = buttonElement.parentElement;
+                    tdElement.innerHTML = '<span class="text-muted">Deleted</span>';
                 }
+            } else {
+                throw new Error(data.message || 'Failed to delete the product');
             }
+        } catch (error) {
+            console.error('Error soft deleting product:', error);
+            await Swal.fire({
+                title: 'Error',
+                text: error.message || 'An unexpected error occurred',
+                icon: 'error'
+            });
         }
- </script>
+    }
+}
+
+</script>
 
 
 <%- include("../../views/partials/admin/footer") %>

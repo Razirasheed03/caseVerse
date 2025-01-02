@@ -40,8 +40,91 @@
 </head>
 
 <style>
-    /* Adjusted styling for better visibility */
 
+    /* Hamburguer menu icon styling */
+		.hamburger {
+			display: flex;
+			flex-direction: column;
+			cursor: pointer;
+			padding: 10px;
+		}
+		.hamburger div {
+			width: 30px;
+			height: 5px;
+			background-color: #333;
+			margin: 5px 0;
+			border-radius: 5px;
+			transition: 0.3s;
+		}
+
+		/* Sidebar styling */
+		.sidebar {
+			height: 42%;
+			width: 0;
+			position: fixed;
+			top: 0;
+			right: 0;
+			background-color: #818181;
+			overflow-x: hidden;
+			transition: 0.5s;
+			padding-top: 60px;
+			z-index: 10000;
+            border-radius: 10px;
+		}
+		.sidebar a {
+			padding: 8px 10px;
+			text-decoration: none;
+			font-size: 25px;
+			color: #e0dbdb;
+			display: block;
+			transition: 0.3s;
+		}
+		.sidebar a:hover {
+			color: #f1f1f1;
+		}
+		.sidebar .closebtn {
+			position: absolute;
+			top: 0;
+			left: 10px;
+			font-size: 36px;
+			color: #000000;
+		}
+
+		/* Show sidebar when active */
+		.sidebar.active {
+			width: 250px;
+		}
+
+.dropdown{
+    z-index: 10001;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    z-index: 10001;
+    border-radius: 10px;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+
+    /* Adjusted styling for better visibility */
+    .logo-mobile .logo-text {
+  font-size: 1.5rem; /* Adjust size as needed */
+  font-weight: bold;
+  color: #000; /* Change to desired color */
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  margin: auto;
+  text-align: center;
+}
     .logoNew {
 	font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 	font-size: 40px;
@@ -102,7 +185,6 @@
                         <ul class="main-menu">
                             <li><a href="/">Home</a></li>
                             <li><a href="/shop">Shop</a></li>
-                            <li><a href="#">Contact</a></li>
                         </ul>
                     </div>	
     
@@ -147,33 +229,60 @@
         <div class="wrap-header-mobile">
             <!-- Logo mobile -->		
             <div class="logo-mobile">
-                <a href="/"><img src="/images/icons/logo-01.png" alt="IMG-LOGO"></a>
+                    <a href="/">
+                        <span class="logo-text">Caseverse</span>
+                    </a>
+                 
             </div>
     
             <!-- Icon header -->
-            <div class="wrap-icon-header flex-w flex-r-m h-full m-r-15">
+            <!-- <div class="wrap-icon-header flex-w flex-r-m h-full m-r-15">
                 <div class="flex-c-m h-full p-r-5">
                     <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 " data-notify="2">
                         <i class="zmdi zmdi-shopping-cart"></i>
                     </div>
                 </div>
-            </div>
+            </div> -->
     
             <!-- Button show menu -->
-            <div class="btn-show-menu-mobile hamburger hamburger--squeeze">
-                <span class="hamburger-box">
-                    <span class="hamburger-inner"></span>
-                </span>
+            <div class="hamburger" onclick="toggleSidebar()">
+                <div></div>
+                <div></div>
+                <div></div>
             </div>
         </div>
     
-        <!-- Menu Mobile -->
-        <div class="menu-mobile">
-            <ul class="main-menu-m">
-                <li><a href="/">Home</a></li>
-                <li><a href="/shop">Shop</a></li>
-                <li><a href="/contact">Contact</a></li>
-            </ul>
+        <!-- Sidebar (Hidden by default) -->
+        <div id="mySidebar" class="sidebar">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeSidebar()">></a>
+      
+            <% if (user) { %>
+            <a href="/profile">Profile</a>
+            <a href="/shop">Shop</a>
+            <a href="/cart">Cart</a>
+            <a href="/logout">Logout</a>
+            <% } else { %>
+                <a href="/shop">Shop</a>
+                <a href="/signup">Signup</a>
+            <a href="/login">Login</a>
+            <% } %>
         </div>
+    </header>
+    
+    <script>
+        // Function to toggle the sidebar
+        function toggleSidebar() {
+            var sidebar = document.getElementById("mySidebar");
+            sidebar.classList.toggle("active");
+        }
+    
+        // Function to close the sidebar
+        function closeSidebar() {
+            var sidebar = document.getElementById("mySidebar");
+            sidebar.classList.remove("active");
+        }
+    </script>
+    
+
     </header>
     

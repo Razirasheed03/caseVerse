@@ -50,7 +50,7 @@ app.use("/admin",adminRouter)
 
 
 
-const PORT=3005||process.env.PORT;
+process.env.PORT;
 app.listen(process.env.PORT,()=>{
     console.log("server running")
 })

@@ -248,19 +248,34 @@ const deleteSingleImage = async (req, res) => {
         res.status(500).json({redirect:'/pageError'})
     }
 }
-const deleteProduct = async(req,res)=>{
 
+const deleteProduct = async(req,res)=>{
     const id = req.params.id;
     try {
-        const update = await Product.findByIdAndUpdate({_id:id},{isDeleted:true},{new:true});
+        const update = await Product.findByIdAndUpdate(
+            {_id: id},
+            {isDeleted: true},
+            {new: true}
+        );
+        
         if(!update){
-            return res.status(404).json({message:'product not Found'});
+            return res.status(404).json({message:'Product not found'});
         }
-        res.status(200).json({message:`${Product} deleted successfully`})
+        
+        // Return success response
+        res.status(200).json({
+            success: true,
+            message: 'Product deleted successfully'
+        });
     } catch (error) {
-        res.status(500).json({message:'Error occured during Deleting product',error:error.message});
+        res.status(500).json({
+            success: false,
+            message: 'Error occurred during deleting product',
+            error: error.message
+        });
     }
 }
+
 const stock=async(req,res)=>{
     try {
         const products=await Product.find().populate('category','name');

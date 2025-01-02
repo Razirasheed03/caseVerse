@@ -7,7 +7,7 @@ const User = require("../../models/userSchema")
 
 const adminOrders = async (req, res) => {
     try {
-        const adminOrders = await Order.find();
+        const adminOrders = await Order.find().sort({ createdAt: -1 });
         console.log(adminOrders, "1")
         res.render('adminOrders', {
             orders: adminOrders
