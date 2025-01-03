@@ -10,6 +10,7 @@ const cors=require('cors')
 const adminRouter=require("./routes/adminRouter")
 db();
 
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({extended:true}))
