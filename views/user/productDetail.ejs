@@ -189,7 +189,7 @@
                     <div class="mobile-carousel">
                         <% product.productImage.forEach((image, index)=> { %>
                             <div class="thumbnail" data-index="<%= index %>">
-                                <img src="/uploads/re-images/<%= image %>" alt="Image <%= index + 1 %>">
+                                <img src="/uploads/re-Images/<%= image %>" alt="Image <%= index + 1 %>">
                             </div>
                             <% }); %>
                     </div>
@@ -203,7 +203,7 @@
                 <!-- Main Image Section (Desktop) -->
                 <div class="col-md-6 desktop-view">
                     <div class="main-image-container" id="mainImageContainer">
-                        <img src="/uploads/re-images/<%= product.productImage[0] %>" id="mainProductImage"
+                        <img src="/uploads/re-Images/<%= product.productImage[0] %>" id="mainProductImage"
                             alt="Product">
                     </div>
                 </div>
