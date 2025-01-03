@@ -37,6 +37,8 @@ const addProducts = async (req, res) => {
                     await sharp(originalImagePath).resize({ width: 440, height: 440 }).toFile(resizedImagePath);
                     images.push(req.files[i].filename);
                 }
+                console.log(images,"image names")
+
             }
 
             const categoryId = await Category.findOne({ name: products.category });

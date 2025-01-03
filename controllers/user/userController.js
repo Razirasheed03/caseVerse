@@ -278,7 +278,7 @@ const loadshopping = async (req, res) => {
             .skip((page - 1) * limit)
             .populate('category')
             .exec();
-
+console.log(productData,'data')
         // Fetch all categories for the category filter links
         const categories = await Category.find({ isListed: true, isDeleted: false });
 
@@ -417,7 +417,7 @@ const postAddAddress=async(req,res)=>{
         const userId=req.session.user||req.session.googleUser;
 
         const {addressType,name,address,city,landMark,state,pincode,phone,altPhone}=req.body;
-        
+
         if (!addressType || !name || !address || !city || !landMark || !state || !pincode || !phone) {
             return res.status(400).json({ error: "All fields are required." });
         }
