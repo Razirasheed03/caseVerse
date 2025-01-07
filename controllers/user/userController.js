@@ -228,7 +228,6 @@ const loadshopping = async (req, res) => {
         const isLoggedIn = !!(req.session.user || req.session.googleUser);
         const user = isLoggedIn ? await User.findById(req.session.user?._id || req.session.googleUser?._id) : null;
         
-
         const search = req.query.search || "";
         const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const page = parseInt(req.query.page) || 1;
