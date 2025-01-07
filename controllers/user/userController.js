@@ -223,10 +223,11 @@ const loadSignup = async (req, res) => {
 
 const loadshopping = async (req, res) => {
     try {
-        const id = req.params.id;
-        const userSession = req.session.user || req.session.googleUser;
         
-        const user = userSession ? await User.findById(userSession._id) : null;
+        const id = req.params.id;
+        const isLoggedIn = !!(req.session.user || req.session.googleUser);
+        const user = isLoggedIn ? await User.findById(req.session.user?._id || req.session.googleUser?._id) : null;
+        
 
         const search = req.query.search || "";
         const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -281,7 +282,7 @@ const loadshopping = async (req, res) => {
         const categories = await Category.find({ isListed: true, isDeleted: false });
 
         // Fetch user's wishlist if logged in
-        const wishlist = user
+        const wishlist = isLoggedIn
             ? await Wishlist.findOne({ userId: user._id }).populate('products.productId')
             : null;
 
@@ -297,6 +298,7 @@ const loadshopping = async (req, res) => {
             totalPages,
             search,
             user,
+            isLoggedIn,
             currentSort: sortQuery,
             categories,
             currentCategory: categoryQuery,
