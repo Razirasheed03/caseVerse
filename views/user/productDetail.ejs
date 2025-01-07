@@ -434,7 +434,8 @@
                 }
             });
 
-            async function addToCart(productId, quantity) {
+            async function addToCart(productId, quantity,e) {
+                if (e) e.preventDefault();
                 try {
                     const response = await fetch('/cart/add', {
                         method: 'POST',
@@ -447,17 +448,17 @@
                     if (!response.ok) {
                         const data = await response.json();
                         Swal.fire({
-                            title: 'Cart Limit Reached',
-                            text: data.message,
-                            icon: 'warning',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#3085d6',
-                            customClass: {
-                                popup: 'rounded-lg',
-                                title: 'text-xl font-bold text-gray-800',
-                                content: 'text-gray-600'
-                            }
-                        });
+    title: 'Cart Limit Reached',
+    text: 'Cannot add more items. Maximum limit of 5 items already in cart.',
+    icon: 'warning',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#3085d6',
+    customClass: {
+        popup: 'rounded-lg',
+        title: 'text-xl font-bold text-gray-800',
+        content: 'text-gray-600'
+    }
+});
                         return;
                     }
 

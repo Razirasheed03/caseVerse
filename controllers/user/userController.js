@@ -1,7 +1,7 @@
-const { response } = require("../../app");
+// const { response } = require("../../app");
+const env = require("dotenv").config();
 const User = require("../../models/userSchema")
 const Product = require('../../models/productSchema')
-const env = require("dotenv").config();
 const nodemailer = require('nodemailer')
 const bcrypt = require("bcrypt");
 const Category = require("../../models/categorySchema");
