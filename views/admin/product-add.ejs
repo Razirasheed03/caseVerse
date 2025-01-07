@@ -375,7 +375,7 @@
 if (description.trim() === "") {
     displayErrorMessage('description-error', 'Please enter a product description.');
     isValid = false;
-} else if (!/^[a-zA-Z0-9\s,.\-’'"]+$/u.test(description.trim())) {
+} else if (!/^[a-zA-Z0-9\s,.\-’'"\n]+$/u.test(description.trim())) {
     displayErrorMessage('description-error', 'Product description can only contain letters, numbers, spaces, commas, periods, hyphens, and basic punctuation.');
     isValid = false;
 }
