@@ -1,10 +1,30 @@
 const Category = require("../../models/categorySchema");
 const Product=require("../../models/productSchema")
+const User=require("../../models/userSchema")
 
 
 
 const categoryInfo = async (req, res) => {
     try {
+        if (!req.session.adminId || !req.session.isAdmin) {
+            return res.redirect("/admin/login");
+        }
+
+        // Verify admin exists and has privileges
+        const admin = await User.findOne({ 
+            _id: req.session.adminId, 
+            isAdmin: true 
+        });
+
+        if (!admin) {
+            // Clear invalid session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                return res.redirect("/admin/login");
+            });
+        }
         const page = parseInt(req.query.page) || 1; // Accessing query params from the frontend
         const limit = 4;
         const skip = (page - 1) * limit;

@@ -9,6 +9,25 @@ const sharp = require('sharp');
 
 const getProductAddPage = async (req, res) => {
     try {
+        if (!req.session.adminId || !req.session.isAdmin) {
+            return res.redirect("/admin/login");
+        }
+
+        // Verify admin exists and has privileges
+        const admin = await User.findOne({ 
+            _id: req.session.adminId, 
+            isAdmin: true 
+        });
+
+        if (!admin) {
+            // Clear invalid session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                return res.redirect("/admin/login");
+            });
+        }
         const category = await Category.find({ isListed: true });
         // const brand = await Brand.find({isBlocked:false});
         res.render('product-add', {
@@ -73,6 +92,25 @@ const addProducts = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
     try {
+        if (!req.session.adminId || !req.session.isAdmin) {
+            return res.redirect("/admin/login");
+        }
+
+        // Verify admin exists and has privileges
+        const admin = await User.findOne({ 
+            _id: req.session.adminId, 
+            isAdmin: true 
+        });
+
+        if (!admin) {
+            // Clear invalid session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                return res.redirect("/admin/login");
+            });
+        }
         const search = req.query.search || "";
         const page = req.query.page || 1;
         const limit = 4;
@@ -271,6 +309,25 @@ const deleteProduct = async (req, res) => {
 
 const stock = async (req, res) => {
     try {
+        if (!req.session.adminId || !req.session.isAdmin) {
+            return res.redirect("/admin/login");
+        }
+
+        // Verify admin exists and has privileges
+        const admin = await User.findOne({ 
+            _id: req.session.adminId, 
+            isAdmin: true 
+        });
+
+        if (!admin) {
+            // Clear invalid session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                return res.redirect("/admin/login");
+            });
+        }
         const products = await Product.find().populate('category', 'name');
         res.render('stock', { products })
 

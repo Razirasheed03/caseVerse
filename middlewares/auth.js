@@ -31,20 +31,36 @@ const profileAuth=(req,res,next)=>{
     }
 }
 
-const adminAuth=(req,res,next)=>{
-    User.findOne({isAdmin:true})
-    .then(data=>{
-        if(data){
+const adminAuth = (req, res, next) => {
+    // First check session
+    if (!req.session.adminId || !req.session.isAdmin) {
+        return res.redirect("/admin/login");
+    }
+
+    // Then verify admin in database
+    User.findOne({ 
+        _id: req.session.adminId, 
+        isAdmin: true 
+    })
+    .then(admin => {
+        if (admin) {
+            req.admin = admin;
             next();
-        }else{
-            res.redirect("/admin/login")
+        } else {
+            // Clear invalid session
+            req.session.destroy(err => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                res.redirect("/admin/login");
+            });
         }
     })
-    .catch(error=>{
-        console.log("Error in adminauth middleware",error);
-        res.status(500).send("Internal Server Error")
-    })
-}
+    .catch(error => {
+        console.log("Error in adminauth middleware", error);
+        res.status(500).send("Internal Server Error");
+    });
+};
 
 module.exports={
     userAuth,

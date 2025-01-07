@@ -27,7 +27,7 @@ const pageerror = async (req, res) => {
 
 const loadLogin = (req, res) => {
     const message = req.query.message || null;
-    if (req.session.admin) {
+    if (req.session.adminId) {
         return res.redirect("/admin")
     }
     res.render("admin-login", { message })
@@ -43,7 +43,8 @@ const login = async (req, res) => {
             const passwordMatch = await bcrypt.compare(password, admin.password);
 
             if (passwordMatch) {
-                req.session.admin = true;
+                req.session.adminId = admin._id;
+                req.session.isAdmin = true;
                 return res.redirect("/admin");
             } else {
                 return res.redirect("/admin/login?message=Incorrect Password");
@@ -60,11 +61,17 @@ const login = async (req, res) => {
 
 
 const loadDashboard = async (req, res) => {
-    if (!req.session.admin) {
+    if (!req.session.adminId || !req.session.isAdmin) {
         return res.redirect('/admin/login');
     }
 
     try {
+        const admin = await User.findOne({ _id: req.session.adminId, isAdmin: true });
+        if (!admin) {
+            // Clear invalid session and redirect
+            req.session.destroy();
+            return res.redirect('/admin/login?message=Invalid session');
+        }
         const { filter } = req.query; // Filter based on date range
         const dateRange = getDateRange(filter);
 

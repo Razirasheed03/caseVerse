@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {userAtuth,adminAuth}=require('../middlewares/auth');
+const {adminAuth}=require('../middlewares/auth');
 
 //Multer
 const multer = require('multer');

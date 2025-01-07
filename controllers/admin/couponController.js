@@ -9,6 +9,25 @@ const sharp = require('sharp');
 // For Getting all coupons
 const coupons = async (req, res) => {
     try {
+        if (!req.session.adminId || !req.session.isAdmin) {
+            return res.redirect("/admin/login");
+        }
+
+        // Verify admin exists and has privileges
+        const admin = await User.findOne({ 
+            _id: req.session.adminId, 
+            isAdmin: true 
+        });
+
+        if (!admin) {
+            // Clear invalid session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                return res.redirect("/admin/login");
+            });
+        }
         const coupons = await Coupon.find().sort({ createdOn: -1 });
         res.render('coupon', { coupons });
     } catch (error) {

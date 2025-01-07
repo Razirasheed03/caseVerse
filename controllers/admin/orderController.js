@@ -7,6 +7,25 @@ const User = require("../../models/userSchema")
 
 const adminOrders = async (req, res) => {
     try {
+        if (!req.session.adminId || !req.session.isAdmin) {
+            return res.redirect("/admin/login");
+        }
+
+        // Verify admin exists and has privileges
+        const admin = await User.findOne({ 
+            _id: req.session.adminId, 
+            isAdmin: true 
+        });
+
+        if (!admin) {
+            // Clear invalid session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                return res.redirect("/admin/login");
+            });
+        }
         const page = parseInt(req.query.page) || 1;
         const limit = 10; // Number of orders per page
         const skip = (page - 1) * limit;
@@ -105,6 +124,25 @@ const changeStatus = async (req, res) => {
 
 const salesReport = async (req, res) => {
     try {
+        if (!req.session.adminId || !req.session.isAdmin) {
+            return res.redirect("/admin/login");
+        }
+
+        // Verify admin exists and has privileges
+        const admin = await User.findOne({ 
+            _id: req.session.adminId, 
+            isAdmin: true 
+        });
+
+        if (!admin) {
+            // Clear invalid session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                return res.redirect("/admin/login");
+            });
+        }
         const { filter = '', startDate = '', endDate = '', format } = req.query;
 
         let query = {};

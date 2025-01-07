@@ -3,6 +3,25 @@ const User = require("../../models/userSchema")
 
 const customerInfo = async (req, res) => {
     try {
+        if (!req.session.adminId || !req.session.isAdmin) {
+            return res.redirect("/admin/login");
+        }
+
+        // Verify admin exists and has privileges
+        const admin = await User.findOne({ 
+            _id: req.session.adminId, 
+            isAdmin: true 
+        });
+
+        if (!admin) {
+            // Clear invalid session
+            req.session.destroy((err) => {
+                if (err) {
+                    console.log("Error destroying invalid session:", err);
+                }
+                return res.redirect("/admin/login");
+            });
+        }
         let search = "";
         if (req.query.search) {
             search = req.query.search;
