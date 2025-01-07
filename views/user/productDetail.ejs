@@ -272,13 +272,13 @@
                                                         <% const cartItem=cartItems.find(item=>
                                                             item.productId.toString() === product._id.toString());
                                                             const maxQuantityReached = cartItem && cartItem.quantity >=
-                                                            10;
+                                                            5;
                                                             %>
                                                             <button type="submit" class="btn btn-primary me-2" <% if
                                                                 (maxQuantityReached) { %> disabled <% } %>
                                                                     >
                                                                     <% if (maxQuantityReached) { %>
-                                                                        Maximum Quantity Reached
+                                                                        Max Quantity In Cart
                                                                         <% } else { %>
                                                                             Add to Cart
                                                                             <% } %>
@@ -434,8 +434,7 @@
                 }
             });
 
-            async function addToCart(productId, quantity,e) {
-                if (e) e.preventDefault();
+            async function addToCart(productId, quantity) {
                 try {
                     const response = await fetch('/cart/add', {
                         method: 'POST',

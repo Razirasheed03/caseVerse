@@ -225,6 +225,7 @@ const loadshopping = async (req, res) => {
     try {
         const id = req.params.id;
         const userSession = req.session.user || req.session.googleUser;
+        
         const user = userSession ? await User.findById(userSession._id) : null;
 
         const search = req.query.search || "";
