@@ -5,7 +5,7 @@
         <h2 class="content-title card-title">Categories</h2>
         <p>Add, edit or delete a category</p>
       </div>
-   
+
     </div>
     <div class="card">
       <div class="card-body">
@@ -78,13 +78,9 @@
                       </td>
                       <td class="text-start">
                         <%if(category.isListed){%>
-                          <span
-                          class="badge rounded-pill alert-success"
-                          style="width:60px">Listed</span>
+                          <span class="badge rounded-pill alert-success" style="width:60px">Listed</span>
                           <%}else{%>
-                            <span
-                            class="badge rounded-pill alert-danger"
-                            style="width:60px">Unisted</span>
+                            <span class="badge rounded-pill alert-danger" style="width:60px">Unisted</span>
                             <%}%>
                       </td>
                       <td class="text-start">
@@ -94,30 +90,29 @@
                             <a href="/admin/listCategory?id=<%=category._id%>" class="text-white">Unlist</a>
                           </button>
                           <%}else{%>
-                          <button class="btn btn-success" style="width:70px">
-                            <a href="/admin/unlistCategory?id=<%=category._id%>" class="text-white">list</a>
-                          </button>
+                            <button class="btn btn-success" style="width:70px">
+                              <a href="/admin/unlistCategory?id=<%=category._id%>" class="text-white">list</a>
+                            </button>
                       </td>
                       <%}%>
 
-                      <td class="text-start">
-                      <button class="btn btn-info" style="width:70px">
-                        <a href="/admin/editCategory?id=<%=category.id%>"" class="text-white">Edit</a>
-                      </button>
-                      </td>
+                        <td class="text-start">
+                          <button class="btn btn-info" style="width:70px">
+                            <a href="/admin/editCategory?id=<%=category.id%>"" class=" text-white">Edit</a>
+                          </button>
+                        </td>
 
 
-                      <td class="text-end">
+                        <td class="text-end">
                         <td>
                           <% if (!category.isDeleted) { %>
-                              <button class="btn btn-danger"
-                                  onclick="softDeleteCategory('<%= category._id %>')">
-                                  Delete
-                              </button>
-                              <% } else { %>
-                                  <span class="text-muted">Deleted</span>
-                                  <%}%>
-                      </td>
+                            <button class="btn btn-danger" onclick="softDeleteCategory('<%= category._id %>')">
+                              Delete
+                            </button>
+                            <% } else { %>
+                              <span class="text-muted">Deleted</span>
+                              <%}%>
+                        </td>
                     </tr>
                     <% }); %>
 
@@ -281,16 +276,14 @@
               "Error",
               "An error occured while adding offer",
               "error"
-            ),
-              console.log("Error adding offer", error);
+            )
           }
         }
       }
 
 
       async function removeOffer(categoryId) {
-        console.log(categoryId,"in remove");
-        
+
         try {
           const response = await fetch("/admin/removeCategoryOffer", {
             method: "POST",
@@ -330,49 +323,49 @@
       }
 
       async function softDeleteCategory(categoryId) {
-    // Confirm the action before proceeding
-    const confirmation = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to recover this category!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it!'
-    });
+        // Confirm the action before proceeding
+        const confirmation = await Swal.fire({
+          title: 'Are you sure?',
+          text: "You won't be able to recover this category!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Yes, delete it!'
+        });
 
-    if (confirmation.isConfirmed) {
-        try {
+        if (confirmation.isConfirmed) {
+          try {
             // Send fetch request to delete the category
             const response = await fetch(`/admin/deleteCategory/${categoryId}`, {
-                method: 'POST', // Can also use DELETE, depending on your API design
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+              method: 'POST', // Can also use DELETE, depending on your API design
+              headers: {
+                'Content-Type': 'application/json'
+              }
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                // Show success alert
-                Swal.fire(
-                    'Deleted!',
-                    'The category has been soft deleted.',
-                    'success'
-                ).then(() => {
-                    // Reload the page or update the UI dynamically
-                    location.reload();
-                });
+              // Show success alert
+              Swal.fire(
+                'Deleted!',
+                'The category has been soft deleted.',
+                'success'
+              ).then(() => {
+                // Reload the page or update the UI dynamically
+                location.reload();
+              });
             } else {
-                // Show error message from the server
-                Swal.fire('Error', data.message || 'Failed to delete the category', 'error');
+              // Show error message from the server
+              Swal.fire('Error', data.message || 'Failed to delete the category', 'error');
             }
-        } catch (error) {
+          } catch (error) {
             console.error('Error soft deleting category:', error);
             Swal.fire('Error', 'An unexpected error occurred while deleting the category', 'error');
+          }
         }
-    }
-}
+      }
     </script>
     </body>
 

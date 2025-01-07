@@ -1,16 +1,16 @@
 const { response } = require("../../app");
 const User = require("../../models/userSchema")
-const Product =require('../../models/productSchema')
+const Product = require('../../models/productSchema')
 const env = require("dotenv").config();
-const nodemailer=require('nodemailer')
-const bcrypt=require("bcrypt");
+const nodemailer = require('nodemailer')
+const bcrypt = require("bcrypt");
 const Category = require("../../models/categorySchema");
-const Address =require("../../models/addressSchema");
-const Cart =require("../../models/cartSchema");
-const Wishlist =require("../../models/wishlistSchema");
-const Coupon =require("../../models/couponSchema");
-const Order =require("../../models/orderSchema");
-const session =require("express-session");
+const Address = require("../../models/addressSchema");
+const Cart = require("../../models/cartSchema");
+const Wishlist = require("../../models/wishlistSchema");
+const Coupon = require("../../models/couponSchema");
+const Order = require("../../models/orderSchema");
+const session = require("express-session");
 const { default: mongoose } = require("mongoose");
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -18,132 +18,131 @@ const PDFDocument = require('pdfkit');
 
 
 
-const logout=async(req,res)=>{
+const logout = async (req, res) => {
     try {
 
-        req.session.destroy((error)=>{
-            if(error){
-                console.log("Session destoy error",error.message)
+        req.session.destroy((error) => {
+            if (error) {
+                console.error("Session destoy error", error.message)
                 return res.redirect("/pageNotFound");
             }
             return res.redirect("/login")
         })
-        
+
     } catch (error) {
-        console.log("Logout error",error)
+        console.log("Logout error", error)
         res.redirect("/pageNotFound")
-        
+
     }
 }
 
-const login= async (req,res)=>{
+const login = async (req, res) => {
     try {
-        const {email,password}=req.body;
-        const findUser= await User.findOne({isAdmin:0,email:email});
-   
-       if(!findUser){
-           return res.json({success:false,message:"User not found"})
+        const { email, password } = req.body;
+        const findUser = await User.findOne({ isAdmin: 0, email: email });
+
+        if (!findUser) {
+            return res.json({ success: false, message: "User not found" })
         }
-        if(findUser.isBlocked){
-            return res.json({success:false,message:"User is Blocked by admin"})
-            
+        if (findUser.isBlocked) {
+            return res.json({ success: false, message: "User is Blocked by admin" })
+
         }
 
-        const passwordMatch= bcrypt.compare(password,findUser.password);
-        
-        if(!passwordMatch){
-      
-            return res.json({success:false,message:"Incorrect Password"})
+        const passwordMatch = await bcrypt.compare(password, findUser.password);
+
+        if (!passwordMatch) {
+
+            return res.json({ success: false, message: "Incorrect Password" })
         }
-        req.session.user={_id:findUser._id,name:findUser.username};
-       
-        
-        res.status(200).json({success:true,message:`${findUser.username} is logIn Successfully`})
-        
+        req.session.user = { _id: findUser._id, name: findUser.username };
+
+
+        res.status(200).json({ success: true, message: `${findUser.username} is logIn Successfully` })
+
     } catch (error) {
-        console.error("login error",error)
-        res.status(500).json({success:false,message:"login failed. Please try again later"})
-        
+        console.error("login error", error)
+        res.status(500).json({ success: false, message: "login failed. Please try again later" })
+
     }
 }
 
-const loadLogin=async(req,res)=>{
+const loadLogin = async (req, res) => {
     try {
-        if(!req.session.user){
-            const msg=req.session.msg;
-            req.session.msg=null;
-            return res.render("login",{message:msg})
-        }else{
+        if (!req.session.user) {
+            const msg = req.session.msg;
+            req.session.msg = null;
+            return res.render("login", { message: msg })
+        } else {
             res.redirect('/')
         }
-        
+
     } catch (error) {
         res.redirect("/pageNotFound")
     }
 }
-const resendOtp=async(req,res)=>{
+const resendOtp = async (req, res) => {
     try {
-        const {email}=req.session.userData;
-        if(!email){
-            return res.status(400).json({success:false,message:"Email not found in session"})
+        const { email } = req.session.userData;
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email not found in session" })
         }
-        const otp=generateOtp();
-        req.session.userOtp=otp;
-        const emailSent=await sendVerificationEmail(email,otp);
-        if(emailSent){
-            console.log("Resend OTP",otp);
-            res.status(200).json({success:true,message:"OTP Resend succesfully"})
-            
-        }else{
-            res.status(500).json({success:false,message:"failed to resend OTP. Please try again"})
+        const otp = generateOtp();
+        req.session.userOtp = otp;
+        const emailSent = await sendVerificationEmail(email, otp);
+        if (emailSent) {
+            console.log("Resend OTP", otp);
+            res.status(200).json({ success: true, message: "OTP Resend succesfully" })
+
+        } else {
+            res.status(500).json({ success: false, message: "failed to resend OTP. Please try again" })
 
         }
     } catch (error) {
-        console.error("Error resending OTP",error)
-        res.status(500).json({success:false,message:"Internal server Error . Please try again"})
-        
+        console.error("Error resending OTP", error)
+        res.status(500).json({ success: false, message: "Internal server Error . Please try again" })
+
     }
 }
 
-const securePassword=async (password)=>{
+const securePassword = async (password) => {
     try {
-        const passwordHash=await bcrypt.hash(password,10)
-        return passwordHash; 
+        const passwordHash = await bcrypt.hash(password, 10)
+        return passwordHash;
     } catch (error) {
-        
+
     }
 }
-const verifyotp=async (req,res)=> {
+const verifyotp = async (req, res) => {
     try {
-        const {otp}=req.body;
+        const { otp } = req.body;
         console.log(otp);
-        if(otp===req.session.userOtp){
-            const user=req.session.userData
-            const passwordHash=await securePassword(user.password)
-            const saveUserData=new User({
-                username:user.username,
-                email:user.email,
-                phone:user.phone,
-                password:passwordHash,
+        if (otp === req.session.userOtp) {
+            const user = req.session.userData
+            const passwordHash = await securePassword(user.password)
+            const saveUserData = new User({
+                username: user.username,
+                email: user.email,
+                phone: user.phone,
+                password: passwordHash,
             })////////change ividem vareeeee
             await saveUserData.save();
-            req.session.user={_id:saveUserData._id,username:saveUserData.username};//for showing username after signup
-            res.json({success:true,redirectUrl:"/"})
-            
-        }else{
-            res.status(400).json({success:false,message:"Invalid OTP,Please try again"})
+            req.session.user = { _id: saveUserData._id, username: saveUserData.username };//for showing username after signup
+            res.json({ success: true, redirectUrl: "/" })
+
+        } else {
+            res.status(400).json({ success: false, message: "Invalid OTP,Please try again" })
         }
 
     } catch (error) {
-        console.error('error in otp verify',error)
-        res.status(500).json({success:false,message:"An error occured"})
+        console.error('error in otp verify', error)
+        res.status(500).json({ success: false, message: "An error occured" })
     }
 }
 const loadverifyotp = async (req, res) => {
     try {
         res.render('verify-otp')
     } catch (error) {
-        console.log(error, "verify page")
         res.status(500).send("server error")
 
     }
@@ -172,38 +171,37 @@ async function sendVerificationEmail(email, otp) {
             text: `Verify Using this ${otp}`,
             html: `<b>Your VerifyCode: ${otp}</b>`,
         })
-        
+
         return info.accepted.length > 0
 
     } catch (error) {
-        console.error("Error sending email",error);
+        console.error("Error sending email", error);
         return false;
     }
 
 }
 
 const signup = async (req, res) => {
-  ///destructuring from body
+    ///destructuring from body
     try {
-        const { username, email, phone, password} = req.body;
-        const findUser=await User.findOne({email});
-        if(findUser){
-    return res.json({success:false,message:"User With this Email Already exists"})
-        
+        const { username, email, phone, password } = req.body;
+        const findUser = await User.findOne({ email });
+        if (findUser) {
+            return res.json({ success: false, message: "User With this Email Already exists" })
+
         }
 
 
         const otp = generateOtp();
         const emailSent = await sendVerificationEmail(email, otp);
-        console.log("email sent:",emailSent)
-        if(!emailSent){
-            return res.render({status: false, message: 'email already exist'})
+        if (!emailSent) {
+            return res.render({ status: false, message: 'email already exist' })
         }
-        req.session.userOtp=otp;
-        req.session.userData={username,phone,email,password};
+        req.session.userOtp = otp;
+        req.session.userData = { username, phone, email, password };
 
-        res.json({status: true, message: "user verified successfuly!!"})
-        console.log("OTP :",otp)
+        res.json({ status: true, message: "user verified successfuly!!" })
+        console.log("OTP :", otp)
 
     } catch (error) {
         console.log("error in otp")
@@ -213,7 +211,7 @@ const signup = async (req, res) => {
 
 const loadSignup = async (req, res) => {
     try {
-  
+
 
         return res.render('signup')
 
@@ -229,11 +227,11 @@ const loadshopping = async (req, res) => {
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
 
-        const search = req.query.search || ""; 
+        const search = req.query.search || "";
         const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const page = parseInt(req.query.page) || 1;
-        const limit = 8; 
-        const sortQuery = req.query.sort || ""; 
+        const limit = 8;
+        const sortQuery = req.query.sort || "";
         const categoryQuery = req.query.category || "";
 
         // Build the base query
@@ -278,7 +276,6 @@ const loadshopping = async (req, res) => {
             .skip((page - 1) * limit)
             .populate('category')
             .exec();
-console.log(productData,'data')
         // Fetch all categories for the category filter links
         const categories = await Category.find({ isListed: true, isDeleted: false });
 
@@ -328,18 +325,17 @@ const loadHomepage = async (req, res) => {
     try {
         // const googleUser=req.session.user;
         req.session.googleUser = req.user
-        const product = await Product.find({isBlocked:false,  quantity: { $gt: 0 }}).limit(8)
-        const category=await Category.findOne({_id:product.category})
+        const product = await Product.find({ isBlocked: false, quantity: { $gt: 0 } }).limit(8)
+        const category = await Category.findOne({ _id: product.category })
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
-        
-
-        res.render('home', { user,product,category}); // Pass user as null if not logged in
 
 
-     
+        res.render('home', { user, product, category }); // Pass user as null if not logged in
+
+
+
     } catch (error) {
-        console.log("home page not found")
         res.status(500).send("server error")
 
     }
@@ -351,7 +347,7 @@ const productDetail = async (req, res) => {
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
         const product = await Product.findOne({ _id: id });
-        
+
         if (!product) {
             return res.status(404).send('Product not found');
         }
@@ -372,8 +368,8 @@ const productDetail = async (req, res) => {
             }
         }
 
-        res.render('productDetail', { product, category, user, wishlistProducts,cartItems });
-        
+        res.render('productDetail', { product, category, user, wishlistProducts, cartItems });
+
     } catch (error) {
         console.error('Error fetching product details:', error.message);
         res.render("pageerror");
@@ -381,69 +377,68 @@ const productDetail = async (req, res) => {
 };
 
 
-const profile=async(req,res)=>{
+const profile = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user|| req.session.googleUser;
-        const user =userSession ? await User.findById(userSession._id):null;
-      
-        res.render('profile',{user})
-        
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+
+        res.render('profile', { user })
+
     } catch (error) {
         res.render("pageerror")
-        
+
     }
 }
 
-const address=async(req,res)=>{
+const address = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user|| req.session.googleUser; 
-        const user =userSession ? await User.findById(userSession._id):null;
-        const addressData=await Address.findOne({userId:userSession._id});
-        res.render('address',{user,userAddress:addressData})
-        
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+        const addressData = await Address.findOne({ userId: userSession._id });
+        res.render('address', { user, userAddress: addressData })
+
     } catch (error) {
-        console.log("in address",error)
+        console.log("in address", error)
         res.render("pageerror")
-        
+
     }
 
 
 }
 
-const postAddAddress=async(req,res)=>{
+const postAddAddress = async (req, res) => {
     try {
-        const userId=req.session.user||req.session.googleUser;
+        const userId = req.session.user || req.session.googleUser;
 
-        const {addressType,name,address,city,landMark,state,pincode,phone,altPhone}=req.body;
+        const { addressType, name, address, city, landMark, state, pincode, phone, altPhone } = req.body;
 
         if (!addressType || !name || !address || !city || !landMark || !state || !pincode || !phone) {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        const userAddress=await Address.findOne({userId:userId});
-        if(!userAddress){
-            const newAddress=new Address({
+        const userAddress = await Address.findOne({ userId: userId });
+        if (!userAddress) {
+            const newAddress = new Address({
                 userId,
-                address:[{addressType,name,address,city,landMark,state,pincode,phone,altPhone}]
-            
+                address: [{ addressType, name, address, city, landMark, state, pincode, phone, altPhone }]
+
             });
             await newAddress.save();
-            console.log("successfully added address")
-            
-        }else{
-            userAddress.address.push({addressType,name,address,city,landMark,state,pincode,phone,altPhone})
+
+        } else {
+            userAddress.address.push({ addressType, name, address, city, landMark, state, pincode, phone, altPhone })
             await userAddress.save();
         }
-        res.status(200).json({success:true})
+        res.status(200).json({ success: true })
         // res.redirect('/profile')
 
-        
+
     } catch (error) {
-        console.log("Error adding address",error);
+        console.log("Error adding address", error);
         res.redirect("/pageNotFound");
-        
+
     }
 }
 
@@ -468,7 +463,7 @@ const wallet = async (req, res) => {
         res.render('wallet', {
             user,
             walletBalance: user.walletBalance || 0, // Default to 0 if not set
-            transactions: sortedTransactions|| [], // Default to an empty array
+            transactions: sortedTransactions || [], // Default to an empty array
         });
     } catch (error) {
         console.error('Error loading wallet page:', error);
@@ -522,50 +517,49 @@ const orders = async (req, res) => {
 
 
 
-const editAddress=async(req,res)=>{
+const editAddress = async (req, res) => {
     try {
-        
-        
-        
-        const addressId=req.query.id;
-        const user=req.session.user|| req.session.googleUser;
-        const username=await User.findOne({_id:user._id});
-        
-        
-        const currAddress=await Address.findOne({userId: user._id});
-        
-        if(!currAddress){
+
+
+
+        const addressId = req.query.id;
+        const user = req.session.user || req.session.googleUser;
+        const username = await User.findOne({ _id: user._id });
+
+
+        const currAddress = await Address.findOne({ userId: user._id });
+
+        if (!currAddress) {
             return res.redirect("/pageNotFound")
         }
-        const addressData=currAddress.address.find((item)=>{
-            return item._id.toString()===addressId.toString();
+        const addressData = currAddress.address.find((item) => {
+            return item._id.toString() === addressId.toString();
         });
-        
-        if(!addressData){
+
+        if (!addressData) {
             return res.redirect('/pageNotFound')
-        }else{
-            res.render('edit-address', { userAddress: addressData, user:username,addressId});
-            
+        } else {
+            res.render('edit-address', { userAddress: addressData, user: username, addressId });
+
         }
     } catch (error) {
-        console.error("error in edit address",error)
-        res.redirect('/pageNotFound')      
+        console.error("error in edit address", error)
+        res.redirect('/pageNotFound')
     }
 };
 
 const postEditAddress = async (req, res) => {
     try {
-        console.log("in controller");
         const data = req.body;
         const addressId = req.query.id;
         const user = req.session.user;
-        
+
         const findAddress = await Address.findOne({ "address._id": addressId });
         if (!findAddress) {
-            
+
             return res.status(404).json({ message: 'Address not found' });
         }
- 
+
         await Address.updateOne(
             { "address._id": addressId },
             {
@@ -584,8 +578,7 @@ const postEditAddress = async (req, res) => {
                 }
             }
         );
-        
-        console.log('Address updated successfully.');
+
         res.status(200).json({ message: 'Address updated successfully' });
     } catch (error) {
         console.error("Error in postEditAddress controller:", error);
@@ -594,188 +587,188 @@ const postEditAddress = async (req, res) => {
 };
 
 
-const deleteAddress=async(req,res)=>{
+const deleteAddress = async (req, res) => {
     try {
-        const addressId=req.query.id;
-        const findAddress=await Address.findOne({'address._id':addressId});
-        if(!findAddress){
+        const addressId = req.query.id;
+        const findAddress = await Address.findOne({ 'address._id': addressId });
+        if (!findAddress) {
             return res.status(404).send("Address not found")
         }
-        
+
         await Address.updateOne({
-            "address._id":addressId
-        },{
-            $pull:{
-                address:{
-                    _id:addressId,
+            "address._id": addressId
+        }, {
+            $pull: {
+                address: {
+                    _id: addressId,
                 }
             }
         })
-        return res.status(200).json({message:true})
+        return res.status(200).json({ message: true })
         // res.redirect("/address")
-        
-        
+
+
     } catch (error) {
-        console.error("Error in delete Address",error)
+        console.error("Error in delete Address", error)
         res.redirect("/pageNotFound")
-        
+
     }
 }
 
-const getForgetPassPage=async (req,res)=>{
+const getForgetPassPage = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user|| req.session.googleUser;
-        const user =userSession ? await User.findById(userSession._id):null;
-        
-        res.render("forgotPassword",{user});
-        
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+
+        res.render("forgotPassword", { user });
+
     } catch (error) {
         res.redirect('/pageNotFound')
-        
+
     }
 }
 
-const forgotEmailValid=async(req,res)=>{
+const forgotEmailValid = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user|| req.session.googleUser; 
-        const user =userSession ? await User.findById(userSession._id):null;
-        
-        const {email}=req.body;
-        const findUser=await User.findOne({email:email});
-        if(findUser){
-            const otp=generateOtp();
-            const emailSent=await sendVerificationEmail(email,otp);
-            if(emailSent){
-                req.session.userOtp=otp;
-                req.session.email=email;
-                res.render("forgotPassOtp",{user})
-                console.log("otp is :",otp)
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+
+        const { email } = req.body;
+        const findUser = await User.findOne({ email: email });
+        if (findUser) {
+            const otp = generateOtp();
+            const emailSent = await sendVerificationEmail(email, otp);
+            if (emailSent) {
+                req.session.userOtp = otp;
+                req.session.email = email;
+                res.render("forgotPassOtp", { user })
+                console.log("otp is :", otp)
             }
-            else{
-                res.json({success:false,message:"failed to send otp Please try again"});
+            else {
+                res.json({ success: false, message: "failed to send otp Please try again" });
             }
-        }else{
-            res.render("forgotPassword",{user,
-                message:"User With this email does not exist"
+        } else {
+            res.render("forgotPassword", {
+                user,
+                message: "User With this email does not exist"
             })
         }
-        
+
     } catch (error) {
         res.redirect("/pageNotFound")
-        
+
     }
 }
 
-const verifyForgotPassOtp=async(req,res)=>{
+const verifyForgotPassOtp = async (req, res) => {
     try {
-        const enteredOtp=req.body.otp;
-        if(enteredOtp=== req.session.userOtp){
-            res.json({success:true,redirectUrl:'/resetPassword'})
-        }else{
-            res.json({success:false,message:"Otp not matching"});
+        const enteredOtp = req.body.otp;
+        if (enteredOtp === req.session.userOtp) {
+            res.json({ success: true, redirectUrl: '/resetPassword' })
+        } else {
+            res.json({ success: false, message: "Otp not matching" });
         }
-        
+
     } catch (error) {
-        res.status(500).json({success:false,message:"An error occured Please try again"})
-        
+        res.status(500).json({ success: false, message: "An error occured Please try again" })
+
     }
 }
 
-const getResetPassPage=async(req,res)=>{
+const getResetPassPage = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user|| req.session.googleUser;
-        const user =userSession ? await User.findById(userSession._id):null;
-        
-        res.render("resetPassword",{user})
-        
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+
+        res.render("resetPassword", { user })
+
     } catch (error) {
         res.render("/pageNotFound")
-        
+
     }
 }
 
-const postNewPassword=async(req,res)=>{
+const postNewPassword = async (req, res) => {
     try {
-        const {newPass1,newPass2}=req.body;
-        const email=req.session.email;
-        if(newPass1===newPass2){
-            const passwordHash =await securePassword(newPass1)
+        const { newPass1, newPass2 } = req.body;
+        const email = req.session.email;
+        if (newPass1 === newPass2) {
+            const passwordHash = await securePassword(newPass1)
             await User.updateOne(
-                {email:email},
-                {$set:{password:passwordHash}}
+                { email: email },
+                { $set: { password: passwordHash } }
             )
             res.redirect("/login")
-        }else{
-            res.render("resetPassword",{message:'Password do not match'});
+        } else {
+            res.render("resetPassword", { message: 'Password do not match' });
         }
-        
+
     } catch (error) {
         res.redirect('/pageNotFound')
-        
+
     }
 }
 
-const loadChangePassword=async(req,res)=>{
+const loadChangePassword = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user|| req.session.googleUser;
-        const user =userSession ? await User.findById(userSession._id):null;
-        
-        res.render('changePassword',{user})
-        
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+
+        res.render('changePassword', { user })
+
     } catch (error) {
         res.render('pageNotFound')
-        
+
     }
 }
 
 const changePassword = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user;
-        const user =userSession ? await User.findById(userSession._id):null;
-        
-        
+        const userSession = req.session.user;
+        const user = userSession ? await User.findById(userSession._id) : null;
+
+
         const { currentPassword, newPassword } = req.body;
         const passwordMatch = await bcrypt.compare(currentPassword, user.password);
-        
+
         if (passwordMatch) {
             if (currentPassword == newPassword) {
                 return res.render('changePassword', { message: "New password cannot be the same as the current password.", user, title: "Update Password" });
             }
             const passwordHash = await securePassword(newPassword);
             await User.updateOne({ _id: user._id }, { $set: { password: passwordHash } });
-            console.log('password updated Successfully');
             return res.redirect('/profile');
         } else {
             return res.render('changePassword', { message: "Wrong Password", user, title: "Update Password" });
         }
-        
+
     } catch (error) {
         console.log(error);
         res.redirect('/pageNotfound');
     }
 }
 
-const saveUserData=async(req,res)=>{
+const saveUserData = async (req, res) => {
     try {
         const id = req.params.id;
-        const userSession=req.session.user||req.session.googleUser;
-        const user =userSession ? await User.findById(userSession._id):null;
-        const data=req.body
-        if(!user){
+        const userSession = req.session.user || req.session.googleUser;
+        const user = userSession ? await User.findById(userSession._id) : null;
+        const data = req.body
+        if (!user) {
             return res.status(400).json('Error User not Found');
         }
-        await User.updateOne({_id:user._id},{
-            username:data.username,
+        await User.updateOne({ _id: user._id }, {
+            username: data.username,
         })
         res.status(200).json("success")
-        
+
     } catch (error) {
-        
+
     }
 }
 
@@ -785,12 +778,12 @@ const addToCart = async (req, res) => {
         const userSession = req.session.user || req.session.googleUser;
         const { productId, quantity } = req.body;
         const MAX_QUANTITY = 5;
-        
+
         if (!userSession) return res.redirect('/login');
-        
+
         const user = await User.findById(userSession._id);
         if (!user) return res.redirect('/login');
-        
+
         const product = await Product.findById(productId);
         if (!product) return res.status(404).send('Product not found');
 
@@ -805,14 +798,14 @@ const addToCart = async (req, res) => {
 
         if (existingItemIndex !== -1) {
             const newQuantity = cart.items[existingItemIndex].quantity + Number(quantity);
-            
+
             if (newQuantity > MAX_QUANTITY) {
                 return res.status(400).json({
                     error: 'Maximum quantity limit reached',
                     message: 'Cannot add more items. Maximum limit of 5 items already in cart.'
                 });
             }
-            
+
             cart.items[existingItemIndex].quantity = newQuantity;
             cart.items[existingItemIndex].totalPrice = newQuantity * product.salePrice;
         } else {
@@ -822,7 +815,7 @@ const addToCart = async (req, res) => {
                     message: 'Cannot add more than 5 items to cart.'
                 });
             }
-            
+
             cart.items.push({
                 productId: product._id,
                 quantity: Number(quantity),
@@ -870,7 +863,7 @@ const wishlist = async (req, res) => {
             imageUrl: item.productId.productImage[0], // First product image
         }));
 
-        res.render('wishlist', { user, wishlist: wishlistItems ,wishlistProducts});
+        res.render('wishlist', { user, wishlist: wishlistItems, wishlistProducts });
     } catch (error) {
         console.error('Error fetching wishlist:', error.message);
         res.render('pageerror');
@@ -1087,7 +1080,7 @@ const quantityChange = async (req, res) => {
 
 const updateCart = async (req, res) => {
     try {
-        const userSession = req.session.user|| req.session.googleUser;
+        const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
         if (!user) return res.redirect('/login');
 
@@ -1108,10 +1101,10 @@ const updateCart = async (req, res) => {
             const updatedQuantities = req.body.quantity;
             for (let itemId in updatedQuantities) {
                 const quantity = parseInt(updatedQuantities[itemId], 10);
-                
+
                 // Enforce maximum quantity limit
                 const limitedQuantity = Math.min(quantity, 10);
-                
+
                 const cartItem = cart.items.find(item => item._id.toString() === itemId);
 
                 if (cartItem) {
@@ -1130,14 +1123,14 @@ const updateCart = async (req, res) => {
         res.status(500).send('Internal server error');
     }
 };
-  
+
 const cart = async (req, res) => {
     try {
         const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
 
         if (!user) return res.redirect('/login');
-       
+
 
 
         // Fetch user's cart
@@ -1208,8 +1201,6 @@ const cart = async (req, res) => {
         const shipping = subtotal > 999 ? 0 : 40;
         const totalPrice = subtotal + shipping;
 
-        console.log("Subtotal:", subtotal, "Shipping:", shipping, "Total Price:", totalPrice);
-
         // Render the cart page with messages
         res.render('cart', {
             user,
@@ -1273,11 +1264,11 @@ const applyCoupon = async (req, res) => {
         // Update cart with coupon details
         await Cart.findOneAndUpdate(
             { userId: user._id },
-            { 
-                $set: { 
+            {
+                $set: {
                     couponDiscount,
-                    totalPrice 
-                } 
+                    totalPrice
+                }
             }
         );
 
@@ -1339,7 +1330,7 @@ const checkout = async (req, res) => {
             user,
             cart,
             totalPrice,
-            addresses: addressData ? addressData.address : [], 
+            addresses: addressData ? addressData.address : [],
         });
     } catch (error) {
         console.error('Error rendering checkout:', error);
@@ -1456,10 +1447,10 @@ const placeOrder = async (req, res) => {
         }, 0);
 
         const shippingCharge = subtotal > 499 ? 0 : 40;
-        
+
         // Ensure coupon discount is a number, default to 0
         const couponDiscount = Number(req.session.couponDiscount) || 0;
-        
+
         // Calculate total amount and final amount carefully
         const totalAmount = Number(subtotal.toFixed(2));
         const finalAmount = Number((totalAmount + shippingCharge - couponDiscount).toFixed(2));
@@ -1508,7 +1499,7 @@ const placeOrder = async (req, res) => {
                     razorpayKey: process.env.RAZORPAY_KEY,
                     totalAmount: finalAmount,
                 });
-              } catch (error) {
+            } catch (error) {
                 console.error('Razorpay order creation failed:', error);
                 newOrder.paymentStatus = 'Failed';
                 await newOrder.save();
@@ -1517,14 +1508,14 @@ const placeOrder = async (req, res) => {
                     { userId: user._id },
                     { $set: { items: [], totalPrice: 0, couponDiscount: 0 } }
                 );
-        
+
                 return res.status(200).json({
                     success: true,
                     message: 'Order placed but Razorpay payment failed. Retry payment from the orders page.',
                     orderId: newOrder._id,
                 });
             }
-        
+
         } else if (paymentMethod === 'COD') {
             const newOrder = new Order({
                 userId: user._id,
@@ -1582,9 +1573,9 @@ const placeOrder = async (req, res) => {
 
             await user.save();
 
-        
 
-          
+
+
             await Cart.findOneAndUpdate({ userId: user._id }, { $set: { items: [], totalPrice: 0, couponDiscount: 0 } });
 
             return res.status(200).json({
@@ -1604,11 +1595,10 @@ const placeOrder = async (req, res) => {
 const retryPayment = async (req, res) => {
     try {
         const { orderId } = req.body;
-        console.log('Received orderId:', orderId); // Debugging
 
         const order = await Order.findById(orderId);
         if (!order || order.paymentStatus !== 'Pending') {
-            console.log('Invalid order:', order); // Debugging
+            console.log('Invalid order:', order);
             return res.status(400).json({
                 success: false,
                 message: 'Invalid order for retrying payment.',
@@ -1621,7 +1611,6 @@ const retryPayment = async (req, res) => {
             amount: Math.round(order.finalAmount * 100),
         });
 
-        console.log('New Razorpay order created:', razorpayOrder); // Debugging
 
         order.razorpayDetails.orderId = razorpayOrder.id;
         await order.save();
@@ -1731,323 +1720,321 @@ const refundToWallet = async (req, res) => {
 
 
 
-const orderComplete=async(req,res)=>{
+const orderComplete = async (req, res) => {
     try {
-        const userSession = req.session.user|| req.session.googleUser;
+        const userSession = req.session.user || req.session.googleUser;
         const user = userSession ? await User.findById(userSession._id) : null;
-        res.render('orderComplete',{user});
-        
+        res.render('orderComplete', { user });
+
     } catch (error) {
         res.render('pageerror')
-        
-    }
-   
+
     }
 
+}
 
-    const cancelOrder = async (req, res) => {
-        try {
-            const { reason } = req.body; // Reason sent from the front-end
-            const orderId = req.params.id;
-    
-            // Fetch the order and populate product details
-            const order = await Order.findById(orderId).populate({
-                path: 'items.productId',
-                select: 'productName quantity status',
+
+const cancelOrder = async (req, res) => {
+    try {
+        const { reason } = req.body; // Reason sent from the front-end
+        const orderId = req.params.id;
+
+        // Fetch the order and populate product details
+        const order = await Order.findById(orderId).populate({
+            path: 'items.productId',
+            select: 'productName quantity status',
+        });
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        // Update stock for each product
+        for (const item of order.items) {
+            const product = item.productId;
+            const purchasedQuantity = item.quantity;
+
+            product.quantity += purchasedQuantity;
+
+            if (product.status === 'out of stock') {
+                product.status = 'Available';
+            }
+
+            await product.save();
+        }
+
+        // Update wallet balance if payment status is "Paid"
+        if (order.paymentStatus === 'Paid') {
+            const user = await User.findById(order.userId);
+
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+
+            user.walletBalance += order.totalAmount;
+            order.paymentStatus = 'Refunded';
+
+            user.walletTransactions.push({
+                detail: `Refund for Order ID ${orderId}`,
+                amount: order.totalAmount,
+                type: 'credit',
             });
-    
-            if (!order) {
-                return res.status(404).json({ success: false, message: 'Order not found' });
-            }
-    
-            // Update stock for each product
-            for (const item of order.items) {
-                const product = item.productId;
-                const purchasedQuantity = item.quantity;
-    
-                product.quantity += purchasedQuantity;
-    
-                if (product.status === 'out of stock') {
-                    product.status = 'Available';
-                }
-    
-                await product.save();
-            }
-    
-            // Update wallet balance if payment status is "Paid"
-            if (order.paymentStatus === 'Paid') {
-                const user = await User.findById(order.userId);
-    
-                if (!user) {
-                    return res.status(404).json({ success: false, message: 'User not found' });
-                }
-    
-                user.walletBalance += order.totalAmount;
-                order.paymentStatus = 'Refunded';
-    
-                user.walletTransactions.push({
-                    detail: `Refund for Order ID ${orderId}`,
-                    amount: order.totalAmount,
-                    type: 'credit',
-                });
-    
-                await user.save();
-                await order.save();
-            }
-    
-            // Add the cancellation reason and update order status
-            order.cancellationReason = reason;
-    
-            const updatedOrder = await Order.findByIdAndUpdate(
-                orderId,
-                { status: 'Cancelled', cancellationReason: reason },
-                { new: true }
+
+            await user.save();
+            await order.save();
+        }
+
+        // Add the cancellation reason and update order status
+        order.cancellationReason = reason;
+
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { status: 'Cancelled', cancellationReason: reason },
+            { new: true }
+        );
+
+        res.status(200).json({ success: true, message: 'Order cancelled and stock updated' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Internal server error', error });
+    }
+};
+
+
+const returnOrder = async (req, res) => {
+    try {
+        const { reason } = req.body; // Reason sent from the front-end
+        const orderId = req.params.id;
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+
+        // Add the return reason
+        order.returnReason = reason;
+
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { status: 'Return Request Sent', returnReason: reason }, // Adding returnReason field
+            { new: true }
+        );
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error returning order:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+const downloadInvoice = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const order = await Order.findById(orderId).populate({
+            path: 'items.productId',
+            select: 'productName price',
+        });
+
+        if (!order) {
+            console.log('Order not found:', orderId);
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        // Create a new PDF document
+        const doc = new PDFDocument({ size: "A4", margin: 50 });
+
+        // Set response headers
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=invoice-${order.orderId}.pdf`);
+
+        // Pipe the PDF to the response
+        doc.pipe(res);
+
+        // Helper functions
+        const generateHr = (y) => {
+            doc
+                .strokeColor("#aaaaaa")
+                .lineWidth(1)
+                .moveTo(50, y)
+                .lineTo(550, y)
+                .stroke();
+        };
+
+        const formatDate = (date) => {
+            return new Date(date).toLocaleDateString('en-IN');
+        };
+
+        // Generate Header
+        doc
+            .fillColor("#000000")  // CaseVerse brand color
+            .fontSize(30)
+            .font('Times-Roman')
+            .text("CaseVerse", 50, 45)
+            .fontSize(10)
+            .font('Helvetica')
+            .text("www.caseverse.in", 50, 80)
+            .text("caseverseofficial@gmail.com", 50, 95)
+            .moveDown();
+
+        // Generate Customer Information
+        doc
+            .fillColor("#444444")
+            .fontSize(20)
+            .text("INVOICE", 50, 160);
+
+        generateHr(185);
+
+        const customerInformationTop = 200;
+
+        doc
+            .fontSize(10)
+            // Left side - Invoice details
+            .text("Invoice Number:", 50, customerInformationTop)
+            .font("Helvetica-Bold")
+            .text(order.orderId, 150, customerInformationTop)
+            .font("Helvetica")
+            .text("Date:", 50, customerInformationTop + 15)
+            .text(formatDate(order.createdAt), 150, customerInformationTop + 15)
+            .text("Payment Method:", 50, customerInformationTop + 30)
+            .text(order.paymentMethod, 150, customerInformationTop + 30)
+
+            // Middle section - Shipping Address
+            .font("Helvetica-Bold")
+            .text("Shipping Address", 300, customerInformationTop)
+            .font("Helvetica")
+            .text(order.address.name, 300, customerInformationTop + 15)
+            .text(order.address.address, 300, customerInformationTop + 30)
+            .text(
+                `${order.address.city}, ${order.address.state} - ${order.address.pincode}`,
+                300,
+                customerInformationTop + 45
+            )
+            .text(`Phone: ${order.address.phone}`, 300, customerInformationTop + 60)
+
+
+            .font("Helvetica-Bold")
+            .text("Sold By:", 450, customerInformationTop)
+            .font("Helvetica")
+            .text("Caseverse India", 450, customerInformationTop + 15)
+            .text("Kannur, Kerala", 450, customerInformationTop + 30)
+            .text("PIN: 670593", 450, customerInformationTop + 45)
+            .text("Phone: 6235009441", 450, customerInformationTop + 60)
+            .moveDown();
+
+        generateHr(customerInformationTop + 85);
+
+        // Generate Table
+        let i;
+        const invoiceTableTop = 330;
+        const tableTop = invoiceTableTop;
+
+        doc.font("Helvetica-Bold");
+        // Table header
+        doc
+            .fontSize(10)
+            .text("Item", 50, tableTop)
+            .text("Quantity", 300, tableTop, { width: 90, align: "center" })
+            .text("Price", 350, tableTop, { width: 90, align: "right" })
+            .text("Total", 450, tableTop, { width: 90, align: "right" });
+
+        generateHr(tableTop + 20);
+        doc.font("Helvetica");
+
+        // Initialize variables for calculations
+        let position = 0;
+        let itemsTotal = 0; // Moved the declaration here, before the loop
+
+        // Table items
+        order.items.forEach((item, index) => {
+            const singleItemPrice = item.totalPrice / item.quantity; // Get price of single item
+            const itemAmount = item.totalPrice; // Total for this item with quantity
+            itemsTotal += itemAmount;
+
+            position = tableTop + (index + 1) * 30;
+            doc
+                .fontSize(10)
+                .text(item.productId.productName, 50, position)
+                .text(item.quantity.toString(), 300, position, { width: 90, align: "center" })
+                .text((singleItemPrice), 350, position, { width: 90, align: "right" })
+                .text((itemAmount), 450, position, { width: 90, align: "right" });
+
+            generateHr(position + 20);
+        });
+
+        // Calculate positions for summary
+        const subtotalPosition = position + 35;
+        doc.font("Helvetica-Bold");
+
+        // Calculate GST amount based on itemsTotal
+        const gstAmount = itemsTotal * 0.18;
+        const gstPosition = subtotalPosition + 20;
+
+        // Add summary with proper structure
+        doc
+            .fontSize(10)
+            .text("Subtotal", 350, subtotalPosition, { width: 90, align: "right" })
+            .text((itemsTotal), 450, subtotalPosition, { width: 90, align: "right" });
+
+        // Add coupon discount if exists
+        if (order.totalCouponDiscount > 0) {
+            doc
+                .fontSize(10)
+                .text("Discount", 350, gstPosition, { width: 90, align: "right" })
+                .text(`-${(order.totalCouponDiscount)}`, 450, gstPosition, { width: 90, align: "right" });
+        }
+
+        // Calculate positions for GST
+        const gstStartPosition = order.totalCouponDiscount > 0 ? gstPosition + 20 : gstPosition;
+
+        // Add GST details
+        doc
+            .fontSize(10)
+            .text("CGST (9%)", 350, gstStartPosition, { width: 90, align: "right" })
+            .text((gstAmount / 2).toFixed(2), 450, gstStartPosition, { width: 90, align: "right" });
+
+        doc
+            .fontSize(10)
+            .text("SGST (9%)", 350, gstStartPosition + 20, { width: 90, align: "right" })
+            .text((gstAmount / 2).toFixed(2), 450, gstStartPosition + 20, { width: 90, align: "right" });
+
+        // Add total GST
+        doc
+            .fontSize(10)
+            .text("Total GST (18%)", 350, gstStartPosition + 40, { width: 90, align: "right" })
+            .text(gstAmount.toFixed(2), 450, gstStartPosition + 40, { width: 90, align: "right" });
+
+        // Calculate final total position
+        const totalPosition = gstStartPosition + 60;
+
+        // Calculate final amount (subtotal + GST - discount)
+        const finalAmount = itemsTotal - (order.totalCouponDiscount || 0);
+
+        // Add final amount
+        doc
+            .fontSize(12)
+            .text("Total Amount", 350, totalPosition, { width: 90, align: "right" })
+            .text((finalAmount.toFixed(2)), 450, totalPosition, { width: 90, align: "right" });
+
+        // Footer
+        doc
+            .fontSize(10)
+            .font('Helvetica')
+            .text(
+                "Thank you for shopping with CaseVerse!",
+                50,
+                780,
+                { align: "center", width: 500 }
             );
-    
-            res.status(200).json({ success: true, message: 'Order cancelled and stock updated' });
-        } catch (error) {
-            res.status(500).json({ success: false, message: 'Internal server error', error });
-        }
-    };
-    
-    
-    const returnOrder = async (req, res) => {
-        try {
-            const { reason } = req.body; // Reason sent from the front-end
-            const orderId = req.params.id;
-    
-            const order = await Order.findById(orderId);
-            if (!order) {
-                return res.status(404).json({ success: false, message: 'Order not found' });
-            }
-    
-            
-            // Add the return reason
-            order.returnReason = reason;
-    
-            const updatedOrder = await Order.findByIdAndUpdate(
-                orderId,
-                { status: 'Return Request Sent', returnReason: reason }, // Adding returnReason field
-                { new: true }
-            );
-    
-            res.json({ success: true });
-        } catch (error) {
-            console.error('Error returning order:', error);
-            res.status(500).json({ success: false, message: 'Internal server error' });
-        }
-    };
 
-    const downloadInvoice = async (req, res) => {
-        try {
-            const { orderId } = req.params;
-            console.log("In downloadinvoice, orderId:", orderId);
-    
-            const order = await Order.findById(orderId).populate({
-                path: 'items.productId',
-                select: 'productName price',
-            });
-    
-            if (!order) {
-                console.log('Order not found:', orderId);
-                return res.status(404).json({ error: 'Order not found' });
-            }
-    
-            // Create a new PDF document
-            const doc = new PDFDocument({ size: "A4", margin: 50 });
-    
-            // Set response headers
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=invoice-${order.orderId}.pdf`);
-    
-            // Pipe the PDF to the response
-            doc.pipe(res);
-    
-            // Helper functions
-            const generateHr = (y) => {
-                doc
-                    .strokeColor("#aaaaaa")
-                    .lineWidth(1)
-                    .moveTo(50, y)
-                    .lineTo(550, y)
-                    .stroke();
-            };
-    
-            const formatDate = (date) => {
-                return new Date(date).toLocaleDateString('en-IN');
-            };
-    
-            // Generate Header
-            doc
-                .fillColor("#000000")  // CaseVerse brand color
-                .fontSize(30)
-                .font('Times-Roman')
-                .text("CaseVerse", 50, 45)
-                .fontSize(10)
-                .font('Helvetica')
-                .text("www.caseverse.in", 50, 80)
-                .text("caseverseofficial@gmail.com", 50, 95)
-                .moveDown();
-    
-            // Generate Customer Information
-            doc
-                .fillColor("#444444")
-                .fontSize(20)
-                .text("INVOICE", 50, 160);
-    
-            generateHr(185);
-    
-            const customerInformationTop = 200;
-    
-            doc
-    .fontSize(10)
-    // Left side - Invoice details
-    .text("Invoice Number:", 50, customerInformationTop)
-    .font("Helvetica-Bold")
-    .text(order.orderId, 150, customerInformationTop)
-    .font("Helvetica")
-    .text("Date:", 50, customerInformationTop + 15)
-    .text(formatDate(order.createdAt), 150, customerInformationTop + 15)
-    .text("Payment Method:", 50, customerInformationTop + 30)
-    .text(order.paymentMethod, 150, customerInformationTop + 30)
+        // Finalize PDF
+        doc.end();
 
-    // Middle section - Shipping Address
-    .font("Helvetica-Bold")
-    .text("Shipping Address", 300, customerInformationTop)
-    .font("Helvetica")
-    .text(order.address.name, 300, customerInformationTop + 15)
-    .text(order.address.address, 300, customerInformationTop + 30)
-    .text(
-        `${order.address.city}, ${order.address.state} - ${order.address.pincode}`,
-        300,
-        customerInformationTop + 45
-    )
-    .text(`Phone: ${order.address.phone}`, 300, customerInformationTop + 60)
+    } catch (error) {
+        console.error('Error in downloadInvoice:', error);
+        res.status(500).json({ error: 'Error generating invoice' });
+    }
+};
 
-
-    .font("Helvetica-Bold")
-    .text("Sold By:", 450, customerInformationTop)
-    .font("Helvetica")
-    .text("Caseverse India", 450, customerInformationTop + 15)
-    .text("Kannur, Kerala", 450, customerInformationTop + 30)
-    .text("PIN: 670593", 450, customerInformationTop + 45)
-    .text("Phone: 6235009441", 450, customerInformationTop + 60)
-    .moveDown();
-    
-            generateHr(customerInformationTop + 85);
-    
-            // Generate Table
-            let i;
-            const invoiceTableTop = 330;
-            const tableTop = invoiceTableTop;
-    
-            doc.font("Helvetica-Bold");
-            // Table header
-            doc
-                .fontSize(10)
-                .text("Item", 50, tableTop)
-                .text("Quantity", 300, tableTop, { width: 90, align: "center" })
-                .text("Price", 350, tableTop, { width: 90, align: "right" })
-                .text("Total", 450, tableTop, { width: 90, align: "right" });
-    
-            generateHr(tableTop + 20);
-            doc.font("Helvetica");
-    
-            // Initialize variables for calculations
-            let position = 0;
-            let itemsTotal = 0; // Moved the declaration here, before the loop
-    
-            // Table items
-            order.items.forEach((item, index) => {
-                const singleItemPrice = item.totalPrice / item.quantity; // Get price of single item
-                const itemAmount = item.totalPrice; // Total for this item with quantity
-                itemsTotal += itemAmount;
-                
-                position = tableTop + (index + 1) * 30;
-                doc
-                    .fontSize(10)
-                    .text(item.productId.productName, 50, position)
-                    .text(item.quantity.toString(), 300, position, { width: 90, align: "center" })
-                    .text((singleItemPrice), 350, position, { width: 90, align: "right" })
-                    .text((itemAmount), 450, position, { width: 90, align: "right" });
-                
-                generateHr(position + 20);
-            });
-    
-            // Calculate positions for summary
-            const subtotalPosition = position + 35;
-            doc.font("Helvetica-Bold");
-    
-            // Calculate GST amount based on itemsTotal
-            const gstAmount = itemsTotal * 0.18;
-            const gstPosition = subtotalPosition + 20;
-    
-            // Add summary with proper structure
-            doc
-                .fontSize(10)
-                .text("Subtotal", 350, subtotalPosition, { width: 90, align: "right" })
-                .text((itemsTotal), 450, subtotalPosition, { width: 90, align: "right" });
-    
-            // Add coupon discount if exists
-            if (order.totalCouponDiscount > 0) {
-                doc
-                    .fontSize(10)
-                    .text("Discount", 350, gstPosition, { width: 90, align: "right" })
-                    .text(`-${(order.totalCouponDiscount)}`, 450, gstPosition, { width: 90, align: "right" });
-            }
-    
-            // Calculate positions for GST
-            const gstStartPosition = order.totalCouponDiscount > 0 ? gstPosition + 20 : gstPosition;
-    
-            // Add GST details
-            doc
-                .fontSize(10)
-                .text("CGST (9%)", 350, gstStartPosition, { width: 90, align: "right" })
-                .text((gstAmount/2).toFixed(2), 450, gstStartPosition, { width: 90, align: "right" });
-    
-            doc
-                .fontSize(10)
-                .text("SGST (9%)", 350, gstStartPosition + 20, { width: 90, align: "right" })
-                .text((gstAmount/2).toFixed(2), 450, gstStartPosition + 20, { width: 90, align: "right" });
-    
-            // Add total GST
-            doc
-                .fontSize(10)
-                .text("Total GST (18%)", 350, gstStartPosition + 40, { width: 90, align: "right" })
-                .text(gstAmount.toFixed(2), 450, gstStartPosition + 40, { width: 90, align: "right" });
-    
-            // Calculate final total position
-            const totalPosition = gstStartPosition + 60;
-    
-            // Calculate final amount (subtotal + GST - discount)
-            const finalAmount = itemsTotal  - (order.totalCouponDiscount || 0);
-    
-            // Add final amount
-            doc
-                .fontSize(12)
-                .text("Total Amount", 350, totalPosition, { width: 90, align: "right" })
-                .text((finalAmount.toFixed(2)), 450, totalPosition, { width: 90, align: "right" });
-    
-            // Footer
-            doc
-                .fontSize(10)
-                .font('Helvetica')
-                .text(
-                    "Thank you for shopping with CaseVerse!",
-                    50,
-                    780,
-                    { align: "center", width: 500 }
-                );
-    
-            // Finalize PDF
-            doc.end();
-    
-        } catch (error) {
-            console.error('Error in downloadInvoice:', error);
-            res.status(500).json({ error: 'Error generating invoice' });
-        }
-    };
-    
 
 
 module.exports = {

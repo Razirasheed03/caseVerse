@@ -1,66 +1,68 @@
 <%-include("../../views/partials/user/header")%>
 	<style>
 		.custom-pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        margin-top: 20px;
-    }
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 10px;
+			margin-top: 20px;
+		}
 
-    .custom-pagination a {
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        color: #333;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-        background-color: #f0f0f0;
-    }
+		.custom-pagination a {
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			color: #333;
+			font-weight: bold;
+			transition: all 0.3s ease;
+			border: 2px solid transparent;
+			background-color: #f0f0f0;
+		}
 
-    .custom-pagination a:hover {
-        background-color: #007bff;
-        color: white;
-        border-color: #007bff;
-        transform: scale(1.1);
-    }
+		.custom-pagination a:hover {
+			background-color: #007bff;
+			color: white;
+			border-color: #007bff;
+			transform: scale(1.1);
+		}
 
-    .custom-pagination a.active {
-        background-color: #007bff;
-        color: white;
-        border-color: #007bff;
-    }
+		.custom-pagination a.active {
+			background-color: #007bff;
+			color: white;
+			border-color: #007bff;
+		}
 
-    .custom-pagination a.disabled {
-        color: #cccccc;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
+		.custom-pagination a.disabled {
+			color: #cccccc;
+			cursor: not-allowed;
+			pointer-events: none;
+		}
+
 		.active-filter {
-    color: #007bff !important;
-    font-weight: bold;
-    position: relative;
-}
+			color: #007bff !important;
+			font-weight: bold;
+			position: relative;
+		}
 
-.active-filter::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: #007bff;
-}
+		.active-filter::after {
+			content: '';
+			position: absolute;
+			bottom: -2px;
+			left: 0;
+			width: 100%;
+			height: 2px;
+			background-color: #007bff;
+		}
 
-.active-category {
-    background-color: #007bff !important;
-    color: white !important;
-}
+		.active-category {
+			background-color: #007bff !important;
+			color: white !important;
+		}
+
 		.sizing {
 			border-radius: 10px;
 			height: 5vh;
@@ -88,358 +90,354 @@
 	<br>
 	<%-include("../../views/partials/user/couponModal")%>
 
-	<!-- Product -->
-	<div class="bg0 m-t-23 p-b-140">
-		<div class="container">
-			<div class="flex-w flex-sb-m p-b-52">
-				<div class="flex-w flex-l-m filter-tope-group m-tb-10">
-					<form action="/shop" method="GET" class="panel-search w-full p-t-5 p-b-5">
-						<div class="sizing bor8 dis-flex p-l-10">
-							<button class="flex-c-m fs-16 cl2 hov-cl1 trans-04 p-b-0">
+		<!-- Product -->
+		<div class="bg0 m-t-23 p-b-140">
+			<div class="container">
+				<div class="flex-w flex-sb-m p-b-52">
+					<div class="flex-w flex-l-m filter-tope-group m-tb-10">
+						<form action="/shop" method="GET" class="panel-search w-full p-t-5 p-b-5">
+							<div class="sizing bor8 dis-flex p-l-10">
+								<button class="flex-c-m fs-16 cl2 hov-cl1 trans-04 p-b-0">
+									<i class="zmdi zmdi-search"></i>
+								</button>
+								<input class="mtext-107 cl2 plh2 p-l-5" type="text" name="search" value="<%= search %>"
+									placeholder="Search" id="searchInput">
+								<button type="button"
+									class="flex-c-m fs-16 cl2 hov-cl1 trans-04 p-b-0 ml-3  clear-search <%= search ? 'visible' : 'hidden' %>"
+									id="clearSearch" title="Clear search">
+									✖
+								</button>
+
+							</div>
+
+						</form>
+
+					</div>
+
+					<div class="flex-w flex-c-m m-tb-10">
+						<div
+							class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
+							<i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
+							<i class="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
+							Filter
+						</div>
+
+
+
+					</div>
+
+					<div class="dis-none panel-search w-full p-t-10 p-b-15">
+						<div class="bor8 dis-flex p-l-15">
+							<button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
 								<i class="zmdi zmdi-search"></i>
 							</button>
-							<input class="mtext-107 cl2 plh2 p-l-5" type="text" name="search" value="<%= search %>"
-								placeholder="Search" id="searchInput">
-							<button type="button"
-								class="flex-c-m fs-16 cl2 hov-cl1 trans-04 p-b-0 ml-3  clear-search <%= search ? 'visible' : 'hidden' %>"
-								id="clearSearch" title="Clear search">
-								✖
-							</button>
 
-						</div>
-
-					</form>
-
-				</div>
-
-				<div class="flex-w flex-c-m m-tb-10">
-					<div
-						class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
-						<i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
-						<i class="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-						Filter
-					</div>
-
-
-
-				</div>
-
-				<div class="dis-none panel-search w-full p-t-10 p-b-15">
-					<div class="bor8 dis-flex p-l-15">
-						<button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
-							<i class="zmdi zmdi-search"></i>
-						</button>
-
-						<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product"
-							placeholder="Search">
-					</div>
-				</div>
-
-
-
-				<!-- Filter -->
-				<div class="dis-none panel-filter w-full p-t-10">
-					<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
-						<div class="filter-col1 p-r-15 p-b-27">
-							<div class="mtext-102 cl2 p-b-15">
-								Sort By
-							</div>
-						
-							<ul>
-								<li class="p-b-6">
-									<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=newArrival&category=<%= currentCategory %>" 
-									   class="filter-link stext-106 trans-04 sorting <%= currentSort === 'newArrival' ? 'active-filter' : '' %>">
-										New Arrival
-									</a>
-								</li>
-							
-								<li class="p-b-6">
-									<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=priceDesc&category=<%= currentCategory %>" 
-									   class="filter-link stext-106 trans-04 sorting <%= currentSort === 'priceDesc' ? 'active-filter' : '' %>">
-										Price: High to Low
-									</a>
-								</li>
-							
-								<li class="p-b-6">
-									<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=priceAsc&category=<%= currentCategory %>" 
-									   class="filter-link stext-106 trans-04 filter-link sorting <%= currentSort === 'priceAsc' ? 'active-filter' : '' %>">
-										Price: Low to High
-									</a>
-								</li>
-							
-								<li class="p-b-6">
-									<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=nameAsc&category=<%= currentCategory %>" 
-									   class="filter-link stext-106 trans-04 sorting <%= currentSort === 'nameAsc' ? 'active-filter' : '' %>">
-										Aa-Zz
-									</a>
-								</li>
-							
-								<li class="p-b-6">
-									<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=nameDesc&category=<%= currentCategory %>" 
-									   class="filter-link stext-106 trans-04 sorting <%= currentSort === 'nameDesc' ? 'active-filter' : '' %>">
-										Zz-Aa
-									</a>
-								</li>
-							</ul>
-						</div>
-
-					<!-- In the Categories section of the filter -->
-					<div class="filter-col4 p-b-27">
-						<div class="mtext-102 cl2 p-b-15">
-							Categories
-						</div>
-					
-						<div class="flex-w p-t-4 m-r--5">
-							<% categories.forEach(function(category) { %>
-								<a href="/shop?search=<%= search %>&page=1&sort=<%= currentSort %>&category=<%= category.name %>" 
-								   class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 <%= currentCategory === category.name ? 'active-category' : '' %>">
-									<%= category.name %>
-								</a>
-							<% }); %>
-							
-							<!-- Add an "All Categories" link to reset category filter -->
-							<a href="/shop?search=<%= search %>&page=1&sort=<%= currentSort %>" 
-							   class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 <%= !currentCategory ? 'active-category' : '' %>">
-								All Categories
-							</a>
+							<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product"
+								placeholder="Search">
 						</div>
 					</div>
 
-				</div>
-			</div>
 
-			<div class="row isotope-grid" id="shopList">
-				<%for(let i=0; i<product.length; i++){%>
-					<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
-						<!-- Block2 -->
-						<div class="block2">
-							<div class="block2-pic hov-img0">
-								<a href="/productDetail/<%=product[i]._id%>">
-									<img src='/uploads/re-Images/<%=product[i].productImage[0]%>'
-										alt="IMG-PRODUCT">
-								</a>
-							</div>
-			
-							<div class="block2-txt flex-w flex-t p-t-14">
-								<div class="block2-txt-child1 flex-col-l ">
-									<a href="/productDetail/<%=product[i]._id%>"
-										class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-										<%=product[i].productName%>
-									</a>
-			
-									<span class="stext-105 cl3">
-										<strike>₹<%=product[i].regularPrice%></strike>&nbsp;
-										<strong>₹<%=product[i].salePrice%></strong>
-									</span>
+
+					<!-- Filter -->
+					<div class="dis-none panel-filter w-full p-t-10">
+						<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
+							<div class="filter-col1 p-r-15 p-b-27">
+								<div class="mtext-102 cl2 p-b-15">
+									Sort By
 								</div>
-			
-								<div class="block2-txt-child2 flex-r p-t-3">
-									<% if (wishlistProductIds.includes(product[i]._id.toString())) { %>
-										<!-- Wishlist icon if product is already in the wishlist -->
-										<i class="fa-solid fa-heart" style="color: red;"></i>
-									<% } else { %>
-										<!-- Add to wishlist icon -->
-										<a href="#" class="btn-addwish-b2 dis-block pos-relative" onclick="addToWishlist(event, '<%=product[i]._id%>')">
-											<img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-											<img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+
+								<ul>
+									<li class="p-b-6">
+										<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=newArrival&category=<%= currentCategory %>"
+											class="filter-link stext-106 trans-04 sorting <%= currentSort === 'newArrival' ? 'active-filter' : '' %>">
+											New Arrival
 										</a>
-									<% } %>
+									</li>
+
+									<li class="p-b-6">
+										<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=priceDesc&category=<%= currentCategory %>"
+											class="filter-link stext-106 trans-04 sorting <%= currentSort === 'priceDesc' ? 'active-filter' : '' %>">
+											Price: High to Low
+										</a>
+									</li>
+
+									<li class="p-b-6">
+										<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=priceAsc&category=<%= currentCategory %>"
+											class="filter-link stext-106 trans-04 filter-link sorting <%= currentSort === 'priceAsc' ? 'active-filter' : '' %>">
+											Price: Low to High
+										</a>
+									</li>
+
+									<li class="p-b-6">
+										<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=nameAsc&category=<%= currentCategory %>"
+											class="filter-link stext-106 trans-04 sorting <%= currentSort === 'nameAsc' ? 'active-filter' : '' %>">
+											Aa-Zz
+										</a>
+									</li>
+
+									<li class="p-b-6">
+										<a href="/shop?search=<%= search %>&page=<%= currentPage %>&sort=nameDesc&category=<%= currentCategory %>"
+											class="filter-link stext-106 trans-04 sorting <%= currentSort === 'nameDesc' ? 'active-filter' : '' %>">
+											Zz-Aa
+										</a>
+									</li>
+								</ul>
+							</div>
+
+							<!-- In the Categories section of the filter -->
+							<div class="filter-col4 p-b-27">
+								<div class="mtext-102 cl2 p-b-15">
+									Categories
+								</div>
+
+								<div class="flex-w p-t-4 m-r--5">
+									<% categories.forEach(function(category) { %>
+										<a href="/shop?search=<%= search %>&page=1&sort=<%= currentSort %>&category=<%= category.name %>"
+											class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 <%= currentCategory === category.name ? 'active-category' : '' %>">
+											<%= category.name %>
+										</a>
+										<% }); %>
+
+											<!-- Add an "All Categories" link to reset category filter -->
+											<a href="/shop?search=<%= search %>&page=1&sort=<%= currentSort %>"
+												class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 <%= !currentCategory ? 'active-category' : '' %>">
+												All Categories
+											</a>
 								</div>
 							</div>
+
 						</div>
 					</div>
-				<%}%>
-			</div>
 
-			<!-- Load more -->
-			<div class="container mt-3">
-				<nav aria-label="Page navigation">
-					<div class="custom-pagination">
-						<% if (currentPage > 1) { %>
-							<a href="?search=<%= search %>&page=<%= currentPage - 1 %>&sort=<%= currentSort %>&category=<%= currentCategory %>" class="prev-page">
-								&larr;
-							</a>
-						<% } %>
-					
-						<% for (let i=1; i <= totalPages; i++) { %>
-							<a href="?search=<%= search %>&page=<%= i %>&sort=<%= currentSort %>&category=<%= currentCategory %>" 
-							   class="<%= currentPage == i ? 'active' : '' %>">
-								<%= i %>
-							</a>
-						<% } %>
-					
-						<% if (currentPage < totalPages) { %>
-							<a href="?search=<%= search %>&page=<%= currentPage + 1 %>&sort=<%= currentSort %>&category=<%= currentCategory %>" class="next-page">
-								&rarr;
-							</a>
-						<% } %>
+					<div class="row isotope-grid" id="shopList">
+						<%for(let i=0; i<product.length; i++){%>
+							<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
+								<!-- Block2 -->
+								<div class="block2">
+									<div class="block2-pic hov-img0">
+										<a href="/productDetail/<%=product[i]._id%>">
+											<img src='/uploads/re-Images/<%=product[i].productImage[0]%>'
+												alt="IMG-PRODUCT">
+										</a>
+									</div>
+
+									<div class="block2-txt flex-w flex-t p-t-14">
+										<div class="block2-txt-child1 flex-col-l ">
+											<a href="/productDetail/<%=product[i]._id%>"
+												class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+												<%=product[i].productName%>
+											</a>
+
+											<span class="stext-105 cl3">
+												<strike>₹<%=product[i].regularPrice%></strike>&nbsp;
+												<strong>₹<%=product[i].salePrice%></strong>
+											</span>
+										</div>
+
+										<div class="block2-txt-child2 flex-r p-t-3">
+											<% if (wishlistProductIds.includes(product[i]._id.toString())) { %>
+												<!-- Wishlist icon if product is already in the wishlist -->
+												<i class="fa-solid fa-heart" style="color: red;"></i>
+												<% } else { %>
+													<!-- Add to wishlist icon -->
+													<a href="#" class="btn-addwish-b2 dis-block pos-relative"
+														onclick="addToWishlist(event, '<%=product[i]._id%>')">
+														<img class="icon-heart1 dis-block trans-04"
+															src="images/icons/icon-heart-01.png" alt="ICON">
+														<img class="icon-heart2 dis-block trans-04 ab-t-l"
+															src="images/icons/icon-heart-02.png" alt="ICON">
+													</a>
+													<% } %>
+										</div>
+									</div>
+								</div>
+							</div>
+							<%}%>
 					</div>
-				</nav>
+
+					<!-- Load more -->
+					<div class="container mt-3">
+						<nav aria-label="Page navigation">
+							<div class="custom-pagination">
+								<% if (currentPage> 1) { %>
+									<a href="?search=<%= search %>&page=<%= currentPage - 1 %>&sort=<%= currentSort %>&category=<%= currentCategory %>"
+										class="prev-page">
+										&larr;
+									</a>
+									<% } %>
+
+										<% for (let i=1; i <=totalPages; i++) { %>
+											<a href="?search=<%= search %>&page=<%= i %>&sort=<%= currentSort %>&category=<%= currentCategory %>"
+												class="<%= currentPage == i ? 'active' : '' %>">
+												<%= i %>
+											</a>
+											<% } %>
+
+												<% if (currentPage < totalPages) { %>
+													<a href="?search=<%= search %>&page=<%= currentPage + 1 %>&sort=<%= currentSort %>&category=<%= currentCategory %>"
+														class="next-page">
+														&rarr;
+													</a>
+													<% } %>
+							</div>
+						</nav>
+					</div>
+				</div>
 			</div>
 		</div>
-	</div>
-	</div>
 
-	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-	<script>
-		async function addToWishlist(event, productId) {
-			event.preventDefault();  // Prevent page refresh
-			
-			try {
-				const response = await fetch('/add-to-wishlist', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({ productId }),
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script>
+			async function addToWishlist(event, productId) {
+				event.preventDefault();  // Prevent page refresh
+
+				try {
+					const response = await fetch('/add-to-wishlist', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ productId }),
+					});
+
+					if (response.ok) {
+						Swal.fire({
+							icon: 'success',
+							text: 'Product has been successfully added to wishlist.',
+							toast: true,
+							position: 'bottom-end',
+							timer: 2000,
+							showConfirmButton: false,
+							timerProgressBar: true,
+							customClass: {
+								popup: 'rounded-pill shadow-sm',
+								title: 'font-weight-bold text-white',
+							},
+							background: '#28a745',  // Green background for success
+							iconColor: '#ffffff',   // White icon color
+						}).then(() => {
+							window.location.reload(); // Reload the page to update the wishlist icon
+						});
+					} else {
+						const data = await response.json();
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops!',
+							text: data.message || 'Failed to add the product to your wishlist.',
+							toast: true,
+							position: 'bottom-end',
+							timer: 2000,
+							showConfirmButton: false,
+							timerProgressBar: true,
+							customClass: {
+								popup: 'rounded-pill shadow-sm',
+								title: 'font-weight-bold text-white',
+							},
+							background: '#fce9b0',  // Light yellowish-orange background for error
+							iconColor: '#ffffff',   // White icon color
+						});
+					}
+				} catch (error) {
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: 'An unexpected error occurred. Please try again later.',
+						toast: true,
+						position: 'bottom-end',
+						timer: 2000,
+						showConfirmButton: false,
+						timerProgressBar: true,
+						customClass: {
+							popup: 'rounded-pill shadow-sm',
+							title: 'font-weight-bold text-white',
+						},
+						background: '#fce9b0',  // Light yellowish-orange background for error
+						iconColor: '#ffffff',   // White icon color
+					});
+				}
+
+			}
+
+		</script>
+
+		<script>
+			document.addEventListener("DOMContentLoaded", () => {
+				const searchInput = document.getElementById("searchInput");
+				const clearSearch = document.getElementById("clearSearch");
+
+				// Show or hide the cancel button dynamically
+				searchInput.addEventListener("input", () => {
+					clearSearch.style.display = searchInput.value.trim() ? "block" : "none";
 				});
-	
-				if (response.ok) {
-    Swal.fire({
-        icon: 'success',
-        text: 'Product has been successfully added to wishlist.',
-        toast: true,
-        position: 'bottom-end',
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        customClass: {
-            popup: 'rounded-pill shadow-sm',
-            title: 'font-weight-bold text-white',
-        },
-        background: '#28a745',  // Green background for success
-        iconColor: '#ffffff',   // White icon color
-    }).then(() => {
-        window.location.reload(); // Reload the page to update the wishlist icon
-    });
-} else {
-    const data = await response.json();
-    Swal.fire({
-        icon: 'error',
-        title: 'Oops!',
-        text: data.message || 'Failed to add the product to your wishlist.',
-        toast: true,
-        position: 'bottom-end',
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        customClass: {
-            popup: 'rounded-pill shadow-sm',
-            title: 'font-weight-bold text-white',
-        },
-        background: '#fce9b0',  // Light yellowish-orange background for error
-        iconColor: '#ffffff',   // White icon color
-    });
-}
-} catch (error) {
-    console.error('Error adding to wishlist:', error);
-    Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'An unexpected error occurred. Please try again later.',
-        toast: true,
-        position: 'bottom-end',
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        customClass: {
-            popup: 'rounded-pill shadow-sm',
-            title: 'font-weight-bold text-white',
-        },
-        background: '#fce9b0',  // Light yellowish-orange background for error
-        iconColor: '#ffffff',   // White icon color
-    });
-}
 
-			}
-		
-	</script>
-	
-	<script>
-		document.addEventListener("DOMContentLoaded", () => {
-			const searchInput = document.getElementById("searchInput");
-			const clearSearch = document.getElementById("clearSearch");
-
-			// Show or hide the cancel button dynamically
-			searchInput.addEventListener("input", () => {
-				clearSearch.style.display = searchInput.value.trim() ? "block" : "none";
+				// Clear the search input and reload the page
+				clearSearch.addEventListener("click", () => {
+					searchInput.value = ""; // Clear the input
+					window.location.href = "/shop"; // Redirect to shop route (normal state)
+				});
 			});
 
-			// Clear the search input and reload the page
-			clearSearch.addEventListener("click", () => {
-				searchInput.value = ""; // Clear the input
-				window.location.href = "/shop"; // Redirect to shop route (normal state)
-			});
-		});
+			function sortItem(item, data) {
+				const product = JSON.parse(data);
+				const shopList = document.getElementById('shopList')
+				switch (item) {
+					case 'New Arrival':
+						product.sort((a, b) => {
+							const dateA = a.createdAt;
+							const dateB = b.createdAt;
 
-		function sortItem(item, data) {
-			const product = JSON.parse(data);
-			const shopList = document.getElementById('shopList')
-			console.log(item);
-			console.log("products:", product)
-			switch (item) {
-				case 'New Arrival':
-					product.sort((a, b) => {
-						const dateA = a.createdAt;
-						const dateB = b.createdAt;
+							if (dateA < dateB) return 1;
+							if (dateA > dateB) return -1;
+							return 0;
+						})
+						break;
+					case 'Price: Low to High':
+						product.sort((a, b) => {
+							const priceA = a.salePrice;
+							const priceB = b.salePrice;
 
-						if (dateA < dateB) return 1;
-						if (dateA > dateB) return -1;
-						return 0;
-					})
-					console.log('sort by new')
-					break;
-				case 'Price: Low to High':
-					product.sort((a, b) => {
-						const priceA = a.salePrice;
-						const priceB = b.salePrice;
+							if (priceA < priceB) return -1;
+							if (priceA > priceB) return 1;
+							return 0;
+						})
+						break;
+					case 'Price: High to Low':
+						product.sort((a, b) => {
+							const priceA = a.salePrice;
+							const priceB = b.salePrice;
 
-						if (priceA < priceB) return -1;
-						if (priceA > priceB) return 1;
-						return 0;
-					})
-					console.log('sort by price asc')
-					break;
-				case 'Price: High to Low':
-					product.sort((a, b) => {
-						const priceA = a.salePrice;
-						const priceB = b.salePrice;
+							if (priceA < priceB) return 1;
+							if (priceA > priceB) return -1;
+							return 0;
+						})
+						break;
+					case 'Aa-Zz':
+						product.sort((a, b) => {
+							const nameA = a.productName.toLowerCase();
+							const nameB = b.productName.toLowerCase();
 
-						if (priceA < priceB) return 1;
-						if (priceA > priceB) return -1;
-						return 0;
-					})
-					console.log('sort by price desc')
-					break;
-				case 'Aa-Zz':
-					product.sort((a, b) => {
-						const nameA = a.productName.toLowerCase();
-						const nameB = b.productName.toLowerCase();
+							if (nameA < nameB) return -1;
+							if (nameA > nameB) return 1;
+							return 0;
+						})
+						break;
+					case 'Zz-Aa':
+						product.sort((a, b) => {
+							const nameA = a.productName.toLowerCase();
+							const nameB = b.productName.toLowerCase();
 
-						if (nameA < nameB) return -1;
-						if (nameA > nameB) return 1;
-						return 0;
-					})
-					console.log('sort by name asc')
-					break;
-				case 'Zz-Aa':
-					product.sort((a, b) => {
-						const nameA = a.productName.toLowerCase();
-						const nameB = b.productName.toLowerCase();
-
-						if (nameA < nameB) return 1;
-						if (nameA > nameB) return -1;
-						return 0;
-					})
-					console.log('sort by name desc')
-					break;
-				default:
-					console.log("default case")
-					break;
-			}
-			shopList.innerHTML = ''
-			product.map(product => {
-				let element = `
+							if (nameA < nameB) return 1;
+							if (nameA > nameB) return -1;
+							return 0;
+						})
+						break;
+					default:
+						break;
+				}
+				shopList.innerHTML = ''
+				product.map(product => {
+					let element = `
 			<div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
 					<!-- Block2 -->
 					<div class="block2">
@@ -472,19 +470,19 @@
 					</div>
 				</div>
 			`
-				shopList.innerHTML += element
-			})
+					shopList.innerHTML += element
+				})
 
 
 
-		}
+			}
 
 
-		function categoryFilter() {
+			function categoryFilter() {
 
-		}
+			}
 
-	</script>
+		</script>
 
-	<!-- Footer -->
-	<%-include("../../views/partials/user/footer")%>
+		<!-- Footer -->
+		<%-include("../../views/partials/user/footer")%>

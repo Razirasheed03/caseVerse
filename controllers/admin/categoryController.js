@@ -1,5 +1,8 @@
 const Category = require("../../models/categorySchema");
 const Product=require("../../models/productSchema")
+
+
+
 const categoryInfo = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1; // Accessing query params from the frontend
@@ -166,7 +169,7 @@ const getEditCategory=async(req,res)=>{
         res.redirect("pageerror")
     }
 };
-//accessing query params from frontent
+
 const editCategory=async(req,res)=>{
     try {
         const id=req.params.id;

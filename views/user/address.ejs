@@ -171,31 +171,31 @@
             const state = document.getElementById('state');
             const landMark = document.getElementById('landMark');
             const address = document.getElementById('address');
-        
+
             submitAddress.addEventListener('click', (e) => {
                 e.preventDefault();
-        
+
                 // Validation Logic
                 if (!name.value || !addressType.value || !phone.value || !pincode.value || !city.value || !state.value || !landMark.value || !address.value) {
                     Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Please Fill all Fields',
-        toast: true,
-        position: 'bottom-end',
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        customClass: {
-            popup: 'rounded-pill shadow-sm',
-            title: 'font-weight-bold text-white',
-        },
-        background: '#FFA500',  // Light yellowish-orange background for error
-        iconColor: '#ffffff',   // White icon color
-    });
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Please Fill all Fields',
+                        toast: true,
+                        position: 'bottom-end',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'rounded-pill shadow-sm',
+                            title: 'font-weight-bold text-white',
+                        },
+                        background: '#FFA500',  // Light yellowish-orange background for error
+                        iconColor: '#ffffff',   // White icon color
+                    });
                     return;
                 }
-        
+
                 // Validate phone number format (example: 10-digit number)
                 const phoneRegex = /^[0-9]{10}$/;
                 if (!phoneRegex.test(phone.value)) {
@@ -204,20 +204,20 @@
                         title: 'Error!',
                         text: 'Please enter a valid 10-digit phone number.',
                         position: 'bottom-end',
-                        toast:true,
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        customClass: {
-            popup: 'rounded-pill shadow-sm',
-            title: 'font-weight-bold text-white',
-        },
-        background: '#FFA500',
-        iconColor: '#ffffff', 
+                        toast: true,
+                        timer: 2000,
+                        showConfirmButton: false,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'rounded-pill shadow-sm',
+                            title: 'font-weight-bold text-white',
+                        },
+                        background: '#FFA500',
+                        iconColor: '#ffffff',
                     });
                     return;
                 }
-        
+
                 // Validate pincode format (example: 6-digit number)
                 const pincodeRegex = /^[0-9]{6}$/;
                 if (!pincodeRegex.test(pincode.value)) {
@@ -226,20 +226,20 @@
                         title: 'Error!',
                         text: 'Please enter a valid 6-digit pincode.',
                         position: 'bottom-end',
-                        toast:true,
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        customClass: {
-            popup: 'rounded-pill shadow-sm',
-            title: 'font-weight-bold text-white',
-        },
-        background: '#FFA500',
-        iconColor: '#ffffff', 
+                        toast: true,
+                        timer: 2000,
+                        showConfirmButton: false,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'rounded-pill shadow-sm',
+                            title: 'font-weight-bold text-white',
+                        },
+                        background: '#FFA500',
+                        iconColor: '#ffffff',
                     });
                     return;
                 }
-        
+
                 // If all validations pass, proceed with the form submission
                 const addressData = {
                     name: name.value,
@@ -251,9 +251,7 @@
                     landMark: landMark.value,
                     address: address.value,
                 };
-        
-                console.log(addressData);
-        
+
                 fetch('/addAddress', {
                     method: "post",
                     headers: {
@@ -261,35 +259,35 @@
                     },
                     body: JSON.stringify(addressData),
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if (data) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: 'Your address has been added successfully.',
-                            toast:true,
-                            position: 'bottom-end',
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        customClass: {
-            popup: 'rounded-pill shadow-sm',
-            title: 'font-weight-bold text-white',
-        },
-        background: '#28a745',
-        iconColor: '#ffffff', 
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    }
-                });
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Your address has been added successfully.',
+                                toast: true,
+                                position: 'bottom-end',
+                                timer: 2000,
+                                showConfirmButton: false,
+                                timerProgressBar: true,
+                                customClass: {
+                                    popup: 'rounded-pill shadow-sm',
+                                    title: 'font-weight-bold text-white',
+                                },
+                                background: '#28a745',
+                                iconColor: '#ffffff',
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        }
+                    });
             });
         </script>
-        
-       
-       
-       <script>
+
+
+
+        <script>
             async function deleteFn(id) {
                 try {
                     const confirmation = await Swal.fire({

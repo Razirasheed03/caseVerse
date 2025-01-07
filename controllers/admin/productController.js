@@ -37,7 +37,6 @@ const addProducts = async (req, res) => {
                     await sharp(originalImagePath).resize({ width: 440, height: 440 }).toFile(resizedImagePath);
                     images.push(req.files[i].filename);
                 }
-                console.log(images,"image names")
 
             }
 
@@ -62,47 +61,46 @@ const addProducts = async (req, res) => {
                 status: 'Available',
             });
             await newProduct.save();
-            console.log('products added successfully')
-            return res.status(200).json({redirectTo:'/admin/addProducts?success=true'});///admin/addProducts?success=true
+            return res.status(200).json({ redirectTo: '/admin/addProducts?success=true' });///admin/addProducts?success=true
         } else {
             return res.status(400).json('Product already exists, Please try with another name');
         }
     } catch (error) {
         console.error('Error saving product', error);
-        return res.status(500).json({redirectTo:'/admin/pageerror'})
+        return res.status(500).json({ redirectTo: '/admin/pageerror' })
     }
 }
 
-const getAllProducts = async (req,res)=>{
+const getAllProducts = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = req.query.page || 1;
         const limit = 4;
         const productData = await Product.find({
-            $or:[
-                {productName:{$regex:new RegExp('.*'+search+'.*','i')}},
+            $or: [
+                { productName: { $regex: new RegExp('.*' + search + '.*', 'i') } },
                 // {brand:{$regex:new RegExp('.*'+search+'.*','i')}},
             ]
-        }).limit(limit*1).skip((page-1)*limit).populate('category').exec();
+        }).limit(limit * 1).skip((page - 1) * limit).populate('category').exec();
 
         const count = await Product.find({
-            $or:[
-                {productName:{$regex:new RegExp('.*'+search+'.*','i')}},
+            $or: [
+                { productName: { $regex: new RegExp('.*' + search + '.*', 'i') } },
                 // {brand:{$regex:new RegExp('.*'+search+'.*','i')}}
             ],
         }).countDocuments();
-        const category = await Category.find({isListed:true});
+        const category = await Category.find({ isListed: true });
         // const brand = await Brand.find({isBlocked:false});
-        if(category){
-res.render('products',{
-    data:productData,
-    currentPage:page,
-    totalPages:Math.ceil(count/limit),
-    cat:category,
-    // brand:brand
-})
+        if (category) {
+            res.render('products', {
+                data: productData,
+                currentPage: page,
+                totalPages: Math.ceil(count / limit),
+                cat: category,
+                // brand:brand
+            })
 
-        }else{
+        } else {
             res.render('page-404');
         }
     } catch (error) {
@@ -113,9 +111,7 @@ res.render('products',{
 const addProductOffer = async (req, res) => {
     try {
         const { productId, percentage } = req.body;
-        // console.log(req.body,"im before")
         const findProduct = await Product.findOne({ _id: productId });
-        // console.log(findProduct,"iam here in addpro")
         const findCategory = await Category.findOne({ _id: findProduct.category });
         if (findCategory.categoryOffer > percentage) {
             return res.json({ status: false, message: 'This product category already has a category offer' })
@@ -133,58 +129,54 @@ const addProductOffer = async (req, res) => {
     }
 }
 
-const removeProductOffer=async (req,res)=>{
-    try{
-        const{productId}=req.body
-        const findProduct=await Product.findOne({_id:productId});
-        const percentage=findProduct.productOffer;
-        findProduct.salePrice=findProduct.salePrice+Math.floor(findProduct.regularPrice*(percentage/100));
-        findProduct.productOffer=0;
+const removeProductOffer = async (req, res) => {
+    try {
+        const { productId } = req.body
+        const findProduct = await Product.findOne({ _id: productId });
+        const percentage = findProduct.productOffer;
+        findProduct.salePrice = findProduct.salePrice + Math.floor(findProduct.regularPrice * (percentage / 100));
+        findProduct.productOffer = 0;
         await findProduct.save();
-        res.json({status:true})
+        res.json({ status: true })
 
-    }catch(error){
+    } catch (error) {
         res.redirect("/pageerror")
     }
 }
 
-const blockProduct=async (req,res)=>{
+const blockProduct = async (req, res) => {
     try {
-        let id=req.query.id;
-        await Product.updateOne({_id:id},{$set:{isBlocked:true}});
+        let id = req.query.id;
+        await Product.updateOne({ _id: id }, { $set: { isBlocked: true } });
         res.redirect("/admin/products")
     } catch (error) {
         res.redirect("/pageerror")
-        
+
     }
 }
-const unblockProduct=async (req,res)=>{
+const unblockProduct = async (req, res) => {
     try {
-        let id=req.query.id;
-        await Product.updateOne({_id:id},{$set:{isBlocked:false}});
+        let id = req.query.id;
+        await Product.updateOne({ _id: id }, { $set: { isBlocked: false } });
         res.redirect("/admin/products")
     } catch (error) {
         res.redirect("/pageerror")
-        
+
     }
 }
 
-const getEditProduct=async(req,res)=>{
+const getEditProduct = async (req, res) => {
     try {
-        const id=req.query.id;
-        console.log(id)
-        const product=await Product.findOne({_id:id});
-        const category=await Category.find({});
-        // const brand=await Brand.find({});
-        res.render("edit-product",{
-            product:product,
-            cat:category,
-            // brand:brand,
+        const id = req.query.id;
+        const product = await Product.findOne({ _id: id });
+        const category = await Category.find({});
+        res.render("edit-product", {
+            product: product,
+            cat: category,
 
         })
-        
+
     } catch (error) {
-        console.log("iam catched")
         res.redirect("/pageerror")
     }
 }
@@ -241,29 +233,28 @@ const deleteSingleImage = async (req, res) => {
         const imagePath = path.join('public', 'uploads', 're-image', imageNameToServer);
         if (fs.existsSync(imagePath)) {
             await fs.unlinkSync(imagePath);
-            console.log(`image ${imageNameToServer} deleted successfully`);
         } else {
             console.log(`image ${imageNameToServer} not found`);
         }
-        res.status(200).json({success:true})
+        res.status(200).json({ success: true })
     } catch (error) {
-        res.status(500).json({redirect:'/pageError'})
+        res.status(500).json({ redirect: '/pageError' })
     }
 }
 
-const deleteProduct = async(req,res)=>{
+const deleteProduct = async (req, res) => {
     const id = req.params.id;
     try {
         const update = await Product.findByIdAndUpdate(
-            {_id: id},
-            {isDeleted: true},
-            {new: true}
+            { _id: id },
+            { isDeleted: true },
+            { new: true }
         );
-        
-        if(!update){
-            return res.status(404).json({message:'Product not found'});
+
+        if (!update) {
+            return res.status(404).json({ message: 'Product not found' });
         }
-        
+
         // Return success response
         res.status(200).json({
             success: true,
@@ -278,61 +269,59 @@ const deleteProduct = async(req,res)=>{
     }
 }
 
-const stock=async(req,res)=>{
+const stock = async (req, res) => {
     try {
-        const products=await Product.find().populate('category','name');
-        res.render('stock',{products})
-        
+        const products = await Product.find().populate('category', 'name');
+        res.render('stock', { products })
+
     } catch (error) {
 
-        
+
     }
 }
 const addstock = async (req, res) => {
     try {
-      const { productId, quantity } = req.body;
-  
-      console.log(productId, 'productId', quantity, 'quantity');
-  
-      // Validate input
-      if (!productId || !quantity || quantity <= 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid input: Ensure productId is provided and quantity is greater than 0.',
-        });
-      }
-  
+        const { productId, quantity } = req.body;
 
-      const product = await Product.findById(productId);
-  
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          message: 'Product not found.',
-        });
-      }
-  
-      product.quantity += parseInt(quantity, 10);
-  
+        // Validate input
+        if (!productId || !quantity || quantity <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid input: Ensure productId is provided and quantity is greater than 0.',
+            });
+        }
 
-      await product.save();
-  
-      res.status(200).json({
-        success: true,
-        message: 'Stock updated successfully.',
-        updatedQuantity: product.quantity,
-      });
+
+        const product = await Product.findById(productId);
+
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found.',
+            });
+        }
+
+        product.quantity += parseInt(quantity, 10);
+
+
+        await product.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Stock updated successfully.',
+            updatedQuantity: product.quantity,
+        });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        success: false,
-        message: 'Server error. Please try again later.',
-      });
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error. Please try again later.',
+        });
     }
-  };
+};
 
 
-  
+
 module.exports = {
     getProductAddPage,
     addProducts,

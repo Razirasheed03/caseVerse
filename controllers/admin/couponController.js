@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-// Get all coupons
+// For Getting all coupons
 const coupons = async (req, res) => {
     try {
         const coupons = await Coupon.find().sort({ createdOn: -1 });
@@ -17,7 +17,7 @@ const coupons = async (req, res) => {
     }
 };
 
-// Add a new coupon
+// For Adding a new coupon
 const addCoupon = async (req, res) => {
     try {
         const { name, createdOn, expireOn, offerPrice, minimumPrice } = req.body;
@@ -43,7 +43,7 @@ const addCoupon = async (req, res) => {
     }
 };
 
-// Delete a coupon
+// For Deleting a coupon
 const deleteCoupon = async (req, res) => {
     try {
         const { id } = req.params;

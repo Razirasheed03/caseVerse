@@ -106,55 +106,6 @@
         <script src="assets/js/vendors/jquery.fullscreen.min.js"></script>
         <script src="assets/js/main.js?v=1.1" type="text/javascript"></script>
 
-        <!-- <script>
-            const submitAddress = document.getElementById('submitAddress');
-            const name = document.getElementById('name')
-            const addressType = document.getElementById('addressType')
-            const phone = document.getElementById('phone')
-            const pincode = document.getElementById('pincode')
-            const city = document.getElementById('city')
-            const state = document.getElementById('state')
-            const landMark = document.getElementById('landMark')
-            const address = document.getElementById('address')
-            submitAddress.addEventListener('click', (e) => {
-                e.preventDefault()
-                console.log(name.value)
-                const addressData = {
-                    name: name.value,
-                    addressType: addressType.value,
-                    phone: phone.value,
-                    pincode: pincode.value,
-                    city: city.value,
-                    state: state.value,
-                    landMark: landMark.value,
-                    address: address.value,
-                }
-                console.log(addressData);
-                fetch('/addAddress', {
-                    method: "post",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(addressData)
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data) {
-                            Swal.fire({
-                                title: 'Success!',
-                                text: 'Your address has been added successfully.',
-                                icon: 'success',
-                                confirmButtonText: 'OK'
-                            }).then(()=>{
-                                window.location.reload()
-                            })
-
-                        }
-                    })
-            })
-
-            console.log(name)
-        </script> -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     </body>
@@ -200,8 +151,7 @@
 
     <script>
         document.getElementById('editAddBtn').addEventListener('click', async (e) => {
-            e.preventDefault(); // Prevent form submission
-            console.log('Submit button clicked.');
+            e.preventDefault();
     
             // Capture form input values
             const name = document.getElementById('name').value;
@@ -236,7 +186,6 @@
                 const result = await response.json();
     
                 if (response.ok) {
-                    // Success - Show a SweetAlert confirmation
                     Swal.fire({
                         icon: 'success',
                         title: 'Address Updated!',
@@ -256,7 +205,6 @@
                     });
                 }
             } catch (error) {
-                console.log(error)
                 console.error('Error submitting form:', error);
     
                 // Show a generic error notification

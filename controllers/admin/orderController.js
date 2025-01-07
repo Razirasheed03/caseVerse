@@ -37,16 +37,12 @@ const adminOrders = async (req, res) => {
 
 const orderDetail = async (req, res) => {
     try {
-        const id = req.query.id; // Ensure this matches the frontend URL
-        console.log("Order ID from query:", id);
+        const id = req.query.id;
 
-        // Fetch order with populated product details
         const orders = await Order.findOne({ _id: id }).populate({
             path: 'items.productId',
             model: 'Product', // Ensure Product is correctly imported
         });
-
-        console.log("Fetched Order:", orders);
 
         if (!orders) {
             return res.render('orderDetail', { orders: null, selectedAddress: null }); // Pass null to indicate no orders found
@@ -65,8 +61,8 @@ const orderDetail = async (req, res) => {
 
 const changeStatus = async (req, res) => {
     try {
-        const { data, id } = req.body; // `data` is the status, `id` is the order ID
-        console.log(data, id);
+        const { data, id } = req.body;
+
 
         const order = await Order.findById(id);
         if (!order) {

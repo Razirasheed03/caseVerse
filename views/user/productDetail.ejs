@@ -286,20 +286,20 @@
                                                     </form>
                                                 </div>
 
-                                                    <!-- Add to Wishlist Button -->
-                                                    <!-- Add to Wishlist Button -->
-                                                    <button class=" mt-2 btn btn-outline-danger"
-                                                        id="wishlistBtn_<%= product._id %>"
-                                                        onclick="addToWishlist('<%= product._id %>')">
-                                                        <% if (wishlistProducts &&
-                                                            wishlistProducts.includes(product._id.toString())) { %>
-                                                            Added to Wishlist
-                                                            <% } else { %>
-                                                                Add to Wishlist
-                                                                <% } %>
-                                                    </button>
+                                                <!-- Add to Wishlist Button -->
+                                                <!-- Add to Wishlist Button -->
+                                                <button class=" mt-2 btn btn-outline-danger"
+                                                    id="wishlistBtn_<%= product._id %>"
+                                                    onclick="addToWishlist('<%= product._id %>')">
+                                                    <% if (wishlistProducts &&
+                                                        wishlistProducts.includes(product._id.toString())) { %>
+                                                        Added to Wishlist
+                                                        <% } else { %>
+                                                            Add to Wishlist
+                                                            <% } %>
+                                                </button>
 
-                                          
+
                     </form>
                 </div>
             </div>
@@ -337,9 +337,9 @@
                         },
                         body: JSON.stringify({ productId }),
                     });
-        
+
                     const data = await response.json();
-        
+
                     if (response.ok) {
                         // Update the button to indicate the product is added to wishlist
                         const wishlistBtn = document.getElementById(`wishlistBtn_${productId}`);
@@ -347,60 +347,60 @@
                         wishlistBtn.classList.remove('btn-outline-danger');
                         wishlistBtn.classList.add('btn-success');
                         wishlistBtn.disabled = true;
-        
+
                         // Optionally, show a toast or alert
                         Swal.fire({
-    icon: 'success',
-    title: data.message,
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true,
-    customClass: {
-        popup: 'rounded-pill shadow-sm',
-        title: 'font-weight-bold text-white',
-    },
-    background: '#28a745',
-    iconColor: '#ffffff', 
-});
+                            icon: 'success',
+                            title: data.message,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            customClass: {
+                                popup: 'rounded-pill shadow-sm',
+                                title: 'font-weight-bold text-white',
+                            },
+                            background: '#28a745',
+                            iconColor: '#ffffff',
+                        });
                     } else {
                         Swal.fire({
-    icon: 'success',
-    title: data.message,
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true,
-    customClass: {
-        popup: 'rounded-pill shadow-sm',
-        title: 'font-weight-bold text-white',
-    },
-    background: '#28a745',
-    iconColor: '#ffffff', 
-});
+                            icon: 'success',
+                            title: data.message,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            customClass: {
+                                popup: 'rounded-pill shadow-sm',
+                                title: 'font-weight-bold text-white',
+                            },
+                            background: '#28a745',
+                            iconColor: '#ffffff',
+                        });
                     }
                 } catch (error) {
                     Swal.fire({
-    icon: 'error',
-    title: data.message,
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true,
-    customClass: {
-        popup: 'rounded-pill shadow-sm',
-        title: 'font-weight-bold text-white',
-    },
-    background: '#f4a261',
-    iconColor: '#ffffff', 
-});
+                        icon: 'error',
+                        title: data.message,
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        customClass: {
+                            popup: 'rounded-pill shadow-sm',
+                            title: 'font-weight-bold text-white',
+                        },
+                        background: '#f4a261',
+                        iconColor: '#ffffff',
+                    });
                 }
             }
         </script>
-        
+
         <script>
             // Mobile Carousel Navigation
             document.addEventListener('DOMContentLoaded', function () {

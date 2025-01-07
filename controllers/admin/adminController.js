@@ -1,36 +1,36 @@
-const User=require('../../models/userSchema');
-const Order=require('../../models/orderSchema');
-const mongoose=require("mongoose");
-const bcrypt=require("bcrypt");
+const User = require('../../models/userSchema');
+const Order = require('../../models/orderSchema');
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 
-const logout=async(req,res)=>{
-    try{
-        req.session.destroy(err=>{
-            if(err){
-                console.log("Error destroying session",err);
+const logout = async (req, res) => {
+    try {
+        req.session.destroy(err => {
+            if (err) {
+                console.log("Error destroying session", err);
                 return res.redirect("/pageerror")
             }
             res.redirect("/admin/login")
         })
-    }catch(error){
-        console.log("Unexpected error during logout",error);
+    } catch (error) {
+        console.log("Unexpected error during logout", error);
         res.redirect("/pageerror")
 
     }
 }
 
 
-const pageerror=async(req,res)=>{
+const pageerror = async (req, res) => {
     res.render("admin-error")
 }
 
-const loadLogin=(req,res)=>{
+const loadLogin = (req, res) => {
     const message = req.query.message || null;
-    if(req.session.admin){
+    if (req.session.admin) {
         return res.redirect("/admin")
     }
-    res.render("admin-login",{message})
+    res.render("admin-login", { message })
 }
 
 const login = async (req, res) => {
@@ -67,10 +67,6 @@ const loadDashboard = async (req, res) => {
     try {
         const { filter } = req.query; // Filter based on date range
         const dateRange = getDateRange(filter);
-
-        // Debugging filter and date range
-        console.log('Filter:', filter);
-        console.log('Date Range:', dateRange);
 
         const adminOrders = await Order.find({
             createdAt: { $gte: dateRange.start, $lte: dateRange.end }
@@ -153,8 +149,6 @@ const loadDashboard = async (req, res) => {
 };
 
 
-
-// Utility function for date range
 function getDateRange(filter) {
     const now = new Date();
     let start, end;
@@ -187,12 +181,12 @@ function getDateRange(filter) {
 
 
 
-module.exports={
+module.exports = {
     loadLogin,
     login,
     loadDashboard,
     pageerror,
     logout,
-    
+
 
 }
