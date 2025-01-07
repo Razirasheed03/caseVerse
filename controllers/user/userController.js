@@ -1688,8 +1688,10 @@ const refundToWallet = async (req, res) => {
         }
 
         const user = await User.findById(userSession._id);
-        const refundAmount = order.finalAmount - req.session.couponDiscount || 0;
-
+        const couponDiscount = req.session.couponDiscount || 0;
+        console.log(couponDiscount,"discount")
+        const refundAmount = order.finalAmount - couponDiscount;
+        console.log(refundAmount)
         user.walletBalance += refundAmount;
 
         user.walletTransactions.push({
@@ -1770,13 +1772,14 @@ const cancelOrder = async (req, res) => {
             if (!user) {
                 return res.status(404).json({ success: false, message: 'User not found' });
             }
-
-            user.walletBalance += order.totalAmount;
+            const couponDiscount = req.session.couponDiscount || 0;
+            const refundAmount = order.totalAmount - couponDiscount;
+            user.walletBalance += refundAmount;
             order.paymentStatus = 'Refunded';
 
             user.walletTransactions.push({
                 detail: `Refund for Order ID ${orderId}`,
-                amount: order.totalAmount,
+                amount:refundAmount,
                 type: 'credit',
             });
 
