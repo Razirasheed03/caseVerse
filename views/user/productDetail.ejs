@@ -247,7 +247,7 @@
                                         </button>
                                         <input type="number" id="quantityInput" name="quantity"
                                             class="form-control text-center mx-2" value="1" min="1"
-                                            max="<%= product.quantity <= 10 ? product.quantity : 10 %>" readonly>
+                                            max="<%= product.quantity <= 5 ? product.quantity : 5 %>" readonly>
                                         <button type="button" class="btn btn-outline-secondary"
                                             onclick="increaseQuantity('<%= product.quantity %>')">
                                             +
@@ -483,7 +483,7 @@
             function increaseQuantity(maxQuantity) {
                 const quantityInput = document.getElementById('quantityInput');
                 const currentValue = parseInt(quantityInput.value);
-                const maxAllowed = maxQuantity <= 10 ? maxQuantity : 10;
+                const maxAllowed = maxQuantity <= 5 ? maxQuantity : 5;
                 if (currentValue < maxAllowed) {
                     quantityInput.value = currentValue + 1;
                 }
