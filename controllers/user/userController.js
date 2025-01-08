@@ -1155,9 +1155,9 @@ const cart = async (req, res) => {
         for (const item of cart.items) {
             const product = item.productId;
 
-            if (!product) {
-                // Skip invalid products and add a message
-                messages.push(`A product in your cart is no longer available and has been removed.`);
+            if (!product || product.isBlocked) {
+                // Remove blocked or invalid products
+                messages.push(`The product "${product?.productName || 'unknown'}" is no longer available and has been removed.`);
                 await Cart.updateOne(
                     { userId: user._id },
                     { $pull: { items: { _id: item._id } } }
