@@ -229,7 +229,7 @@
               toast: true,
               position: 'bottom-end',
               showConfirmButton: false,
-              timer: 300,
+              timer: 3000,
               timerProgressBar: true,
               didOpen: (toast) => {
                 toast.addEventListener('mouseenter', Swal.stopTimer);
@@ -248,7 +248,7 @@
               toast: true,
               position: 'bottom-end',
               showConfirmButton: false,
-              timer: 300,
+              timer: 3000,
               timerProgressBar: true,
               didOpen: (toast) => {
                 toast.addEventListener('mouseenter', Swal.stopTimer);
@@ -281,11 +281,30 @@
         const result = await response.json();
 
         if (response.ok) {
-          alert(result.success);
-          location.reload(); // Reload the page to update the cart UI
-        } else {
-          alert(result.error);
-        }
+    Swal.fire({
+        toast: true,
+        icon: 'success',
+        title: result.success,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+    setTimeout(() => {
+        location.reload(); // Reload the page to update the cart UI
+    }, 3000); // Wait for the toast to disappear before reloading
+} else {
+    Swal.fire({
+        toast: true,
+        icon: 'error',
+        title: result.error,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+}
+
       } catch (error) {
         console.error('Error removing coupon:', error);
         alert('An error occurred while removing the coupon.');
