@@ -181,11 +181,13 @@
             onclick="applyCoupon('<%= totalPrice.toFixed(2) %>')" id="applyCouponBtn">
             Apply Coupon
           </button>
+          <% if (cart.couponDiscount > 0) { %>
           <button type="button"
             class="flex-c-m stext-101 cl2 size-118 bg-danger bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-5"
             onclick="removeCoupon()" id="removeCouponBtn">
             Remove Coupon
           </button>
+          <%}%>
 
         </div>
       </div>
